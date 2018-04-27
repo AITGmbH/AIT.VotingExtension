@@ -1,0 +1,44 @@
+[
+  {
+    "outputFileName": "Content/agilecss.css",
+    "inputFiles": [
+      "Content/agilecss.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/style.css",
+    "inputFiles": [
+      "Content/style.css"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/VotingCommon.js",
+    "inputFiles": [
+      "Scripts/VotingCommon.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/VotingVotingpage.js",
+    "inputFiles": [
+      "Scripts/VotingVotingpage.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/tsBundle.js",
+    "inputFiles": [
+      "Scripts/tsBundle.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/bundle.js",
+    "inputFiles": [
+      "Scripts/bundle.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/VotingAdminpage.min.js",
+    "inputFiles": [
+      "Scripts/VotingAdminpage.js"
+    ]
+  }
+]

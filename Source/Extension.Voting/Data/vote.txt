@@ -1,0 +1,28 @@
+﻿{
+  "vote": [
+    {
+      "id": "1",
+      "userId": "99",
+      "votingId": "1",
+      "workItemId": "10623"
+    },
+    {
+      "id": "2",
+      "userId": "88",
+      "votingId": "2",
+      "workItemId": "10613"
+    },
+    {
+      "id": "3",
+      "userId": "77",
+      "votingId": "3",
+      "workItemId": "10610"
+    },
+    {
+      "id": "4",
+      "userId": "66",
+      "votingId": "4",
+      "workItemId": "10606"
+    }
+  ]
+}

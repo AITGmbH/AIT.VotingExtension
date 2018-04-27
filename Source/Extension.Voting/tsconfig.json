@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "node",
+    "target": "es5",
+    "rootDir": "",
+    "outDir": "",
+    "lib": [ "es2015", "dom" ]
+  },
+  "include": [
+    "Controller/*",
+    "Entities/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

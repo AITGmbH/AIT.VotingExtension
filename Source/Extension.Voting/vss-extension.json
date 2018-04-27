@@ -1,0 +1,85 @@
+{
+  "manifestVersion": 1,
+  "id": "asap-voting-aitgmb-de-preview",
+  "version": "0.1.15",
+  "publisher": "AITGmbh",
+  "public": false,
+  "name": "AIT Voting Extension (Preview)",
+  "description": "Democratize your backlog with Voting Extension. Ask your stakeholders to vote for their favorite backlog items. Align your work on your stakeholders' needs.",
+  "content": {
+    "details": {
+      "path": "Markdown/VotingExtension_Description.md"
+    },
+    "license": {
+      "path": "Markdown/VotingExtension_License.md"
+    }
+  },
+  "screenshots": [
+    {
+      "path": "Images/Screenshots/VotingSettingsStarted.png"
+    },
+    {
+      "path": "Images/Screenshots/VotingtableUnvoted.png"
+    },
+    {
+      "path": "Images/Screenshots/VotingtableVoted.png"
+    }
+  ],
+  "baseUri": "https://staging-ait-teamfoundation-extension-voting.azurewebsites.net/",
+  "icons": {
+    "default": "Images/Logo/AIT-Voting-Extension.png"
+  },
+  "tags": [
+    "Planning"
+  ],
+  "categories": [
+    "Collaborate"
+  ],
+  "scopes": [
+    "vso.work_write"
+  ],
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "contributions": [
+    {
+      "id": "Voting.Home",
+      "type": "ms.vss-web.hub",
+      "description": "Adds a 'voting' hub to the Work hub group.",
+      "targets": [
+        "ms.vss-work-web.work-hub-group"
+      ],
+      "properties": {
+        "name": "Voting",
+        "order": 99,
+        "uri": "/View/VotingVotingpage.html"
+      }
+    },
+
+    {
+      "id": "Voting.Administration",
+      "type": "ms.vss-web.hub",
+      "description": "Adds the voting administration hub to the project admin group.",
+      "targets": [
+        "ms.vss-web.project-admin-hub-group"
+
+      ],
+      "properties": {
+        "name": "Voting",
+        "order": 99,
+        "uri": "/View/VotingAdminpage.html"
+      }
+
+    }
+  ],
+  "links": {
+    "getstarted": {
+      "uri": "https://youtu.be/GvzbQba2cGU"
+    },
+    "support": {
+      "uri": "http://www.aitgmbh.de/unternehmen/kontakt.html"
+    }
+  }
+}

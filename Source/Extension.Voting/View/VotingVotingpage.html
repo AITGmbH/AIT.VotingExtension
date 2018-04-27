@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Voting</title>
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../Content/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="../Content/animate.css">
+    <link type="text/css" rel="stylesheet" href="../Content/style.min.css">
+    <link type="text/css" rel="stylesheet" href="../Content/agilecss.min.css">
+    <!-- JavaScript-->
+    <script src="../Scripts/typings/jquery/jquery-2.1.4.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+    <script src="../Scripts/bootstrap-notify.min.js"></script>
+
+    <script src="../Scripts/typings/insQ/insQ.min.js"></script>
+    <script src="../Scripts/typings/async/async.js"></script>
+    <script src="../node_modules/vss-web-extension-sdk/lib/VSS.SDK.js"></script>
+    <script src="../Controller/LogExtension.js"></script>
+    <script src="../Controller/BasicController.js"></script>
+    <script src="../Controller/BasicDataController.js"></script>
+    <script src="../Controller/VotingpageController.js"></script>
+    <script src="../Controller/VotingpageDataController.js"></script>
+    <script src="../Controller/VotingpageMainController.js"></script>
+    <script src="../Entities/User.js"></script>
+    <script src="../Entities/Voting.js"></script>
+    <script src="../Entities/TinyRequirement.js"></script>
+    <script src="../Entities/VotingItem.js"></script>
+    <script src="../Entities/Vote.js"></script>
+
+    <script src="../Scripts/VotingCommon.js"></script>
+    <script src="../Scripts/VotingVotingpage.js"></script>
+</head>
+
+<body>
+    <div id="waitContainer"></div>
+<div class="vso-container">
+        <div class="row">
+            <h1 class="votingheadline">Voting</h1>
+            <div id="progressBar" class="hub-progress pageProgressIndicator" style="display: none;"></div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="votingMenue-container" class="toolbar hide"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contentVotingActive" class="row voting-info-bar">
+            <div id="titleDiv" class="col-sm-6 titleBar"></div>
+            <div id="remainingVotesDiv" class="col-sm-2 col-sm-offset-4"></div>
+            <div id="informationDiv" class="col-sm-12"></div>
+        </div>
+
+        <div id="contentVotingInactive" class="row hide">
+            <div class="col-sm-12" id="errorMessage">
+                <!-- If Voting is disabled show error message-->
+                <p id="votingdisabledmessage">
+                    Voting is disabled. Create a new Voting at the <a id="linkToAdminpage" href="VotingAdminpage.html" target="_blank">Adminpage</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 hide" id="grid-container">
+            </div>
+            <div id="nothingToVote" class="col-sm-12 hide">
+                <div class="hub-no-content-gutter gutter-banner">
+                    <div class="gutter-banner-container">
+                        <div class="gutter-banner-text">
+                            <h2 class="votingh2">It's lonely in here!</h2>
+                            <p>There is nothing to vote for...</p>
+                        </div>
+
+                        <div class="gutter-banner-icon">
+                            <div class="image image-vso-cloud"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../Scripts/AppInsights.js"></script>
+</body>
+</html>
