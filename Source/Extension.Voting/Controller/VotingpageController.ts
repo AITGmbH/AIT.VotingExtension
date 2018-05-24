@@ -2,6 +2,7 @@
 ///<reference path="../Entities/User.ts"/>
 ///<reference path="../Entities/VotingItem.ts"/>
 ///<reference path="BasicController.ts"/>
+///<reference types="vss-web-extension-sdk" />
 
 declare function createVotingTable();
 declare function createVotingMenue();
@@ -36,45 +37,52 @@ class VotingpageController extends BasicController {
         this.dataController.loadWebContext();
         this.setAttributes(this.dataController.getWebContext());
         this.dataController.setDocumentId(this.dataController.getWebContext().team.id);
-        async.series([
-            (asyncCallback) => {
-                LogExtension.log("loadVoting");
-                this.dataController.loadVoting(asyncCallback);
-            },
-            (asyncCallback) => {
-                LogExtension.log("loadVotes");
-                this.dataController.loadVotes(asyncCallback);
-            },
-            (asyncCallback) => {
-                LogExtension.log("getAreas");
-                this.dataController.getAreas(asyncCallback);
-            },
-            (asyncCallback) => {
-                LogExtension.log("loadRequirements");
-                this.dataController.loadRequirements(asyncCallback);
-            }
-        ], (err: Error) => {
-            if (err == null) {
-                this.actualVoting = this.dataController.getSettings();
-                this.calculating();
-                this.buildVotingTable();
-                this.nothingToVote(true);
-            }
-            else {
-                LogExtension.log("Error occured: " + err);
-                switch (err.message) {
-                    case "noVotingActive":
-                        this.votingInactive();
-                        break;
-                    case "noVoting":
-                        this.votingInactive();
-                        break;
-                    case "nothingToVote":
-                        this.nothingToVote(false);
-                        break;
+        if (this.isCookieSet()) {
+            async.series([
+                (asyncCallback) => {
+                    LogExtension.log("loadVoting");
+                    this.dataController.loadVoting(asyncCallback);
+                },
+                (asyncCallback) => {
+                    LogExtension.log("loadVotes");
+                    this.dataController.loadVotes(asyncCallback);
+                },
+                (asyncCallback) => {
+                    LogExtension.log("getAreas");
+                    this.dataController.getAreas(asyncCallback);
+                },
+                (asyncCallback) => {
+                    LogExtension.log("loadRequirements");
+                    this.dataController.loadRequirements(asyncCallback);
                 }
-            }
-        });
+            ], (err: Error) => {
+                if (err == null) {
+                    this.actualVoting = this.dataController.getSettings();
+                    this.calculating();
+                    this.buildVotingTable();
+                    this.nothingToVote(true);
+                }
+                else {
+                    LogExtension.log("Error occured: " + err);
+                    switch (err.message) {
+                        case "noVotingActive":
+                            this.votingInactive();
+                            break;
+                        case "noVoting":
+                            this.votingInactive();
+                            break;
+                        case "nothingToVote":
+                            this.nothingToVote(false);
+                            break;
+                    }
+                }
+            });
+        }
+        else {
+            LogExtension.log("loadUserConfirmationDialog");
+            this.initializeDataProtectionDialog(this);
+            this.notAllowedToVote();
+        }
     } 
 
     //calculate the remaining votes and myVotes
@@ -190,6 +198,13 @@ class VotingpageController extends BasicController {
         this.waitControl.endWait();
     }
 
+    //if user did not confirm data notification, show error message
+    public notAllowedToVote() {
+        $("#contentVotingActive").toggleClass("hide");
+        $("#notAllowedToVote").toggleClass("hide");
+        this.waitControl.endWait();
+    }
+
     //get all needed information to save the vote
     //give the information to datacontroller
     public saveVoting(id: string, upVote: boolean) {
@@ -260,4 +275,48 @@ class VotingpageController extends BasicController {
     public set LockButtons(value: boolean) {
         this.lockButtons = value;
     }
-}
+
+    private initializeDataProtectionDialog(controller: VotingpageController) {
+        let cookieName: string = "VotingExtension.UserConfirmation";
+        VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
+            let htmlContentString: string = '<html><body><div>Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services - ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target = "_blank" > Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (VSTS / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our data protection declaration.<br/>By confirming this notification you accept this terms of use.</div></body></html>';
+            let dialogContent = $.parseHTML(htmlContentString);
+            let dialogOptions = {
+                title: "Terms of Use",
+                content: dialogContent,
+                buttons: {
+                    "Confirm": () => {
+                        controller.setCookie();
+                        dialog.close();
+                        controller.notAllowedToVote();
+                        controller.initializeVotingpage();
+                    },
+                    "Decline": () => {
+                        dialog.close();
+                    }
+                },
+                hideCloseButton: true
+            }
+            let dialog = Dialogs.show(Dialogs.ModalDialog, dialogOptions);
+        })
+    }
+
+    private cookie: string = "VotingExtension.UserConfirmation=true";
+
+    private setCookie() {
+        let expiringDate = new Date();
+        expiringDate.setTime(expiringDate.getTime() + (365 * 24 * 60 * 60 * 1000)); // cookie expires after one year - specified in msec
+        document.cookie = this.cookie + ";expires=" + expiringDate.toUTCString() + ";";
+    }
+
+    private isCookieSet() {
+        let decodedCookie: string = decodeURIComponent(document.cookie);
+        let allCookies: string[] = decodedCookie.split(';');
+        for (let i = 0; i < allCookies.length; i++) {
+            if (allCookies[i] === this.cookie) {
+                return true;
+            }
+        }
+        return false;
+    }
+} 
