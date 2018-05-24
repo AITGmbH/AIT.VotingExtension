@@ -101,4 +101,7 @@ class VotingpageMain {
     static refreshTable() {
         VotingpageMain.votingController.initializeVotingpage();
     }
-}
+    static removeAllUserdata() {
+        this.votingController.removeAllUservotes();
+    }
+ }

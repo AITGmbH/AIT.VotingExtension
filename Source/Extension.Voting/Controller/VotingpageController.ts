@@ -1,7 +1,9 @@
-﻿///<reference path="VotingpageDataController.ts"/>
+///<reference path="VotingpageDataController.ts"/>
 ///<reference path="../Entities/User.ts"/>
 ///<reference path="../Entities/VotingItem.ts"/>
 ///<reference path="BasicController.ts"/>
+///<reference path="../Services/IVotingDataService.ts"/>
+///<reference path="../Services/VssVotingDataService.ts"/>
 ///<reference types="vss-web-extension-sdk" />
 
 declare function createVotingTable();
@@ -21,11 +23,13 @@ class VotingpageController extends BasicController {
     private grid: any;
     private waitControl: any;
     private lockButtons: boolean;
+    private votingDataService: IVotingDataService;
 
     constructor(waitControl: any) {
         super();
         this.waitControl = waitControl;
-        this.dataController = new VotingpageDataController(this);
+        this.votingDataService = new VssVotingDataService();
+        this.dataController = new VotingpageDataController(this, this.votingDataService);
     }
 
     public getActualVotingItems(): Array<VotingItem> {
@@ -274,6 +278,10 @@ class VotingpageController extends BasicController {
 
     public set LockButtons(value: boolean) {
         this.lockButtons = value;
+    }
+
+    public removeAllUservotes(): any {
+        this.dataController.removeAllUservotes(this.user.Id);
     }
 
     private initializeDataProtectionDialog(controller: VotingpageController) {

@@ -4,19 +4,23 @@
 ///<reference path="../Entities/Voting.ts"/>
 /// <reference types="vss-web-extension-sdk" />
 ///<reference path="BasicDataController.ts"/>
+///<reference path="../"/>
+
 
 declare function bsNotify(type, message);
 ///<summary>
 /// Controller Class with api-functions
 ///</summary>
 class VotingpageDataController extends BasicDataController {
+    private votingDataService: IVotingDataService;
     private votingController: VotingpageController;
     private votes: Array<Vote>;
     private areas: string;
     private requirements: Array<TinyRequirement>;
 
-    constructor(controller: VotingpageController) {
+    constructor(controller: VotingpageController, votingDataService: IVotingDataService) {
         super();
+        this.votingDataService = votingDataService;
         this.votingController = controller;
     }
 
@@ -368,5 +372,28 @@ class VotingpageDataController extends BasicDataController {
                     bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
                 }
             });
+    }
+
+    public async removeAllUservotes(userId: string) {
+
+        let docs = await this.votingDataService.getAllVotings();
+
+        try {
+            $.each(docs,
+                (idx, doc) => {
+
+                    //remove votes if userid matches
+                    doc.vote = doc.vote.filter(vote => vote.userId !== userId);
+
+                    //store document
+                    this.votingDataService.storeDocument(doc);
+
+                   
+                    bsNotify("success", "Your votes has been successfully removes.");
+                });
+            this.votingController.initializeVotingpage();
+        } catch (e) {
+            LogExtension.log(e);
+        }
     }
 }

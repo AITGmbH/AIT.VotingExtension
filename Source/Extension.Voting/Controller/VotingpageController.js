@@ -2,7 +2,10 @@
 ///<reference path="../Entities/User.ts"/>
 ///<reference path="../Entities/VotingItem.ts"/>
 ///<reference path="BasicController.ts"/>
+///<reference path="../Services/IVotingDataService.ts"/>
+///<reference path="../Services/VssVotingDataService.ts"/>
 ///<reference types="vss-web-extension-sdk" />
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23,7 +26,8 @@ var VotingpageController = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.cookie = "VotingExtension.UserConfirmation=true";
         _this.waitControl = waitControl;
-        _this.dataController = new VotingpageDataController(_this);
+        _this.votingDataService = new VssVotingDataService();
+        _this.dataController = new VotingpageDataController(_this, _this.votingDataService);
         return _this;
     }
     VotingpageController.prototype.getActualVotingItems = function () {
@@ -267,6 +271,11 @@ var VotingpageController = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+
+    VotingpageController.prototype.removeAllUservotes = function () {
+        this.dataController.removeAllUservotes(this.user.Id);
+    };
+  
     VotingpageController.prototype.initializeDataProtectionDialog = function (controller) {
         var cookieName = "VotingExtension.UserConfirmation";
         VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
