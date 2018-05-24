@@ -4,6 +4,8 @@
 ///<reference path="BasicController.ts"/>
 ///<reference path="../Services/IVotingDataService.ts"/>
 ///<reference path="../Services/VssVotingDataService.ts"/>
+///<reference types="vss-web-extension-sdk" />
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22,6 +24,7 @@ var VotingpageController = /** @class */ (function (_super) {
     __extends(VotingpageController, _super);
     function VotingpageController(waitControl) {
         var _this = _super.call(this) || this;
+        _this.cookie = "VotingExtension.UserConfirmation=true";
         _this.waitControl = waitControl;
         _this.votingDataService = new VssVotingDataService();
         _this.dataController = new VotingpageDataController(_this, _this.votingDataService);
@@ -36,45 +39,52 @@ var VotingpageController = /** @class */ (function (_super) {
         this.dataController.loadWebContext();
         this.setAttributes(this.dataController.getWebContext());
         this.dataController.setDocumentId(this.dataController.getWebContext().team.id);
-        async.series([
-            function (asyncCallback) {
-                LogExtension.log("loadVoting");
-                _this.dataController.loadVoting(asyncCallback);
-            },
-            function (asyncCallback) {
-                LogExtension.log("loadVotes");
-                _this.dataController.loadVotes(asyncCallback);
-            },
-            function (asyncCallback) {
-                LogExtension.log("getAreas");
-                _this.dataController.getAreas(asyncCallback);
-            },
-            function (asyncCallback) {
-                LogExtension.log("loadRequirements");
-                _this.dataController.loadRequirements(asyncCallback);
-            }
-        ], function (err) {
-            if (err == null) {
-                _this.actualVoting = _this.dataController.getSettings();
-                _this.calculating();
-                _this.buildVotingTable();
-                _this.nothingToVote(true);
-            }
-            else {
-                LogExtension.log("Error occured: " + err);
-                switch (err.message) {
-                    case "noVotingActive":
-                        _this.votingInactive();
-                        break;
-                    case "noVoting":
-                        _this.votingInactive();
-                        break;
-                    case "nothingToVote":
-                        _this.nothingToVote(false);
-                        break;
+        if (this.isCookieSet()) {
+            async.series([
+                function (asyncCallback) {
+                    LogExtension.log("loadVoting");
+                    _this.dataController.loadVoting(asyncCallback);
+                },
+                function (asyncCallback) {
+                    LogExtension.log("loadVotes");
+                    _this.dataController.loadVotes(asyncCallback);
+                },
+                function (asyncCallback) {
+                    LogExtension.log("getAreas");
+                    _this.dataController.getAreas(asyncCallback);
+                },
+                function (asyncCallback) {
+                    LogExtension.log("loadRequirements");
+                    _this.dataController.loadRequirements(asyncCallback);
                 }
-            }
-        });
+            ], function (err) {
+                if (err == null) {
+                    _this.actualVoting = _this.dataController.getSettings();
+                    _this.calculating();
+                    _this.buildVotingTable();
+                    _this.nothingToVote(true);
+                }
+                else {
+                    LogExtension.log("Error occured: " + err);
+                    switch (err.message) {
+                        case "noVotingActive":
+                            _this.votingInactive();
+                            break;
+                        case "noVoting":
+                            _this.votingInactive();
+                            break;
+                        case "nothingToVote":
+                            _this.nothingToVote(false);
+                            break;
+                    }
+                }
+            });
+        }
+        else {
+            LogExtension.log("loadUserConfirmationDialog");
+            this.initializeDataProtectionDialog(this);
+            this.notAllowedToVote();
+        }
     };
     //calculate the remaining votes and myVotes
     //also store the votes in the allVotes-Array
@@ -183,6 +193,12 @@ var VotingpageController = /** @class */ (function (_super) {
         $("#contentVotingInactive").toggleClass("hide");
         this.waitControl.endWait();
     };
+    //if user did not confirm data notification, show error message
+    VotingpageController.prototype.notAllowedToVote = function () {
+        $("#contentVotingActive").toggleClass("hide");
+        $("#notAllowedToVote").toggleClass("hide");
+        this.waitControl.endWait();
+    };
     //get all needed information to save the vote
     //give the information to datacontroller
     VotingpageController.prototype.saveVoting = function (id, upVote) {
@@ -255,8 +271,49 @@ var VotingpageController = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+
     VotingpageController.prototype.removeAllUservotes = function () {
         this.dataController.removeAllUservotes(this.user.Id);
+    };
+  
+    VotingpageController.prototype.initializeDataProtectionDialog = function (controller) {
+        var cookieName = "VotingExtension.UserConfirmation";
+        VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
+            var htmlContentString = '<html><body><div>Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services - ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target = "_blank" > Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (VSTS / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our data protection declaration.<br/>By confirming this notification you accept this terms of use.</div></body></html>';
+            var dialogContent = $.parseHTML(htmlContentString);
+            var dialogOptions = {
+                title: "Terms of Use",
+                content: dialogContent,
+                buttons: {
+                    "Confirm": function () {
+                        controller.setCookie();
+                        dialog.close();
+                        controller.notAllowedToVote();
+                        controller.initializeVotingpage();
+                    },
+                    "Decline": function () {
+                        dialog.close();
+                    }
+                },
+                hideCloseButton: true
+            };
+            var dialog = Dialogs.show(Dialogs.ModalDialog, dialogOptions);
+        });
+    };
+    VotingpageController.prototype.setCookie = function () {
+        var expiringDate = new Date();
+        expiringDate.setTime(expiringDate.getTime() + (365 * 24 * 60 * 60 * 1000)); // cookie expires after one year - specified in msec
+        document.cookie = this.cookie + ";expires=" + expiringDate.toUTCString() + ";";
+    };
+    VotingpageController.prototype.isCookieSet = function () {
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var allCookies = decodedCookie.split(';');
+        for (var i = 0; i < allCookies.length; i++) {
+            if (allCookies[i] === this.cookie) {
+                return true;
+            }
+        }
+        return false;
     };
     return VotingpageController;
 }(BasicController));

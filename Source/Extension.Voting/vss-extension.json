@@ -79,7 +79,10 @@
       "uri": "https://youtu.be/GvzbQba2cGU"
     },
     "support": {
-      "uri": "http://www.aitgmbh.de/unternehmen/kontakt.html"
+      "uri": "https://www.aitgmbh.de/kontakt-und-anfahrt"
+    },
+    "privacypolicy": {
+      "uri": "https://www.aitgmbh.de/datenschutz"
     }
   }
 }

@@ -36,7 +36,7 @@
 
 <body>
     <div id="waitContainer"></div>
-<div class="vso-container">
+    <div class="vso-container">
         <div class="row">
             <h1 class="votingheadline">Voting</h1>
             <div id="progressBar" class="hub-progress pageProgressIndicator" style="display: none;"></div>
@@ -59,6 +59,13 @@
                 <p id="votingdisabledmessage">
                     Voting is disabled. Create a new Voting at the <a id="linkToAdminpage" href="VotingAdminpage.html" target="_blank">Adminpage</a>
                 </p>
+            </div>
+        </div>
+
+        <div id="notAllowedToVote" class="row hide">
+            <div class="col-sm-12" id="errorMessage">
+                <!-- If user has not confirmed data save notification show error message-->
+                <p id="userInformationNotConfirmedMessage"></p>
             </div>
         </div>
 
