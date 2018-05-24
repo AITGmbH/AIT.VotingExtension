@@ -19,7 +19,12 @@ Click the picture below to see a demo video.
 6. Each team member votes for the items it want to see on the top of the team backlog
 7. Appliy the (interim) results to backlog 
 
+## Additional Links
+- <a href="http://www.aitgmbh.de/" target="_blank">AIT-Homepage</a>
+- <a href="https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc" target="_blank">AIT TFS-Tools</a>
 
-## Additional links
-AIT-Homepage: http://www.aitgmbh.de/
-AIT TFS-Tools: http://www.aitgmbh.de/downloads/team-foundation-server-tools.html
+## Privace Information
+Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.
+<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target="_blank">Microsoft Docs: Data collection, retention and storage in Application Insights</a>)
+as well as the (VSTS/TFS) account name and Team Project id is tracked.
+<br/>For general information on data protection, please refer to our data protection declaration.
