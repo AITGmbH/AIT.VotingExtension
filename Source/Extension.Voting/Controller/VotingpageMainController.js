@@ -83,5 +83,8 @@ var VotingpageMain = /** @class */ (function () {
     VotingpageMain.refreshTable = function () {
         VotingpageMain.votingController.initializeVotingpage();
     };
+    VotingpageMain.removeAllUserdata = function () {
+        this.votingController.removeAllUservotes();
+    };
     return VotingpageMain;
 }());

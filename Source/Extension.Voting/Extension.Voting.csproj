@@ -130,6 +130,8 @@
     <TypeScriptCompile Include="Controller\VotingpageMainController.ts" />
     <TypeScriptCompile Include="Entities\Vote.ts" />
     <TypeScriptCompile Include="Entities\Voting.ts" />
+    <TypeScriptCompile Include="Services\IVotingDataService.ts" />
+    <TypeScriptCompile Include="Services\VssVotingDataService.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>

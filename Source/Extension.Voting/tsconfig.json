@@ -9,7 +9,8 @@
   },
   "include": [
     "Controller/*",
-    "Entities/*"
+    "Entities/*",
+    "Services/*"
   ],
   "exclude": [
     "node_modules"

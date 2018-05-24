@@ -2,6 +2,8 @@
 ///<reference path="../Entities/User.ts"/>
 ///<reference path="../Entities/VotingItem.ts"/>
 ///<reference path="BasicController.ts"/>
+///<reference path="../Services/IVotingDataService.ts"/>
+///<reference path="../Services/VssVotingDataService.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21,7 +23,8 @@ var VotingpageController = /** @class */ (function (_super) {
     function VotingpageController(waitControl) {
         var _this = _super.call(this) || this;
         _this.waitControl = waitControl;
-        _this.dataController = new VotingpageDataController(_this);
+        _this.votingDataService = new VssVotingDataService();
+        _this.dataController = new VotingpageDataController(_this, _this.votingDataService);
         return _this;
     }
     VotingpageController.prototype.getActualVotingItems = function () {
@@ -252,5 +255,8 @@ var VotingpageController = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    VotingpageController.prototype.removeAllUservotes = function () {
+        this.dataController.removeAllUservotes(this.user.Id);
+    };
     return VotingpageController;
 }(BasicController));

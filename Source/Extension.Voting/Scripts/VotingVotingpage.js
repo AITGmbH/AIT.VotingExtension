@@ -136,6 +136,13 @@ function createVotingMenue() {
                 {
                     id: "adminpageLink", title: "Visit settings page",
                     icon: "icon icon-settings", disabled: false
+                },
+                {
+                    separator: true
+                },
+                {
+                    id: "removeAllUserdata", title: "Deletes all user-voring realated data from storage.",
+                    icon: "icon icon-delete", disabled: false
                 }
             ],
             executeAction: function (args) {
@@ -150,6 +157,9 @@ function createVotingMenue() {
                         break;
                     case "refresh":
                         VotingpageMain.refreshTable();
+                        break;
+                    case "removeAllUserdata":
+                        VotingpageMain.removeAllUserdata();
                         break;
                 }
             }
