@@ -271,7 +271,28 @@ var VotingpageController = /** @class */ (function (_super) {
         configurable: true
     });
     VotingpageController.prototype.removeAllUservotes = function () {
-        this.dataController.removeAllUservotes(this.user.Id);
+        this.removeAllUservotesDialog(this);
+    };
+    VotingpageController.prototype.removeAllUservotesDialog = function (controller) {
+        VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
+            var htmlContentString = '<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>';
+            var dialogContent = $.parseHTML(htmlContentString);
+            var dialogOptions = {
+                title: "Delete all user data",
+                content: dialogContent,
+                buttons: {
+                    "Delete": function () {
+                        controller.dataController.removeAllUservotes(controller.user.Id);
+                        dialog.close();
+                    },
+                    "Cancel": function () {
+                        dialog.close();
+                    }
+                },
+                hideCloseButton: true
+            };
+            var dialog = Dialogs.show(Dialogs.ModalDialog, dialogOptions);
+        });
     };
     VotingpageController.prototype.initializeDataProtectionDialog = function (controller) {
         var cookieName = "VotingExtension.UserConfirmation";

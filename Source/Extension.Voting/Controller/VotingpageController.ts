@@ -281,7 +281,29 @@ class VotingpageController extends BasicController {
     }
 
     public removeAllUservotes(): any {
-        this.dataController.removeAllUservotes(this.user.Id);
+        this.removeAllUservotesDialog(this);
+    }
+
+    private removeAllUservotesDialog(controller: VotingpageController) {
+        VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
+            let htmlContentString: string = '<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>';
+            let dialogContent = $.parseHTML(htmlContentString);
+            let dialogOptions = {
+                title: "Delete all user data",
+                content: dialogContent,
+                buttons: {
+                    "Delete": () => {
+                        controller.dataController.removeAllUservotes(controller.user.Id);
+                        dialog.close();
+                    },
+                    "Cancel": () => {
+                        dialog.close();
+                    }
+                },
+                hideCloseButton: true
+            }
+            let dialog = Dialogs.show(Dialogs.ModalDialog, dialogOptions);
+        })
     }
 
     private initializeDataProtectionDialog(controller: VotingpageController) {
