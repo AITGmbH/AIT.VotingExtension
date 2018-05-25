@@ -173,7 +173,7 @@ var VotingpageDataController = /** @class */ (function (_super) {
                             tempRequirement.Size = req.fields['Microsoft.VSTS.Scheduling.Size'];
                             tempRequirement.ValueArea = req.fields['Microsoft.VSTS.Common.BusinessValue'];
                             tempRequirement.IterationPath = req.fields['System.IterationPath'];
-                            tempRequirement.AssignedTo = req.fields['System.AssignedTo'];
+                            tempRequirement.AssignedTo = req.fields['System.AssignedTo'].displayName;
                             tempRequirement.Description = req.fields['System.Description'];
                             _this.requirements.push(tempRequirement);
                         });
@@ -422,8 +422,8 @@ var VotingpageDataController = /** @class */ (function (_super) {
                                 doc.vote = doc.vote.filter(function (vote) { return vote.userId !== userId; });
                                 //store document
                                 _this.votingDataService.storeDocument(doc);
-                                bsNotify("success", "Your votes has been successfully removes.");
                             });
+                            bsNotify("success", "Your votes have been successfully removed.");
                             this.votingController.initializeVotingpage();
                         }
                         catch (e) {
