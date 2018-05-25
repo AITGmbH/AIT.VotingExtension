@@ -387,9 +387,8 @@ class VotingpageDataController extends BasicDataController {
                     //store document
                     this.votingDataService.storeDocument(doc);
 
-                   
-                    bsNotify("success", "Your votes has been successfully removes.");
                 });
+            bsNotify("success", "Your votes have been successfully removed.");
             this.votingController.initializeVotingpage();
         } catch (e) {
             LogExtension.log(e);
