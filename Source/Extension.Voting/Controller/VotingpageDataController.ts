@@ -17,6 +17,8 @@ class VotingpageDataController extends BasicDataController {
     private areas: string;
     private requirements: Array<TinyRequirement>;
 
+    private static assignedToUnassignedText: string = "";
+
     constructor(controller: VotingpageController, votingDataService: IVotingDataService) {
         super();
         this.votingDataService = votingDataService;
@@ -87,6 +89,12 @@ class VotingpageDataController extends BasicDataController {
         });
     }
 
+    private getNameOfWiResponsiveness(req: any): string {
+        const assignedTo = req.fields["System.AssignedTo"];
+        var displayName = (assignedTo == undefined) ? VotingpageDataController.assignedToUnassignedText : assignedTo.displayName;
+        return displayName;
+    };
+
     //Method to load the Requirements from TFS
     public loadRequirements(asyncCallback) {
         this.requirements = new Array<TinyRequirement>();
@@ -136,7 +144,7 @@ class VotingpageDataController extends BasicDataController {
                             tempRequirement.Size = req.fields['Microsoft.VSTS.Scheduling.Size'];
                             tempRequirement.ValueArea = req.fields['Microsoft.VSTS.Common.BusinessValue'];
                             tempRequirement.IterationPath = req.fields['System.IterationPath'];
-                            tempRequirement.AssignedTo = req.fields['System.AssignedTo'];
+                            tempRequirement.AssignedTo = this.getNameOfWiResponsiveness(req);
                             tempRequirement.Description = req.fields['System.Description'];
 
                             this.requirements.push(tempRequirement);
