@@ -122,6 +122,12 @@ var VotingpageDataController = /** @class */ (function (_super) {
             });
         });
     };
+    VotingpageDataController.prototype.getNameOfWiResponsiveness = function (req) {
+        var assignedTo = req.fields["System.AssignedTo"];
+        var displayName = (assignedTo == undefined) ? VotingpageDataController.assignedToUnassignedText : assignedTo.displayName;
+        return displayName;
+    };
+    ;
     //Method to load the Requirements from TFS
     VotingpageDataController.prototype.loadRequirements = function (asyncCallback) {
         var _this = this;
@@ -173,7 +179,7 @@ var VotingpageDataController = /** @class */ (function (_super) {
                             tempRequirement.Size = req.fields['Microsoft.VSTS.Scheduling.Size'];
                             tempRequirement.ValueArea = req.fields['Microsoft.VSTS.Common.BusinessValue'];
                             tempRequirement.IterationPath = req.fields['System.IterationPath'];
-                            tempRequirement.AssignedTo = req.fields['System.AssignedTo'].displayName;
+                            tempRequirement.AssignedTo = _this.getNameOfWiResponsiveness(req);
                             tempRequirement.Description = req.fields['System.Description'];
                             _this.requirements.push(tempRequirement);
                         });
@@ -434,5 +440,6 @@ var VotingpageDataController = /** @class */ (function (_super) {
             });
         });
     };
+    VotingpageDataController.assignedToUnassignedText = "";
     return VotingpageDataController;
 }(BasicDataController));
