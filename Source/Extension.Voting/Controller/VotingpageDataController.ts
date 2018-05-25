@@ -4,7 +4,6 @@
 ///<reference path="../Entities/Voting.ts"/>
 /// <reference types="vss-web-extension-sdk" />
 ///<reference path="BasicDataController.ts"/>
-///<reference path="../"/>
 
 
 declare function bsNotify(type, message);
