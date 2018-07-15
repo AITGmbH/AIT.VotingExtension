@@ -1,7 +1,6 @@
 #Variables which provide the hardcoded changes
 $newid = "asap-voting-aitgmb-de-preview"
 $public = $FALSE
-$baseUri = "https://asap-voting-preview.azurewebsites.net/"
 $newName = "AIT Voting Extension (Preview)"
 $hubName = "Voting (Preview)"
 $defaultVersion = "1.0.0.0"
@@ -36,7 +35,7 @@ Write-Verbose "BUILD_SOURCESDIRECTORY: $Env:BUILD_SOURCESDIRECTORY"
 ### prepare json vss-extension.json
 Write-Warning "Source Directory: $Env:BUILD_SOURCESDIRECTORY"
 
-$files = gci –Path $Env:BUILD_SOURCESDIRECTORY -Include vss-extension.json -Recurse
+$files = gci ï¿½Path $Env:BUILD_SOURCESDIRECTORY -Include vss-extension.json -Recurse
 if($files)
 {
     Write-Warning "Will apply the changes to $($files.count) files."
@@ -48,7 +47,6 @@ if($files)
 		$json.version = $defaultVersion
 		$json.name = $newName
 		$json.public = $public
-		$json.baseUri = $baseUri
 		$json.contributions[0].properties.name = $hubName
 		$json.contributions[1].properties.name = $hubName
 		$filecontent = ConvertTo-Json $json -Depth 3
@@ -63,4 +61,4 @@ else
     Write-Warning "Found no files."
 }
 
-tfx extension create 
+tfx extension create

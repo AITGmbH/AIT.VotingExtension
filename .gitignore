@@ -24,3 +24,6 @@ bld/
 # Visual Studio cache/options directory
 .vs/
 /Source/Extension.Voting/Scripts/typings
+
+*.vsix
+dist
