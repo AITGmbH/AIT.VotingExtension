@@ -271,12 +271,33 @@ var VotingpageController = /** @class */ (function (_super) {
         configurable: true
     });
     VotingpageController.prototype.removeAllUservotes = function () {
-        this.dataController.removeAllUservotes(this.user.Id);
+        this.removeAllUservotesDialog(this);
+    };
+    VotingpageController.prototype.removeAllUservotesDialog = function (controller) {
+        VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
+            var htmlContentString = '<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>';
+            var dialogContent = $.parseHTML(htmlContentString);
+            var dialogOptions = {
+                title: "Delete all user data",
+                content: dialogContent,
+                buttons: {
+                    "Delete": function () {
+                        controller.dataController.removeAllUservotes(controller.user.Id);
+                        dialog.close();
+                    },
+                    "Cancel": function () {
+                        dialog.close();
+                    }
+                },
+                hideCloseButton: true
+            };
+            var dialog = Dialogs.show(Dialogs.ModalDialog, dialogOptions);
+        });
     };
     VotingpageController.prototype.initializeDataProtectionDialog = function (controller) {
         var cookieName = "VotingExtension.UserConfirmation";
         VSS.require(["VSS/Controls", "VSS/Controls/Dialogs"], function (Controls, Dialogs) {
-            var htmlContentString = '<html><body><div>Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services - ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target = "_blank" > Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (VSTS / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our data protection declaration.<br/>By confirming this notification you accept this terms of use.</div></body></html>';
+            var htmlContentString = '<html><body><div>Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services - ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target = "_blank" >Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (VSTS / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our data protection declaration.<br/>By confirming this notification you accept this terms of use.</div></body></html>';
             var dialogContent = $.parseHTML(htmlContentString);
             var dialogOptions = {
                 title: "Terms of Use",

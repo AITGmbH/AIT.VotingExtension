@@ -141,7 +141,7 @@ function createVotingMenue() {
                     separator: true
                 },
                 {
-                    id: "removeAllUserdata", title: "Deletes all user-voring realated data from storage.",
+                    id: "removeAllUserdata", title: "Delete user data from storage.",
                     icon: "icon icon-delete", disabled: false
                 }
             ],
