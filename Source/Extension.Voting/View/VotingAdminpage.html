@@ -25,6 +25,12 @@
     <script src="../Scripts/VotingCommon.min.js"></script>
     <script src="../Scripts/VotingAdminpage.min.js"></script>
 
+    <script src="../Controller/AdminpageMainController.js"></script>
+
+    <script src="../Services/IReportCreationService.js"></script>
+    <script src="../Services/ReportCreationService.js"></script>
+    <script src="../Services/IEmailService.js"></script>
+    <script src="../Services/EmailService.js"></script>
 </head>
 
 <body>
@@ -81,6 +87,12 @@
                         <div class="row" id="levelContainer"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-12" id="errorMessage">
+                <div class="row" id="reportcontainer">This is a Report</div>
             </div>
         </div>
 

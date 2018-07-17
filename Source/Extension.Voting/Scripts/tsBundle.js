@@ -814,7 +814,7 @@ var AdminpageMain = (function () {
     }
     AdminpageMain.startApplication = function (waitcontrol) {
         waitcontrol.startWait();
-        var adminController = new AdminpageController(waitcontrol);
+        var adminController = new AdminpageController(waitcontrol, new ReportView()); // Manual create it here ? I am not sure, this is generated...
         adminController.initializeAdminpage();
         AdminpageMain.setAdminController(adminController);
         generateCombos();

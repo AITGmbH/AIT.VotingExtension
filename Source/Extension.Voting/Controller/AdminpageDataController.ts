@@ -13,11 +13,9 @@ declare function bsNotify(type, message);
 /// Controller Class with Api-functions
 ///</summary>
 class AdminpageDataController extends BasicDataController {
-    private controller: AdminpageController;
 
-    constructor(controller: AdminpageController) {
+    constructor() {
         super();
-        this.controller = controller;
     }
 
     public addToExclude(item: string) {

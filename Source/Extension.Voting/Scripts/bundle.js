@@ -13,7 +13,8 @@ $(document).ready(function () {
                     message: "Loading..."
                 });
                 LogExtension.log("Waitcontrol ready", "start application");
-                VotingpageMain.startApplication(waitcontrol);
+               // VotingpageMain.startApplication(waitcontrol);
+               new AdminpageMain(waitcontrol);
             });
         });
     } catch(ex) {

@@ -10,37 +10,47 @@ declare function generateCombos();
 ///<summary>
 ///Main-class, contains the methods of the clickevents on the View
 ///</summary>
-class AdminpageMain {
-    private static adminController: AdminpageController;
-    private static userIsAdmin: boolean;
-    private static settings: Voting;
-    private static combos;
+class AdminpageMain implements IReportView {
 
-    static startApplication(waitcontrol) {
+
+    private adminController: AdminpageController;
+    private userIsAdmin: boolean;
+    private settings: Voting;
+    private combos;
+
+    constructor(waitcontrol: any) {
         waitcontrol.startWait();
-        var adminController = new AdminpageController(waitcontrol);
+        var adminController = new AdminpageController(waitcontrol, this);
         adminController.initializeAdminpage();
-        AdminpageMain.setAdminController(adminController);
+        this.setAdminController(adminController);
         generateCombos();
     }
 
-    static setMultipleVotes(isEnabled: boolean) {
+    //static startApplication(waitcontrol) {
+    //    waitcontrol.startWait();
+    //    var adminController = new AdminpageController(waitcontrol);
+    //    adminController.initializeAdminpage();
+    //    AdminpageMain.setAdminController(adminController);
+    //    generateCombos();
+    //}
+
+    setMultipleVotes(isEnabled: boolean) {
         this.adminController.ActualVoting.IsMultipleVotingEnabled = isEnabled;
     }
 
-    static setLevel(level: string) {
+    setLevel(level: string) {
         this.adminController.ActualVoting.Level = level;
     }
 
-    static setDescription(description: string) {
+    setDescription(description: string) {
         this.adminController.ActualVoting.Description = description;
     }
 
-    static setTitle(title: string) {
+    setTitle(title: string) {
         this.adminController.ActualVoting.Title = title;
     }
 
-    static setAdminController(value: AdminpageController) {
+    setAdminController(value: AdminpageController) {
         this.adminController = value;
         if (this.combos != undefined) {
             this.adminController.setCombos(this.combos[0], this.combos[1], this.combos[2], this.combos[3]);
@@ -48,11 +58,11 @@ class AdminpageMain {
         this.userIsAdmin = true; // VSS.getWebContext().team.userIsAdmin;
     }
 
-    static saveClicked(value: string) {
+    saveClicked(value: string) {
         this.adminController.saveSettings(value);
     }
 
-    static votingEnabledClicked() {
+    votingEnabledClicked() {
         toggleActive();
         if ($("#content").hasClass("hide") == false) {
             var voting = this.adminController.ActualVoting;
@@ -62,13 +72,13 @@ class AdminpageMain {
         }
     }
 
-    static cancelClicked() {
+    cancelClicked() {
         $('#content').toggleClass("hide", true);
         this.adminController.ActualVoting = new Voting();
         this.adminController.buildAdminpage();
     }
 
-    static loadExcludeList() {
+    loadExcludeList() {
         var excludes = this.adminController.getExcludes();
         var levels = this.adminController.getLevels();
         var excludeContainer = $("#excludeListbody");
@@ -94,7 +104,7 @@ class AdminpageMain {
         })
     }
 
-    static getMenuItems(isActive: string): IContributedMenuItem[] {
+    getMenuItems(isActive: string): IContributedMenuItem[] {
         $('#menueBar-container').toggleClass("hide", false);
         $('#no-permissions').toggleClass("hide", true);
         $('#error-message').toggleClass("hide", true);
@@ -135,11 +145,20 @@ class AdminpageMain {
         ];
     }
 
-    static showInfo() {
+    public setReport(report: string): void {
+        console.debug("Inputreport:" + report);
+        let obj = $('#reportcontainer');
+        console.debug("obj:" + obj);
+        obj.toggleClass("hide", false);
+        obj.html(report);
+    }
+
+
+    showInfo() {
         showInfoDialog();
     }
 
-    static setCombos(title, description, multipleVotes, level) {
+    setCombos(title, description, multipleVotes, level) {
         if (this.adminController != undefined) {
             this.adminController.setCombos(title, description, multipleVotes, level);
         } else {
@@ -147,15 +166,15 @@ class AdminpageMain {
         }
     }
 
-    static addToExcludeList(item: string) {
+    addToExcludeList(item: string) {
         this.adminController.addToExclude(item);
     }
 
-    static addToIncludeList(item: string) {
+    addToIncludeList(item: string) {
         this.adminController.addToInclude(item);
     }
 
-    static changeProcess() {
+    changeProcess() {
         this.adminController.changeProcess($("#process").val() as string);
     }
 }

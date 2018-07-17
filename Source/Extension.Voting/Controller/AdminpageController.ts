@@ -3,6 +3,11 @@
 /// <reference types="jquery" />
 ///<reference path="AdminpageDataController.ts"/>
 ///<reference path="BasicController.ts"/>
+///<reference path="../Services/IReportCreationService.ts"/>
+///<reference path="../Services/ReportCreationService.ts"/>
+///<reference path="../Services/IEmailService.ts"/>
+///<reference path="../Services/EmailService.ts"/>
+///<reference path="IReportView.ts"/>
 
 //here the functions which are implemented in the HTML-Body
 //are declared, this is nessesary to use them in TypeScript
@@ -28,10 +33,17 @@ class AdminpageController extends BasicController {
     private levels: string[];
     private waitControl: any;
 
-    constructor(waitcontrol: any) {
+    private reportCreator: IReportCreationService;
+    private emailService: EmailService;
+    private reportview: IReportView;
+
+    constructor(waitcontrol: any, reportview: IReportView) {
         super();
+        this.reportview = reportview;
         this.waitControl = waitcontrol;
-        this.dataController = new AdminpageDataController(this);
+        this.dataController = new AdminpageDataController();
+        this.reportCreator = new ReportCreationService();
+        this.emailService = new EmailService();
     }
 
     //"start" of the Adminpage
@@ -117,6 +129,7 @@ class AdminpageController extends BasicController {
                     this.multipleVotesCombo.setText("Disabled");
                 }
                 this.levelCombo.setText(this.actualVoting.Level);
+
             }
             else {
                 LogExtension.log("actual voting disabled");
@@ -133,6 +146,8 @@ class AdminpageController extends BasicController {
         }
         LogExtension.log("finished initializing");
         createMenueBar("false");
+        this.createReport();
+
     }
 
     private removeRightAngleBrackets(s: string): string {
@@ -206,10 +221,14 @@ class AdminpageController extends BasicController {
     }
 
     public abortVotingSettings() {
+
         this.resetAdminpage();
+        this.createReport();
+        this.sendReportToEmail();
         this.buildAdminpage();
     }
 
+    //Sets the html-Element to local variables
     public setCombos(title, description, multipleVotes, level) {
         this.title = title;
         this.description = description;
@@ -243,4 +262,23 @@ class AdminpageController extends BasicController {
     public changeProcess(process: string) {
         this.dataController.changeProcess(process);
     }
+
+    private createReport() {
+        console.debug("Initialize Report-creation");
+
+        this.reportCreator.createReport(this.actualVoting)
+            .then((report) => {
+                console.debug("Wait for Report");
+                this.reportview.setReport(report);
+            }).catch((r) => {
+                console.debug("Report-creation fails");
+            });
+
+        console.debug("Report-creation done");
+
+    }
+
+    private sendReportToEmail() { throw new Error("Not implemented"); }
+
+
 }

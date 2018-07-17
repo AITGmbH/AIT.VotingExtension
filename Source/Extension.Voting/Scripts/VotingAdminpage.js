@@ -1,4 +1,5 @@
-﻿$(document).ready(function () {
+﻿var adminpage;
+$(document).ready(function () {
     LogExtension.debugEnabled = false;
     try {
         VSS.init({
@@ -13,7 +14,8 @@
                     message: "Loading..."
                 });
                 LogExtension.log("Waitcontrol ready", "start application");
-                AdminpageMain.startApplication(waitcontrol);
+                //AdminpageMain.startApplication(waitcontrol);
+                adminpage =  new AdminpageMain(waitcontrol);
                 LogExtension.log("Events ready");
                 $('#appVersion').text(VSS.getExtensionContext().version);
             });
@@ -54,7 +56,7 @@ function generateCombos() {
                     this.setInvalid(true);
                 } else {
                     this.setInvalid(false);
-                    AdminpageMain.setTitle(this.getText());
+                    adminpage.setTitle(this.getText());
                 }
             }
         });
@@ -66,7 +68,7 @@ function generateCombos() {
             value: "",
             enabled: true,
             change: function() {
-                AdminpageMain.setDescription(this.getText());
+                adminpage.setDescription(this.getText());
             }
         });
 
@@ -81,7 +83,7 @@ function generateCombos() {
             enabled: true,
             indexChanged: function () {
                 var isEnabled = this.getText() == "Enabled";
-                AdminpageMain.setMultipleVotes(isEnabled);
+                adminpage.setMultipleVotes(isEnabled);
             },
             disabledCss: "readOnly"
         });
@@ -93,11 +95,11 @@ function generateCombos() {
             allowEdit: false,
             enabled: true,
             change: function () {
-                AdminpageMain.setLevel(this.getText());
+                adminpage.setLevel(this.getText());
             },
             disabledCss: "readOnly"
         });
-        AdminpageMain.setCombos(titleField, descriptionField, multipleVotesCombo, levelCombo);
+        adminpage.setCombos(titleField, descriptionField, multipleVotesCombo, levelCombo);
     });
 }
 
@@ -113,7 +115,7 @@ function addToIncludes(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
     $("#includeListbody").append(document.getElementById(data));
-    AdminpageMain.addToIncludeList($("#" + data).children(".panel-body").text());
+    adminpage.addToIncludeList($("#" + data).children(".panel-body").text());
     //ev.target.appendChild();
 }
 
@@ -121,7 +123,7 @@ function addToExcludes(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");  
     $("#excludeListbody").append(document.getElementById(data));
-    AdminpageMain.addToExcludeList($("#" + data).children(".panel-body").text());
+    adminpage.addToExcludeList($("#" + data).children(".panel-body").text());
     //ev.target.appendChild();
 }
 
@@ -139,12 +141,12 @@ function createMenueBar(isActive) {
         // Create the menubar in a container element
         var menubar = Controls.create(Menus.MenuBar, $("#menueBar-container"), {
             showIcon: true,
-            items: AdminpageMain.getMenuItems(isActive),
+            items: adminpage.getMenuItems(isActive),
             executeAction: function (args) {
                 var command = args.get_commandName();
                 switch (command) {
                     case "createVoting":
-                        AdminpageMain.votingEnabledClicked();
+                        adminpage.votingEnabledClicked();
                         $('#errorMessage').toggleClass("hide", true);
                         break;
                     case "createNewVoting":
@@ -152,23 +154,23 @@ function createMenueBar(isActive) {
                         var extensioncontext = VSS.getExtensionContext();
                         appInsights.trackEvent("Create voting", { ExtensionId: extensioncontext.extensionId, Account: webcontext.account.name, TeamProject: webcontext.project.id });
                     case "saveSettings":
-                        AdminpageMain.saveClicked("true");
+                        adminpage.saveClicked("true");
                         break;
                     case "infoButton":
-                        AdminpageMain.showInfo();
+                        adminpage.showInfo();
                         break;
                     case "cancelVoting":
-                        AdminpageMain.cancelClicked();
+                        adminpage.cancelClicked();
                         break;
                     case "terminateVoting":
-                        AdminpageMain.saveClicked("false");
+                        adminpage.saveClicked("false");
                         break;
                     case "excludeList":
-                        AdminpageMain.loadExcludeList();
+                        adminpage.loadExcludeList();
                         $('#excludeModal').modal();
                         break;
                     case "applyToBacklog":
-                        AdminpageMain.applyClicked();
+                        adminpage.applyClicked();
                         break;
                 }
             }

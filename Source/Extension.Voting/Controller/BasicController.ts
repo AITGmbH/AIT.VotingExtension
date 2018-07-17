@@ -13,6 +13,8 @@ class BasicController {
     protected actualVoting: Voting;
     protected user: User;
 
+    constructor() { }
+
     setAttributes(context: WebContext){
         this.context = context;
         this.user = new User();
