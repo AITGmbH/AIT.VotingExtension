@@ -1,9 +1,11 @@
 ﻿/// <reference types="jquery" />
 /// <reference types="vss-web-extension-sdk" />
 ///<reference path="AdminpageController.ts"/>
+/// <reference path="../Services/VssVotingDataService.ts"/>
+
 
 declare function toggleActive();
-declare function createMenueBar(boolean);
+declare function createMenueBar(boolean: boolean);
 declare function showInfoDialog();
 declare function generateCombos();
 
@@ -12,27 +14,21 @@ declare function generateCombos();
 ///</summary>
 class AdminpageMain implements IReportView {
 
-
     private adminController: AdminpageController;
     private userIsAdmin: boolean;
     private settings: Voting;
     private combos;
 
     constructor(waitcontrol: any) {
+        var dataService = new VssVotingDataService();
+        var votingpagedataservice = new VotingpageDataController(new VotingpageController(waitcontrol, dataService), dataService);
+
         waitcontrol.startWait();
-        var adminController = new AdminpageController(waitcontrol, this);
+        var adminController = new AdminpageController(waitcontrol, this, dataService, votingpagedataservice);
         adminController.initializeAdminpage();
         this.setAdminController(adminController);
         generateCombos();
     }
-
-    //static startApplication(waitcontrol) {
-    //    waitcontrol.startWait();
-    //    var adminController = new AdminpageController(waitcontrol);
-    //    adminController.initializeAdminpage();
-    //    AdminpageMain.setAdminController(adminController);
-    //    generateCombos();
-    //}
 
     setMultipleVotes(isEnabled: boolean) {
         this.adminController.ActualVoting.IsMultipleVotingEnabled = isEnabled;
@@ -68,7 +64,7 @@ class AdminpageMain implements IReportView {
             var voting = this.adminController.ActualVoting;
             voting.Created = Math.round((new Date()).getTime() / 1000);
             this.adminController.ActualVoting = voting;
-            createMenueBar("true");
+            createMenueBar(true);
         }
     }
 
@@ -145,14 +141,17 @@ class AdminpageMain implements IReportView {
         ];
     }
 
-    public setReport(report: string): void {
-        console.debug("Inputreport:" + report);
-        let obj = $('#reportcontainer');
-        console.debug("obj:" + obj);
-        obj.toggleClass("hide", false);
-        obj.html(report);
+    getReportContainer() {
+        return $('#reportcontainer');
     }
 
+
+    //public setReport(report: string): void {
+    //    let obj = $('#reportcontainer');
+    //    console.debug("obj:" + obj);
+    //    obj.toggleClass("hide", false);
+    //    obj.html(report);
+    //}
 
     showInfo() {
         showInfoDialog();

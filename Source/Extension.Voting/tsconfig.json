@@ -5,7 +5,7 @@
     "target": "es5",
     "rootDir": "",
     "outDir": "",
-    "lib": [ "es2015", "dom" ]
+    "lib": [ "es2016", "dom", "es5" ]
   },
   "include": [
     "Controller/*",

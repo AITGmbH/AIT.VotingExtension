@@ -1,4 +1,7 @@
-﻿///<reference path="VotingpageController.ts"/>
+﻿/// <reference path="../Services/VssVotingDataService.ts"/>
+
+//import { VssVotingDataService } from "../Services/VssVotingDataService";
+
 declare function createVotingTable();
 declare var appInsights;
 
@@ -10,18 +13,18 @@ class VotingpageMain {
     private static context: WebContext;
     private static extensioncontext: IExtensionContext;
 
-    static startApplication(waitcontrol) {
+    static startApplication(waitcontrol, dataService: VssVotingDataService) {
         VotingpageMain.context = VSS.getWebContext();
         VotingpageMain.extensioncontext = VSS.getExtensionContext();
         waitcontrol.startWait();
-        var votingController = new VotingpageController(waitcontrol);
+        var votingController = new VotingpageController(waitcontrol, dataService);
         VotingpageMain.setVotingController(votingController);
         votingController.initializeVotingpage();
         VotingpageMain.createAdminpageUri();
         createVotingTable();
     }
 
-    static getAdminpageUri(){
+    static getAdminpageUri() {
         return VotingpageMain.adminpageUri;
     }
 
@@ -104,4 +107,4 @@ class VotingpageMain {
     static removeAllUserdata() {
         this.votingController.removeAllUservotes();
     }
- }
+}

@@ -1,16 +1,19 @@
-﻿///<reference path="../Entities/Voting.ts"/>
-///<reference path="../Entities/User.ts"/>
+﻿/// <reference path="../Entities/Voting.ts"/>
+/// <reference path="../Entities/User.ts"/>
 /// <reference types="jquery" />
-///<reference path="AdminpageDataController.ts"/>
-///<reference path="BasicController.ts"/>
-///<reference path="../Services/IReportCreationService.ts"/>
-///<reference path="../Services/ReportCreationService.ts"/>
-///<reference path="../Services/IEmailService.ts"/>
-///<reference path="../Services/EmailService.ts"/>
-///<reference path="IReportView.ts"/>
+/// <reference path="AdminpageDataController.ts"/>
+/// <reference path="VotingpageDataController.ts"/>
+/// <reference path="BasicController.ts"/>
+/// <reference path="../Services/IReportCreationService.ts"/>
+/// <reference path="../Services/ReportCreationService.ts"/>
+/// <reference path="../Services/IEmailService.ts"/>
+/// <reference path="../Services/EmailService.ts"/>
+/// <reference path="IReportView.ts"/>
+/// <reference path="../Services/VssVotingDataService.ts"/>
 
 //here the functions which are implemented in the HTML-Body
 //are declared, this is nessesary to use them in TypeScript
+
 declare function fillSettingsTable(data: any);
 declare function createMenueBar(isActive: boolean);
 declare function generateCombos();
@@ -24,6 +27,7 @@ declare function bsNotify(type: string, message: string);
 /// the HTML View
 ///</summary>
 class AdminpageController extends BasicController {
+    
     private dataController: AdminpageDataController;
     private optionvalue: string = null;
     private title: any;
@@ -37,12 +41,12 @@ class AdminpageController extends BasicController {
     private emailService: EmailService;
     private reportview: IReportView;
 
-    constructor(waitcontrol: any, reportview: IReportView) {
+    constructor(waitcontrol: any, reportview: IReportView, dataService: VssVotingDataService, votingpagedataservice : VotingpageDataController) {
         super();
         this.reportview = reportview;
         this.waitControl = waitcontrol;
         this.dataController = new AdminpageDataController();
-        this.reportCreator = new ReportCreationService();
+        this.reportCreator = new ReportCreationService(dataService, votingpagedataservice);
         this.emailService = new EmailService();
     }
 
@@ -145,7 +149,7 @@ class AdminpageController extends BasicController {
             $("#content").toggleClass("hide", true);
         }
         LogExtension.log("finished initializing");
-        createMenueBar("false");
+        createMenueBar(false);
         this.createReport();
 
     }
@@ -205,7 +209,7 @@ class AdminpageController extends BasicController {
         }
         else {
             this.resetAdminpage();
-            createMenueBar("false");
+            createMenueBar(false);
         }
     }
 
@@ -266,19 +270,19 @@ class AdminpageController extends BasicController {
     private createReport() {
         console.debug("Initialize Report-creation");
 
-        this.reportCreator.createReport(this.actualVoting)
-            .then((report) => {
-                console.debug("Wait for Report");
-                this.reportview.setReport(report);
-            }).catch((r) => {
-                console.debug("Report-creation fails");
-            });
+        var container = this.reportview.getReportContainer();
+
+        this.reportCreator.createReport(container, this.actualVoting);
+
+        //.then((report) => {
+        //    console.debug("Wait for Report");
+        //    this.reportview.setReport(report);
+        //}).catch((r) => {
+        //    console.debug("Report-creation fails");
+        //});
 
         console.debug("Report-creation done");
-
     }
 
     private sendReportToEmail() { throw new Error("Not implemented"); }
-
-
 }

@@ -1,3 +1,4 @@
 ﻿interface IReportView {
-    setReport(report: string): void;
+    //setReport(report: string): void;
+    getReportContainer(): any ;
 }

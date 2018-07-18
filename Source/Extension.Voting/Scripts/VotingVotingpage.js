@@ -13,7 +13,7 @@
                     message: "Loading..."
                 });
                 LogExtension.log("Waitcontrol ready", "start application");
-                VotingpageMain.startApplication(waitcontrol);
+                VotingpageMain.startApplication(waitcontrol, new VssVotingDataService());
             });
         });
     } catch(ex) {

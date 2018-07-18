@@ -17,7 +17,7 @@ class VotingpageDataController extends BasicDataController {
     private areas: string;
     private requirements: Array<TinyRequirement>;
 
-    private static assignedToUnassignedText: string = "";
+    public static assignedToUnassignedText: string = "";
 
     constructor(controller: VotingpageController, votingDataService: IVotingDataService) {
         super();

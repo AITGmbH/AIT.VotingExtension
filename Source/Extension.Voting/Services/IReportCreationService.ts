@@ -1,3 +1,3 @@
 ﻿interface IReportCreationService {
-    createReport(doc: Voting): Promise<string>;
+    createReport(container: any, voting: Voting): void;
 }

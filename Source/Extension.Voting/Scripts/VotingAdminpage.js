@@ -1,6 +1,10 @@
-﻿var adminpage;
+﻿///<reference path="../Controller/VotingpageDataController.ts"/>
+///<reference path="../Services/VssVotingDataService.ts"/>
+
+var adminpage;
+
 $(document).ready(function () {
-    LogExtension.debugEnabled = false;
+    LogExtension.debugEnabled = true;
     try {
         VSS.init({
             //explicitNotifyLoaded: true,
@@ -14,14 +18,13 @@ $(document).ready(function () {
                     message: "Loading..."
                 });
                 LogExtension.log("Waitcontrol ready", "start application");
-                //AdminpageMain.startApplication(waitcontrol);
-                adminpage =  new AdminpageMain(waitcontrol);
+                adminpage = new AdminpageMain(waitcontrol);
                 LogExtension.log("Events ready");
                 $('#appVersion').text(VSS.getExtensionContext().version);
             });
         });
 
-        
+
     } catch (ex) {
         LogExtension.log(ex);
     }
@@ -44,7 +47,7 @@ function showInfoDialog() {
 }
 function generateCombos() {
     VSS.require(["VSS/Controls", "VSS/Controls/Combos"], function (Controls, Combos) {
-        var titleField = Controls.create(Combos.Combo, $('#titleContainer'), {  
+        var titleField = Controls.create(Combos.Combo, $('#titleContainer'), {
             type: "list",
             label: "Provide a title for the voting (required)",
             mode: "text",
@@ -52,7 +55,7 @@ function generateCombos() {
             value: "",
             invalidCss: "invalid",
             change: function () {
-                if (this.getText() == "") {
+                if (this.getText() === "") {
                     this.setInvalid(true);
                 } else {
                     this.setInvalid(false);
@@ -67,7 +70,7 @@ function generateCombos() {
             mode: "text",
             value: "",
             enabled: true,
-            change: function() {
+            change: function () {
                 adminpage.setDescription(this.getText());
             }
         });
@@ -82,7 +85,7 @@ function generateCombos() {
             allowEdit: false,
             enabled: true,
             indexChanged: function () {
-                var isEnabled = this.getText() == "Enabled";
+                var isEnabled = this.getText() === "Enabled";
                 adminpage.setMultipleVotes(isEnabled);
             },
             disabledCss: "readOnly"
@@ -121,7 +124,7 @@ function addToIncludes(ev) {
 
 function addToExcludes(ev) {
     ev.preventDefault();
-    var data = ev.dataTransfer.getData("text");  
+    var data = ev.dataTransfer.getData("text");
     $("#excludeListbody").append(document.getElementById(data));
     adminpage.addToExcludeList($("#" + data).children(".panel-body").text());
     //ev.target.appendChild();
@@ -153,6 +156,8 @@ function createMenueBar(isActive) {
                         var webcontext = VSS.getWebContext();
                         var extensioncontext = VSS.getExtensionContext();
                         appInsights.trackEvent("Create voting", { ExtensionId: extensioncontext.extensionId, Account: webcontext.account.name, TeamProject: webcontext.project.id });
+                        adminpage.saveClicked("true"); // maybe this should not be here
+                        break;
                     case "saveSettings":
                         adminpage.saveClicked("true");
                         break;

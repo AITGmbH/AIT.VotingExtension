@@ -23,13 +23,11 @@ class VotingpageController extends BasicController {
     private grid: any;
     private waitControl: any;
     private lockButtons: boolean;
-    private votingDataService: IVotingDataService;
 
-    constructor(waitControl: any) {
+    constructor(waitControl: any, dataService: IVotingDataService) {
         super();
         this.waitControl = waitControl;
-        this.votingDataService = new VssVotingDataService();
-        this.dataController = new VotingpageDataController(this, this.votingDataService);
+        this.dataController = new VotingpageDataController(this, dataService);
     }
 
     public getActualVotingItems(): Array<VotingItem> {
@@ -87,7 +85,7 @@ class VotingpageController extends BasicController {
             this.initializeDataProtectionDialog(this);
             this.notAllowedToVote();
         }
-    } 
+    }
 
     //calculate the remaining votes and myVotes
     //also store the votes in the allVotes-Array
@@ -104,7 +102,7 @@ class VotingpageController extends BasicController {
             });
         }
     }
-    
+
     //generate VotingItems for the table from requirements
     //-> set allVotes and myVotes
     public calculateMyVotes() {

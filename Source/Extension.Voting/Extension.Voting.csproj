@@ -124,6 +124,7 @@
     <TypeScriptCompile Include="Controller\LogExtension.ts" />
     <TypeScriptCompile Include="Controller\VotingpageController.ts" />
     <TypeScriptCompile Include="Entities\TinyRequirement.ts" />
+    <TypeScriptCompile Include="Entities\Document.ts" />
     <TypeScriptCompile Include="Entities\User.ts" />
     <TypeScriptCompile Include="Entities\VotingItem.ts" />
     <TypeScriptCompile Include="Controller\VotingpageDataController.ts" />
