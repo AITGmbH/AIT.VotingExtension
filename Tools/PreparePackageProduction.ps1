@@ -35,7 +35,7 @@ Write-Verbose "BUILD_SOURCESDIRECTORY: $Env:BUILD_SOURCESDIRECTORY"
 ### prepare json vss-extension.json
 Write-Warning "Source Directory: $Env:BUILD_SOURCESDIRECTORY"
 
-$files = gci �Path $Env:BUILD_SOURCESDIRECTORY -Include vss-extension.json -Recurse
+$files = gci -Path $Env:BUILD_SOURCESDIRECTORY -Include vss-extension.json -Recurse
 if($files)
 {
     Write-Warning "Will apply the changes to $($files.count) files."

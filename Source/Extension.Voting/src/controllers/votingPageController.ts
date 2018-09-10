@@ -57,14 +57,11 @@ export class VotingPageController extends BaseController {
 
     private createAdminpageUri() {
         const host = this.votingService.context.host.uri;
-        let project = this.votingService.context.project.name;
-        let team = this.votingService.team;
+        const project = escape(this.votingService.context.project.name);
+        const team = this.votingService.team;
 
         const publisher = this.extensionContext.publisherId;
         const extensionId = this.extensionContext.extensionId;
-
-        project = project.replace("(", "%28");
-        project = project.replace(")", "%29");
 
         const uri = `${host}${project}/_settings/${publisher}.${extensionId}.Voting.Administration?teamId=${team.id}`;
 

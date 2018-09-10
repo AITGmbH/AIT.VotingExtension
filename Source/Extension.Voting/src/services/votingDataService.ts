@@ -49,14 +49,18 @@ export class VotingDataService {
         try {
             const service = await this.getVssService();
             return await service.updateDocument(this.webContext.collection.name, doc);
-        } catch { }
+        } catch { 
+            return null;
+        }
     }
 
     public async createDocument(doc: VotingDocument): Promise<VotingDocument> {
         try {
             const service = await this.getVssService();
             return await service.createDocument(this.webContext.collection.name, doc);
-        } catch { }
+        } catch { 
+            return null;
+        }
     }
 
     private async getVssService(): Promise<IExtensionDataService> {

@@ -150,9 +150,9 @@ export class VotingPageService extends BaseDataService {
         const isEnabled = voting.isVotingEnabled;
 
         if (isEnabled) {
-            let multipleVotes = doc.vote.some(vote => vote.userId === vote.userId
-                && vote.votingId === vote.votingId
-                && vote.workItemId === vote.workItemId);
+            let multipleVotes = doc.vote.some(v => v.userId === vote.userId
+                && v.votingId === vote.votingId
+                && v.workItemId === vote.workItemId);
 
             if ((this.actualSetting.numberOfVotes - this.numberOfMyVotes()) < 1) {
                 bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
@@ -172,14 +172,14 @@ export class VotingPageService extends BaseDataService {
                 }
             }
         } else {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser windot to get the actual content.");
+            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
         }
     }
 
     public async deleteVote(id: number, userId: string) {
         const doc = await this.votingDataService.getDocument(this.documentId);
         if (doc == null) {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser windot to get the actual content.");
+            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
             return;
         }
 
@@ -303,6 +303,7 @@ export class VotingPageService extends BaseDataService {
             this.updateBacklog(votingItems, tempItem);
         } catch (err) {
             bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
+            LogExtension.log(err);
         }
     }
 

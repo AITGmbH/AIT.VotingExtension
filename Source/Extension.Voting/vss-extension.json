@@ -16,13 +16,13 @@
   },
   "screenshots": [
     {
-      "path": "images/Screenshots/VotingSettingsStarted.png"
+      "path": "images/screenshots/VotingSettingsStarted.png"
     },
     {
-      "path": "images/Screenshots/VotingtableUnvoted.png"
+      "path": "images/screenshots/VotingtableUnvoted.png"
     },
     {
-      "path": "images/Screenshots/VotingtableVoted.png"
+      "path": "images/screenshots/VotingtableVoted.png"
     }
   ],
   "files": [
@@ -32,7 +32,7 @@
     }
   ],
   "icons": {
-    "default": "images/Logo/AIT-Voting-Extension.png"
+    "default": "images/logo/AIT-Voting-Extension.png"
   },
   "tags": [
     "Planning"
