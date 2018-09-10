@@ -62,8 +62,5 @@ export function getUrlParameterByName(name, url) {
 }
 
 export function escapeText(s: string): string {
-    s = s.replace("<", "");
-    s = s.replace(">", "");
-
-    return s;
+    return s.replace(/<|>/g, "");
 }
