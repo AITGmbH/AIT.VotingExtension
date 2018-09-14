@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Voting</title>
+    <script src="vss.js"></script>
+    <% htmlWebpackPlugin.files.css.forEach(function (src) { %><link rel="stylesheet" href="<%= src.replace('dist/', '') %>"><% }) %>
+</head>
+
+<body>
+    <div id="waitContainer"></div>
+    <div class="vso-container">
+        <div class="row">
+            <h1 class="votingheadline">Voting</h1>
+            <div class="hub-pivot">
+                <div class="filters filter-container"></div>
+            </div>
+            <div id="progressBar" class="hub-progress pageProgressIndicator" style="display: none;"></div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="votingMenue-container" class="toolbar hide"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contentVotingActive" class="row voting-info-bar">
+            <div id="titleDiv" class="col-sm-6 titleBar"></div>
+            <div id="remainingVotesDiv" class="col-sm-2 col-sm-offset-4"></div>
+            <div id="informationDiv" class="col-sm-12"></div>
+        </div>
+
+        <div id="contentVotingInactive" class="row hide">
+            <div class="col-sm-12" id="errorMessage">
+                <!-- If Voting is disabled show error message-->
+                <p id="votingdisabledmessage">
+                    Voting is disabled. Create a new voting at the
+                    <a id="linkToAdminpage" href="adminPage.html" target="_blank">admin page</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="notAllowedToVote" class="row hide">
+            <div class="col-sm-12" id="errorMessage">
+                <!-- If user has not confirmed data save notification show error message-->
+                <p id="userInformationNotConfirmedMessage">
+                    Voting is disabled since the terms of use are not confirmed. To be able to vote refresh the page and confirm the terms of use in
+                    the upcoming dialog.
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 hide" id="grid-container">
+            </div>
+            <div id="nothingToVote" class="col-sm-12 hide">
+                <div class="hub-no-content-gutter gutter-banner">
+                    <div class="gutter-banner-container">
+                        <div class="gutter-banner-text">
+                            <h2 class="votingh2">It's lonely in here!</h2>
+                            <p>There is nothing to vote for...</p>
+                        </div>
+
+                        <div class="gutter-banner-icon">
+                            <div class="image image-vso-cloud"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        VSS.init({
+            explicitNotifyLoaded: true,
+            usePlatformScripts: true,
+            usePlatformStyles: true,
+            moduleLoaderConfig: {}
+        });
+
+        VSS.require(["vendors.js", "voting.js"], function () {
+            VSS.notifyLoadSucceeded();
+        });
+    </script>
+</body>
+
+</html>

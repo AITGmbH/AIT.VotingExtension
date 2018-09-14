@@ -1,9 +1,0 @@
-﻿{ 
-"Voting" : [
-	{ "ID" : "1", "Area Path" : "Test/test" },
-  { "ID" : "2", "Area Path" : "Test2/test" },
-	{ "ID" : "3", "Area Path" : "Test/test2" },
-	{ "ID" : "4", "Area Path" : "Test2/test2" }		
-	]
-            
-}
