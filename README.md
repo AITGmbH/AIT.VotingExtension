@@ -41,4 +41,4 @@ Install the debug version of the extension to your personal VSTS account and sta
 ## Additional links
 - [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production)
 - [AIT-Homepage](http://www.aitgmbh.de)
-- [AIT TFS-Tools](http://www.aitgmbh.de/downloads/team-foundation-server-tools.html)
+- [AIT TFS-Tools](https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc)
