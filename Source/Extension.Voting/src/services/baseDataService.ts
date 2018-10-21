@@ -4,9 +4,7 @@ import { LogExtension } from "../shared/logExtension";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
 import { VotingDataService } from "./votingDataService";
-import { VssComponent } from "VSS/Platform/Layout";
 import { getUrlParameterByName } from "../shared/common";
-import { TfvcHistoryList } from "TFS/VersionControl/Controls";
 
 export class BaseDataService {
     private _witFieldNames: string[] = [];
