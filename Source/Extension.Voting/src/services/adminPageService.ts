@@ -44,7 +44,7 @@ export class AdminPageService extends BaseDataService {
             _etag: -1
         } as VotingDocument;
 
-        const cDoc = await this.votingDataService.createDocument(newDoc);
+        const cDoc = await this.votingDataService.updateDocument(newDoc);
         LogExtension.log("Doc id: " + cDoc.id);
         this.actualSetting = new Voting();
     }
@@ -88,7 +88,7 @@ export class AdminPageService extends BaseDataService {
                 _etag: -1
             } as VotingDocument;
 
-            const cDoc = await this.votingDataService.createDocument(newDoc);
+            const cDoc = await this.votingDataService.updateDocument(newDoc);
             try {
                 LogExtension.log("Doc id: " + cDoc.id);
                 cDoc.voting = voting;

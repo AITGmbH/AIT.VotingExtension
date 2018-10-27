@@ -1,17 +1,21 @@
 ﻿import { VotingDocument } from "../entities/votingDocument";
+import { LogExtension } from "../shared/logExtension";
 
 export class VotingDataService {
-    private votingName: string;
     private webContext: WebContext;
 
     public constructor() {
         this.webContext = VSS.getWebContext();
-        this.votingName = this.webContext.collection.name;
     }
 
     public async getAllVotings(): Promise<VotingDocument[]> {
-        let service = await this.getVssService();
-        return service.getDocuments(this.votingName);
+        try {
+            let service = await this.getVssService();
+            return service.getDocuments(this.webContext.collection.name);
+        } catch (err) {
+            LogExtension.log("votingDataService.getAllVotings: Could not get documents", err);
+            return [];
+        }
     }
 
     public async getDocument(id: string): Promise<VotingDocument> {
@@ -40,7 +44,8 @@ export class VotingDataService {
             voting.isMultipleVotingEnabled = voting.hasOwnProperty('multipleVoting') ? (<any>voting).multipleVoting === "true" : voting.isMultipleVotingEnabled;
 
             return doc;
-        } catch {
+        } catch (err) {
+            LogExtension.log("votingDataService.getDocument: Could not get document", err);
             return null;
         }
     }
@@ -48,17 +53,9 @@ export class VotingDataService {
     public async updateDocument(doc: VotingDocument): Promise<VotingDocument> {
         try {
             const service = await this.getVssService();
-            return await service.updateDocument(this.webContext.collection.name, doc);
-        } catch { 
-            return null;
-        }
-    }
-
-    public async createDocument(doc: VotingDocument): Promise<VotingDocument> {
-        try {
-            const service = await this.getVssService();
-            return await service.createDocument(this.webContext.collection.name, doc);
-        } catch { 
+            return await service.setDocument(this.webContext.collection.name, doc);
+        } catch (err) { 
+            LogExtension.log("votingDataService.updateDocument: Could not update document", err);
             return null;
         }
     }
