@@ -332,7 +332,7 @@ export class AdminPageController extends BaseController {
                     value: team.id,
                     selected: this.adminPageService.team.id === team.id
                 };
-            }),
+            }).sort((a, b) => a.text.localeCompare(b.text)),
             change: (item) => {
                 this.adminPageService.team = item;
                 this.init();

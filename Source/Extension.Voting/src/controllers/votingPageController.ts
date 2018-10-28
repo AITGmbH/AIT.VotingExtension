@@ -537,7 +537,7 @@ export class VotingPageController extends BaseController {
                     value: team.id,
                     selected: this.votingService.team.id === team.id
                 };
-            }),
+            }).sort((a, b) => a.text.localeCompare(b.text)),
             change: (item) => {
                 this.votingService.team = item;
                 this.init();
