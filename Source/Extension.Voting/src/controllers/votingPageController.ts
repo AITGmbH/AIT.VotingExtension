@@ -40,19 +40,23 @@ export class VotingPageController extends BaseController {
 
         this.waitControl.startWait();
 
-        this.cookieService = new CookieService();
+        try {
+            this.cookieService = new CookieService();
 
-        this.votingService = new VotingPageService();
-        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
-        this.votingService.initializeVotingpage = () => this.init();
-        this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
-        this.votingService.calculating = () => {
-            this.calculating();
-            this.calculateMyVotes();
-        };
-        this.votingService.getActualVotingItems = () => this.actualVotingItems;
+            this.votingService = new VotingPageService();
+            this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
+            this.votingService.initializeVotingpage = () => this.init();
+            this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
+            this.votingService.calculating = () => {
+                this.calculating();
+                this.calculateMyVotes();
+            };
+            this.votingService.getActualVotingItems = () => this.actualVotingItems;
 
-        this.initializeVotingpage();
+            this.initializeVotingpage();
+        } finally {
+            this.waitControl.endWait();
+        }
     }
 
     private createAdminpageUri() {
@@ -125,46 +129,48 @@ export class VotingPageController extends BaseController {
     private async init() {
         this.waitControl.startWait();
 
-        this.createAdminpageUri();
+        try {
+            this.createAdminpageUri();
 
-        this.setAttributes(this.votingService.context.user, this.votingService.team);
+            this.setAttributes(this.votingService.context.user, this.votingService.team);
 
-        if (this.cookieService.isCookieSet()) {
-            LogExtension.log("loadVoting");
-            var voting = await this.votingService.loadVoting();
+            if (this.cookieService.isCookieSet()) {
+                LogExtension.log("loadVoting");
+                var voting = await this.votingService.loadVoting();
 
-            if (voting === VotingStatus.NoActiveVoting) {
-                this.votingInactive();
-                return;
-            } else if (voting === VotingStatus.NoVoting) {
-                this.votingInactive();
-                return;
-            } else {                
-                document.getElementById("contentVotingActive").classList.remove("hide");
-                document.getElementById("contentVotingInactive").classList.add("hide");
+                if (voting === VotingStatus.NoActiveVoting) {
+                    this.votingInactive();
+                    return;
+                } else if (voting === VotingStatus.NoVoting) {
+                    this.votingInactive();
+                    return;
+                } else {                
+                    document.getElementById("contentVotingActive").classList.remove("hide");
+                    document.getElementById("contentVotingInactive").classList.add("hide");
+                }
+
+                LogExtension.log("loadVotes");
+                await this.votingService.loadVotes();
+
+                LogExtension.log("getAreas");
+                await this.votingService.getAreas();
+
+                LogExtension.log("loadRequirements");
+                await this.votingService.loadRequirements();
+
+                this.actualVoting = this.votingService.getSettings();
+                this.calculating();
+                this.buildVotingTable();
+                this.nothingToVote(true);
+            } else {
+                LogExtension.log("loadUserConfirmationDialog");
+
+                this.initializeDataProtectionDialog();
+                this.notAllowedToVote();
             }
-
-            LogExtension.log("loadVotes");
-            await this.votingService.loadVotes();
-
-            LogExtension.log("getAreas");
-            await this.votingService.getAreas();
-
-            LogExtension.log("loadRequirements");
-            await this.votingService.loadRequirements();
-
-            this.actualVoting = this.votingService.getSettings();
-            this.calculating();
-            this.buildVotingTable();
-            this.nothingToVote(true);
-        } else {
-            LogExtension.log("loadUserConfirmationDialog");
-
-            this.initializeDataProtectionDialog();
-            this.notAllowedToVote();
+        } finally {
+            this.waitControl.endWait();
         }
-
-        this.waitControl.endWait();
     }
 
     private calculating() {

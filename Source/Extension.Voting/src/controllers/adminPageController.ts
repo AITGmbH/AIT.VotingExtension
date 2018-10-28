@@ -91,32 +91,39 @@ export class AdminPageController extends BaseController {
     private async initializeAdminpage(): Promise<void> {
         this.waitControl.startWait();
 
-        await this.adminPageService.load();
-        await this.adminPageService.loadWITFieldNames();
+        try {
+            await this.adminPageService.load();
+            await this.adminPageService.loadWITFieldNames();
 
-        this.generateCombos();        
-        this.generateTeamPivot();
-        this.generateLevelDropDown();
+            this.generateCombos();        
+            this.generateTeamPivot();
+            this.generateLevelDropDown();
 
-        this.bindEvents();
+            this.bindEvents();
 
-        this.init();
+            this.init();
+        } finally {
+            this.waitControl.endWait();
+        }
     }
 
     private async init() {
         this.waitControl.startWait();
 
-        var votingStatus = await this.adminPageService.loadVoting();
-        if (votingStatus === VotingStatus.ActiveVoting) {
-            this.actualVoting = this.adminPageService.getSettings();
-        } else if (votingStatus === VotingStatus.NoVoting) {
-            await this.adminPageService.createNewVoting();
-        } else if (votingStatus === VotingStatus.NoActiveVoting) {
-            this.actualVoting = new Voting();
-        }
+        try {
+            var votingStatus = await this.adminPageService.loadVoting();
+            if (votingStatus === VotingStatus.ActiveVoting) {
+                this.actualVoting = this.adminPageService.getSettings();
+            } else if (votingStatus === VotingStatus.NoVoting) {
+                await this.adminPageService.createNewVoting();
+            } else if (votingStatus === VotingStatus.NoActiveVoting) {
+                this.actualVoting = new Voting();
+            }
 
-        this.buildAdminpage();
-        this.waitControl.endWait();
+            this.buildAdminpage();
+        } finally {            
+            this.waitControl.endWait();
+        }
     }
 
     private generateLevelDropDown() {
