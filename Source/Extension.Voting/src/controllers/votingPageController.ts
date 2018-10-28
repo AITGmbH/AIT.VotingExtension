@@ -146,9 +146,8 @@ export class VotingPageController extends BaseController {
                 } else if (voting === VotingStatus.NoVoting) {
                     this.votingInactive();
                     return;
-                } else {                
-                    document.getElementById("contentVotingActive").classList.remove("hide");
-                    document.getElementById("contentVotingInactive").classList.add("hide");
+                } else {
+                    this.votingActive();
                 }
 
                 LogExtension.log("loadVotes");
@@ -276,6 +275,12 @@ export class VotingPageController extends BaseController {
         document.getElementById("grid-container").classList.add("hide");
         document.getElementById("contentVotingActive").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.remove("hide");
+    }
+
+    private votingActive() {        
+        document.getElementById("contentVotingActive").classList.remove("hide");
+        document.getElementById("contentVotingInactive").classList.add("hide");                    
+        document.getElementById("notAllowedToVote").classList.add("hide");
     }
 
     private saveVoting(id: number, upVote: boolean) {
