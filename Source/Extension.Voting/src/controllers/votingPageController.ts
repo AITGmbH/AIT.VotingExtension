@@ -368,8 +368,7 @@ export class VotingPageController extends BaseController {
                     this.cookieService.setCookie();
                     dialog.close();
 
-                    this.notAllowedToVote();
-                    this.initializeVotingpage();
+                    this.init();
                 },
                 "Decline": () => {
                     dialog.close();
