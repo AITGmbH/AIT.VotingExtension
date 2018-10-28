@@ -61,6 +61,11 @@ export class BaseDataService {
 
     public set team(team: TeamContext) {
         this.configuration.team = team;
+
+        if (history.pushState) {
+            var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?teamId=' + team.id;
+            window.history.pushState({ path: newUrl },'', newUrl);
+        }
     }
 
     public getTemplate(): string {
