@@ -24,7 +24,7 @@ Click the picture below to see a demo video.
 - <a href="https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc" target="_blank">AIT TFS-Tools</a>
 
 ## Privace Information
-Please note that when using the Voting Extension personal and confidential information is only saved in your VSTS account using the built-in VSTS data storage service "Team Services ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: VSTS Data storage</a>.
+Please note that when using the Voting Extension personal and confidential information is only saved in your Azure DevOps account using the built-in Azure DevOps data storage service "Team Services ExtensionDataService". You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: Azure DevOps Data storage</a>.
 <br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target="_blank">Microsoft Docs: Data collection, retention and storage in Application Insights</a>)
-as well as the (VSTS/TFS) account name and Team Project id is tracked.
+as well as the (Azure DevOps/TFS) account name and Team Project id is tracked.
 <br/>For general information on data protection, please refer to our data protection declaration.

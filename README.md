@@ -36,7 +36,7 @@ npm run publish-debug-package
 npm run debug
 ```
 
-Install the debug version of the extension to your personal VSTS account and start debugging.
+Install the debug version of the extension to your personal Azure DevOps account and start debugging.
 
 ## Additional links
 - [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production)
