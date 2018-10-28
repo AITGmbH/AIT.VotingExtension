@@ -35,7 +35,7 @@ export class AdminPageService extends BaseDataService {
         LogExtension.log("saveVoting: document updated", uDoc.id);
     }
 
-    public async createNewVoting(): Promise<void> {
+    public async createNewVoting(): Promise<Voting> {
         var newDoc = {
             id: this.documentId,
             voting: new Voting(),
@@ -47,6 +47,7 @@ export class AdminPageService extends BaseDataService {
         const cDoc = await this.votingDataService.updateDocument(newDoc);
         LogExtension.log("Doc id: " + cDoc.id);
         this.actualSetting = new Voting();
+        return this.actualSetting;
     }
 
     public async resetVoting() {

@@ -10,7 +10,6 @@ export class BaseDataService {
     private _witFieldNames: string[] = [];
 
     protected votingDataService: VotingDataService;
-    protected documentIdField: string;
     protected actualSetting: Voting;
     protected template: string;
     protected process: string;
@@ -23,22 +22,16 @@ export class BaseDataService {
     }
 
     constructor() {
-
         const teamId = getUrlParameterByName("teamId", document.referrer);
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
 
         this.votingDataService = new VotingDataService();
-        this.documentId = this.team.id;
-    }
-
-    public set documentId(teamId: string) {
-        this.documentIdField = this.extensionContext.extensionId + "_" + teamId;
     }
 
     public get documentId() {
-        return this.documentIdField;
+        return this.extensionContext.extensionId + "_" + this.team.id;
     }
 
     public get context() {
@@ -68,7 +61,6 @@ export class BaseDataService {
 
     public set team(team: TeamContext) {
         this.configuration.team = team;
-        this.documentId = team.id;
     }
 
     public getTemplate(): string {

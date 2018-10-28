@@ -115,7 +115,7 @@ export class AdminPageController extends BaseController {
             if (votingStatus === VotingStatus.ActiveVoting) {
                 this.actualVoting = this.adminPageService.getSettings();
             } else if (votingStatus === VotingStatus.NoVoting) {
-                await this.adminPageService.createNewVoting();
+                this.actualVoting = await this.adminPageService.createNewVoting();
             } else if (votingStatus === VotingStatus.NoActiveVoting) {
                 this.actualVoting = new Voting();
             }
