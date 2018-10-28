@@ -5,6 +5,7 @@ import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
 import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
+import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 
 export class BaseDataService {
     private _witFieldNames: string[] = [];
@@ -62,10 +63,9 @@ export class BaseDataService {
     public set team(team: TeamContext) {
         this.configuration.team = team;
 
-        if (history.pushState) {
-            var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?teamId=' + team.id;
-            window.history.pushState({ path: newUrl },'', newUrl);
-        }
+        VSS.getService(VSS.ServiceIds.Navigation).then((navigationService: HostNavigationService) => {
+            navigationService.updateHistoryEntry(null, { teamId: team.id });
+        })
     }
 
     public getTemplate(): string {
