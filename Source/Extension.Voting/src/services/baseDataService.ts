@@ -23,7 +23,7 @@ export class BaseDataService {
     }
 
     constructor() {
-        const teamId = getUrlParameterByName("teamId", document.referrer);
+        const teamId = getUrlParameterByName("teamId", document.referrer) || window.localStorage.getItem("VotingExtension.SelectedTeamId");
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
@@ -65,7 +65,9 @@ export class BaseDataService {
 
         VSS.getService(VSS.ServiceIds.Navigation).then((navigationService: HostNavigationService) => {
             navigationService.updateHistoryEntry(null, { teamId: team.id });
-        })
+        });
+
+        window.localStorage.setItem("VotingExtension.SelectedTeamId", team.id);
     }
 
     public getTemplate(): string {
