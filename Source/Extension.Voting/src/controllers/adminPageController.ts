@@ -20,6 +20,7 @@ export class AdminPageController extends BaseController {
     private multipleVotesCombo: combos.Combo;
     private levelCombo: combos.Combo;
     private waitControl: statusIndicators.WaitControl;
+    private menuBar: menus.MenuBar;
 
     constructor() {
         super();
@@ -39,7 +40,7 @@ export class AdminPageController extends BaseController {
         await this.adminPageService.resetVotingAsync();
 
         this.generateLevelDropDown();
-        
+
         this.toggleContent();
 
         this.actualVoting.created = Math.round((new Date()).getTime() / 1000);
@@ -95,7 +96,7 @@ export class AdminPageController extends BaseController {
             await this.adminPageService.loadAsync();
             await this.adminPageService.loadWITFieldNamesAsync();
 
-            this.generateCombos();        
+            this.generateCombos();
             this.generateTeamPivot();
             this.generateLevelDropDown();
 
@@ -112,16 +113,16 @@ export class AdminPageController extends BaseController {
 
         try {
             var votingStatus = await this.adminPageService.loadVotingAsync();
-            if (votingStatus === VotingStatus.ActiveVoting) {
-                this.actualVoting = this.adminPageService.getSettings();
-            } else if (votingStatus === VotingStatus.NoVoting) {
+            if (votingStatus === VotingStatus.NoVoting) {
                 this.actualVoting = await this.adminPageService.createNewVotingAsync();
             } else if (votingStatus === VotingStatus.NoActiveVoting) {
                 this.actualVoting = new Voting();
+            } else {
+                this.actualVoting = this.adminPageService.actualVoting;
             }
 
             this.buildAdminpage();
-        } finally {            
+        } finally {
             this.waitControl.endWait();
         }
     }
@@ -143,6 +144,7 @@ export class AdminPageController extends BaseController {
 
     private buildAdminpage() {
         this.generateLevelDropDown();
+        this.createMenueBar(false);
 
         LogExtension.log("set Voting level");
 
@@ -151,7 +153,7 @@ export class AdminPageController extends BaseController {
 
             if (this.actualVoting.isVotingEnabled) {
                 LogExtension.log("actual voting enabled");
-                  
+
                 this.toggleContent();
 
                 this.setEditable(false);
@@ -167,6 +169,8 @@ export class AdminPageController extends BaseController {
                 }
 
                 this.levelCombo.setText(this.actualVoting.level);
+
+                this.menuBar.updateItems(this.getMenuItems(true));
             } else {
                 LogExtension.log("actual voting disabled");
 
@@ -183,7 +187,6 @@ export class AdminPageController extends BaseController {
         }
 
         LogExtension.log("finished initializing");
-        this.createMenueBar(false);
     }
 
     private toggleContent(showContent: boolean = true) {
@@ -196,7 +199,7 @@ export class AdminPageController extends BaseController {
         }
     }
 
-    private async saveSettingsAsync(isEnabled: boolean) {
+    private async saveSettingsAsync(isEnabled: boolean, isPaused: boolean | null = null) {
         const voting = this.actualVoting;
 
         voting.title = escapeText(voting.title);
@@ -212,6 +215,10 @@ export class AdminPageController extends BaseController {
         voting.isVotingEnabled = isEnabled;
         if (!isEnabled) {
             this.toggleContent(false);
+        }
+
+        if (isPaused != null) {
+            voting.isVotingPaused = isPaused;
         }
 
         LogExtension.log("Level:", voting.level);
@@ -273,19 +280,28 @@ export class AdminPageController extends BaseController {
             }
         }
 
-        return [
-            { id: "saveSettings", text: "Save", title: "Save voting", icon: "icon icon-save", disabled: !this.userIsAdmin },
-            { id: "terminateVoting", title: "Stop Voting", icon: "icon icon-delete", disabled: !this.userIsAdmin },
-            { separator: true },
-            { id: "infoButton", title: "Help", icon: "icon icon-info", disabled: false },
-            { id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin }
+        const items = [
+            <any>{ id: "saveSettings", text: "Save", title: "Save voting", icon: "icon icon-save", disabled: !this.userIsAdmin }
         ];
+
+        if (this.actualVoting.isVotingPaused) {
+            items.push({ id: "resumeVoting", title: "Resume voting", icon: "icon icon-play", disabled: !this.userIsAdmin });
+        } else {
+            items.push({ id: "pauseVoting", title: "Pause voting", icon: "icon icon-pause", disabled: !this.userIsAdmin });
+        }
+
+        items.push({ id: "terminateVoting", title: "Stop voting", icon: "icon icon-delete", disabled: !this.userIsAdmin });
+        items.push({ separator: true });
+        items.push({ id: "infoButton", title: "Help", icon: "icon icon-info", disabled: false });
+        items.push({ id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin });
+
+        return items;
     }
 
     private createMenueBar(isActive: boolean) {
         document.getElementById("menueBar-container").innerHTML = '';
 
-        controls.create(menus.MenuBar, $("#menueBar-container"), {
+        this.menuBar = controls.create(menus.MenuBar, $("#menueBar-container"), {
             showIcon: true,
             items: this.getMenuItems(isActive),
             executeAction: (args) => {
@@ -307,6 +323,12 @@ export class AdminPageController extends BaseController {
                 break;
             case "saveSettings":
                 this.saveSettingsAsync(true);
+                break;
+            case "pauseVoting":
+                this.saveSettingsAsync(true, true);
+                break;
+            case "resumeVoting":
+                this.saveSettingsAsync(true, false);
                 break;
             case "infoButton":
                 this.showInfo();
@@ -407,7 +429,7 @@ export class AdminPageController extends BaseController {
 
     private addToIncludes(ev) {
         ev.preventDefault();
-        
+
         const id = ev.dataTransfer.getData("id");
         const text = ev.dataTransfer.getData("text");
 

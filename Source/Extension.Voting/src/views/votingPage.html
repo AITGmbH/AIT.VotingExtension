@@ -32,7 +32,6 @@
 
         <div id="contentVotingInactive" class="row hide">
             <div class="col-sm-12" id="errorMessage">
-                <!-- If Voting is disabled show error message-->
                 <p id="votingdisabledmessage">
                     Voting is disabled. Create a new voting at the
                     <a id="linkToAdminpage" href="adminPage.html" target="_blank">admin page</a>
@@ -40,9 +39,16 @@
             </div>
         </div>
 
+        <div id="contentVotingPaused" class="row hide">
+            <div class="col-sm-12" id="errorMessage">
+                <p id="votingdisabledmessage">
+                    Voting is paused. You can only view the voting result.
+                </p>
+            </div>
+        </div>
+
         <div id="notAllowedToVote" class="row hide">
             <div class="col-sm-12" id="errorMessage">
-                <!-- If user has not confirmed data save notification show error message-->
                 <p id="userInformationNotConfirmedMessage">
                     Voting is disabled since the terms of use are not confirmed. To be able to vote refresh the page and confirm the terms of use in
                     the upcoming dialog.

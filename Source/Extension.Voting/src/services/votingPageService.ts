@@ -74,7 +74,7 @@ export class VotingPageService extends BaseDataService {
 
         const witClient = service.getCollectionClient(wit.WorkItemTrackingHttpClient);
         const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
-            + " AND [System.WorkItemType] = '" + this.actualSetting.level + "' " + this.areas;
+            + " AND [System.WorkItemType] = '" + this.actualVoting.level + "' " + this.areas;
         const wiqlJson = {
             query: wiql,
         };
@@ -143,18 +143,19 @@ export class VotingPageService extends BaseDataService {
 
         const voting = doc.voting;
         const isEnabled = voting.isVotingEnabled;
+        const isPaused = voting.isVotingPaused;
 
-        if (isEnabled) {
+        if (isEnabled && !isPaused) {
             let multipleVotes = doc.vote.some(v => v.userId === vote.userId
                 && v.votingId === vote.votingId
                 && v.workItemId === vote.workItemId);
 
-            if ((this.actualSetting.numberOfVotes - this.numberOfMyVotes()) < 1) {
+            if ((this.actualVoting.numberOfVotes - this.numberOfMyVotes()) < 1) {
                 bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
                 return;
             } else {
                 if (!voting.isMultipleVotingEnabled && multipleVotes) {
-                    bsNotify("warning", "You cannot vote again for this Item. Please refresh your browser window to get the actual content.");
+                    bsNotify("warning", "You cannot vote again for this item. Please refresh your browser window to get the actual content.");
                     return;
                 } else {
                     doc.vote.push(vote);
@@ -164,8 +165,10 @@ export class VotingPageService extends BaseDataService {
                     bsNotify("success", "Your vote has been saved.");
                 }
             }
-        } else {
+        } else if (!isEnabled) {
             bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
+        } else if (isPaused) {
+            bsNotify("warning", "This voting has been paused. \nPlease refresh your browser window to get the actual content.");
         }
     }
 

@@ -11,10 +11,10 @@ export class BaseDataService {
     private _witFieldNames: string[] = [];
 
     protected votingDataService: VotingDataService;
-    protected actualSetting: Voting;
     protected template: string;
     protected process: string;
 
+    public actualVoting: Voting;
     public excludes: string[] = [];
     public teams: any[] = [];
     
@@ -83,10 +83,6 @@ export class BaseDataService {
         }
     }
 
-    public getSettings(): Voting {
-        return this.actualSetting;
-    }
-
     public reload() {
         window.location.href = window.location.href;
     }
@@ -145,12 +141,12 @@ export class BaseDataService {
         this.excludes = doc.excludes || [];
 
         if (doc.voting == null || !doc.voting.isVotingEnabled) {
-            this.actualSetting = new Voting();
+            this.actualVoting = new Voting();
             return VotingStatus.NoActiveVoting;
         } else {
-            this.actualSetting = doc.voting;
+            this.actualVoting = doc.voting;
         }
 
-        return VotingStatus.ActiveVoting;
+        return doc.voting.isVotingPaused ? VotingStatus.PausedVoting : VotingStatus.ActiveVoting;
     }
 }

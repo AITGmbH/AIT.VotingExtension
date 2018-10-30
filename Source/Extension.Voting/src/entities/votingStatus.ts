@@ -1,5 +1,6 @@
 export enum VotingStatus {
     NoVoting,
     NoActiveVoting,
-    ActiveVoting
+    ActiveVoting,
+    PausedVoting
 }

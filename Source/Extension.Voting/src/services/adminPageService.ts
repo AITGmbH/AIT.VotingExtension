@@ -46,8 +46,8 @@ export class AdminPageService extends BaseDataService {
 
         const cDoc = await this.votingDataService.updateDocumentAsync(newDoc);
         LogExtension.log("Doc id: " + cDoc.id);
-        this.actualSetting = new Voting();
-        return this.actualSetting;
+        this.actualVoting = new Voting();
+        return this.actualVoting;
     }
 
     public async resetVotingAsync() {

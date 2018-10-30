@@ -18,7 +18,7 @@ import { parseEmail } from "../shared/common";
 import { TfvcHistoryList } from "TFS/VersionControl/Controls";
 
 export class VotingPageController extends BaseController {
-    private grid: any;
+    private grid: grids.Grid;
     private extensionContext: IExtensionContext;
     private votingService: VotingPageService;
     private myVotes: Vote[];
@@ -96,11 +96,15 @@ export class VotingPageController extends BaseController {
 
     private initializeItem(id: number, voteUp: HTMLElement, voteDown: HTMLElement) {
         const votingItem = this.actualVotingItem(id);
+        if (votingItem == null) {
+            return;
+        }
+
         voteUp.parentElement.classList.add("hide");
         voteDown.parentElement.classList.add("hide");
 
         if (this.remainingVotes > 0) {
-            if (votingItem.myVotes === 0 || this.actualVoting.isMultipleVotingEnabled) {
+            if (votingItem.myVotes === 0 || this.votingService.actualVoting.isMultipleVotingEnabled) {
                 voteUp.parentElement.classList.remove("hide");
             }
         }
@@ -142,6 +146,10 @@ export class VotingPageController extends BaseController {
                 return;
             } else {
                 this.votingActive();
+                
+                var columns = this.grid.getColumns();
+                columns[0].hidden = voting === VotingStatus.PausedVoting;
+                columns[1].hidden = voting === VotingStatus.PausedVoting;
             }
 
             LogExtension.log("getAreas");
@@ -172,7 +180,6 @@ export class VotingPageController extends BaseController {
             LogExtension.log("loadVotes");
             await this.votingService.loadVotesAsync();
 
-            this.actualVoting = this.votingService.getSettings();
             this.calculating();
             this.buildVotingTable();
         } finally {
@@ -181,12 +188,12 @@ export class VotingPageController extends BaseController {
     }
 
     private calculating() {
-        this.remainingVotes = this.actualVoting.numberOfVotes;
+        this.remainingVotes = this.votingService.actualVoting.numberOfVotes;
         this.myVotes = new Array<Vote>();
         this.allVotes = new Array<Vote>();
         if (this.votingService.votes != null) {
             for (const item of this.votingService.votes) {
-                if (item.votingId === this.actualVoting.created) {
+                if (item.votingId === this.votingService.actualVoting.created) {
                     this.allVotes.push(item);
                 }
             }
@@ -254,22 +261,19 @@ export class VotingPageController extends BaseController {
     }
 
     private setVotingSettings() {
-        if (this.actualVoting == null) {
-            this.actualVoting = new Voting();
+        if (this.votingService.actualVoting.title != null) {
+            document.getElementById("titleDiv").innerHTML = `<p>${this.votingService.actualVoting.title}</p>`;
         }
 
-        if (this.actualVoting.title != null) {
-            document.getElementById("titleDiv").innerHTML = `<p>${this.actualVoting.title}</p>`;
-        }
-
-        if (this.actualVoting.description != null) {
-            document.getElementById("informationDiv").innerHTML = `<p>${this.actualVoting.description}</p>`;
+        if (this.votingService.actualVoting.description != null) {
+            document.getElementById("informationDiv").innerHTML = `<p>${this.votingService.actualVoting.description}</p>`;
         }
     }
 
     private votingInactive() {
         document.getElementById("grid-container").classList.add("hide");
         document.getElementById("contentVotingActive").classList.add("hide");
+        document.getElementById("contentVotingPaused").classList.add("hide");
         document.getElementById("contentVotingInactive").classList.remove("hide");
         document.getElementById("votingMenue-container").classList.add("hide");
     }
@@ -277,6 +281,7 @@ export class VotingPageController extends BaseController {
     private notAllowedToVote() {
         document.getElementById("grid-container").classList.add("hide");
         document.getElementById("contentVotingActive").classList.add("hide");
+        document.getElementById("contentVotingPaused").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.remove("hide");
         document.getElementById("votingMenue-container").classList.add("hide");
     }
@@ -286,6 +291,12 @@ export class VotingPageController extends BaseController {
         document.getElementById("contentVotingInactive").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.add("hide");
         document.getElementById("votingMenue-container").classList.remove("hide");
+
+        if (this.votingService.actualVoting.isVotingPaused) {
+            document.getElementById("contentVotingPaused").classList.remove("hide");
+        } else {
+            document.getElementById("contentVotingPaused").classList.add("hide");
+        }
     }
 
     private async saveVotingAsync(id: number, upVote: boolean) {
@@ -299,7 +310,7 @@ export class VotingPageController extends BaseController {
                     }
 
                     vote.userId = this.user.id;
-                    vote.votingId = this.actualVoting.created;
+                    vote.votingId = this.votingService.actualVoting.created;
                     vote.workItemId = id;
 
                     await this.votingService.saveVoteAsync(vote);
