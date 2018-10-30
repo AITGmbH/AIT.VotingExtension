@@ -490,7 +490,7 @@ export class VotingPageController extends BaseController {
                 },
                 { tooltip: "Work Item ID", text: "ID", index: "id", width: 50, fieldId: "itemId" },
                 { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                { tooltip: "Work Item Title", text: "Title", index: "title", width: 200 },
+                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
                 { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
                 { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
                 { tooltip: "All votes per item", text: "Votes", index: "allVotes", width: 60 },
