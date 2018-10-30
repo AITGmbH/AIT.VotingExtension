@@ -32,31 +32,24 @@ export class VotingPageController extends BaseController {
     constructor() {
         super();
 
-        this.extensionContext = VSS.getExtensionContext();
-
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });
 
-        this.waitControl.startWait();
+        this.extensionContext = VSS.getExtensionContext();
+        this.cookieService = new CookieService();
 
-        try {
-            this.cookieService = new CookieService();
+        this.votingService = new VotingPageService();
+        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
+        this.votingService.initializeVotingpage = () => this.initAsync();
+        this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
+        this.votingService.calculating = () => {
+            this.calculating();
+            this.calculateMyVotes();
+        };
+        this.votingService.getActualVotingItems = () => this.actualVotingItems;
 
-            this.votingService = new VotingPageService();
-            this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
-            this.votingService.initializeVotingpage = () => this.init();
-            this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
-            this.votingService.calculating = () => {
-                this.calculating();
-                this.calculateMyVotes();
-            };
-            this.votingService.getActualVotingItems = () => this.actualVotingItems;
-
-            this.initializeVotingpage();
-        } finally {
-            this.waitControl.endWait();
-        }
+        this.initializeVotingpageAsync();
     }
 
     private createAdminpageUri() {
@@ -117,16 +110,22 @@ export class VotingPageController extends BaseController {
         }
     }
 
-    private async initializeVotingpage() {        
-        await this.votingService.load();        
+    private async initializeVotingpageAsync() {
+        this.waitControl.startWait();
 
-        this.createVotingTable();
-        this.generateTeamPivot();
+        try {
+            await this.votingService.load();
 
-        await this.init();
+            this.createVotingTable();
+            this.generateTeamPivot();
+
+            await this.initAsync();
+        } finally {
+            this.waitControl.endWait();
+        }
     }
 
-    private async init() {
+    private async initAsync() {
         this.waitControl.startWait();
 
         try {
@@ -277,9 +276,9 @@ export class VotingPageController extends BaseController {
         document.getElementById("notAllowedToVote").classList.remove("hide");
     }
 
-    private votingActive() {        
+    private votingActive() {
         document.getElementById("contentVotingActive").classList.remove("hide");
-        document.getElementById("contentVotingInactive").classList.add("hide");                    
+        document.getElementById("contentVotingInactive").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.add("hide");
     }
 
@@ -373,7 +372,7 @@ export class VotingPageController extends BaseController {
                     this.cookieService.setCookie();
                     dialog.close();
 
-                    this.init();
+                    this.initAsync();
                 },
                 "Decline": () => {
                     dialog.close();
@@ -423,7 +422,7 @@ export class VotingPageController extends BaseController {
                         window.open(url, '_blank');
                         break;
                     case "refresh":
-                        this.initializeVotingpage();
+                        this.initializeVotingpageAsync();
                         break;
                     case "removeAllUserdata":
                         this.removeAllUservotes();
@@ -546,7 +545,7 @@ export class VotingPageController extends BaseController {
             }).sort((a, b) => a.text.localeCompare(b.text)),
             change: (item) => {
                 this.votingService.team = item;
-                this.init();
+                this.initAsync();
             }
         });
     }
