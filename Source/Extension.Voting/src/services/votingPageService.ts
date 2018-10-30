@@ -18,7 +18,6 @@ export class VotingPageService extends BaseDataService {
 
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
-    public initializeVotingpage: () => void;
     public numberOfMyVotes: () => number;
     public calculating: () => void;
     public getActualVotingItems: () => VotingItem[];
@@ -31,8 +30,8 @@ export class VotingPageService extends BaseDataService {
         return this.requirements;
     }
 
-    public async loadVotes(): Promise<void> {
-        const doc = await this.votingDataService.getDocument(this.documentId);
+    public async loadVotesAsync() {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         this.votes = [];
 
         if (doc.vote != null && doc.vote.length > 0) {
@@ -40,7 +39,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async getAreas(): Promise<void> {
+    public async getAreasAsync() {
         LogExtension.log("in require");
         const client = getClient();
         LogExtension.log("got REST-Client");
@@ -74,7 +73,7 @@ export class VotingPageService extends BaseDataService {
         LogExtension.log("finish area");
     }
 
-    public async loadRequirements(): Promise<void> {
+    public async loadRequirementsAsync() {
         this.requirements = new Array<TinyRequirement>();
 
         const witClient = service.getCollectionClient(wit.WorkItemTrackingHttpClient);
@@ -143,8 +142,8 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async saveVote(vote: Vote) {
-        const doc = await this.votingDataService.getDocument(this.documentId);
+    public async saveVoteAsync(vote: Vote) {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         const voting = doc.voting;
         const isEnabled = voting.isVotingEnabled;
@@ -163,12 +162,10 @@ export class VotingPageService extends BaseDataService {
                     return;
                 } else {
                     doc.vote.push(vote);
-                    const uDoc = await this.votingDataService.updateDocument(doc);
+                    const uDoc = await this.votingDataService.updateDocumentAsync(doc);
                     LogExtension.log("saveVote: document updated", uDoc.id);
 
                     bsNotify("success", "Your vote has been saved.");
-
-                    this.initializeVotingpage();
                 }
             }
         } else {
@@ -176,8 +173,8 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async deleteVote(id: number, userId: string) {
-        const doc = await this.votingDataService.getDocument(this.documentId);
+    public async deleteVoteAsync(id: number, userId: string) {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         if (doc == null) {
             bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
             return;
@@ -199,16 +196,14 @@ export class VotingPageService extends BaseDataService {
                 }
             }
 
-            const uDoc = await this.votingDataService.updateDocument(doc);
+            const uDoc = await this.votingDataService.updateDocumentAsync(doc);
             LogExtension.log("deleteVote: document updated", uDoc.id);
 
             bsNotify("success", "Your vote has been deleted.");
-
-            this.initializeVotingpage();
         }
     }
 
-    public async updateBacklog(wis: VotingItem[], firstBacklogItem: VotingItem) {
+    public async updateBacklogAsync(wis: VotingItem[], firstBacklogItem: VotingItem) {
         LogExtension.log("begin updating");
 
         const order = this.getTemplate();
@@ -271,12 +266,12 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async applyToBacklog() {
+    public async applyToBacklogAsync() {
         try {
-            await this.loadVoting();
-            await this.loadVotes();
-            await this.getAreas();
-            await this.loadRequirements();
+            await this.loadVotingAsync();
+            await this.loadVotesAsync();
+            await this.getAreasAsync();
+            await this.loadRequirementsAsync();
 
             this.calculating();
 
@@ -296,28 +291,30 @@ export class VotingPageService extends BaseDataService {
 
                 if (item.allVotes > 0) {
                     votingItems.splice(0, idx);
-                    return false;
+                    continue;
                 }
             }
 
-            this.updateBacklog(votingItems, tempItem);
+            await this.updateBacklogAsync(votingItems, tempItem);
         } catch (err) {
             bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
             LogExtension.log(err);
         }
     }
 
-    public async removeAllUservotes(userId: string) {
-        const docs = await this.votingDataService.getAllVotings();
+    public async removeAllUserVotesAsync(userId: string) {
+        const docs = await this.votingDataService.getAllVotingsAsync();
 
         try {
+            const promises = [];
             for (const doc of docs) {
                 doc.vote = doc.vote.filter((vote) => vote.userId !== userId);
-                this.votingDataService.updateDocument(doc);
+                 promises.push(this.votingDataService.updateDocumentAsync(doc));
             }
 
+            await Promise.all(promises);
+
             bsNotify("success", "Your votes have been successfully removed.");
-            this.initializeVotingpage();
         } catch (e) {
             LogExtension.log(e);
         }

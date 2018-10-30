@@ -8,18 +8,18 @@ export class VotingDataService {
         this.webContext = VSS.getWebContext();
     }
 
-    public async getAllVotings(): Promise<VotingDocument[]> {
+    public async getAllVotingsAsync(): Promise<VotingDocument[]> {
         try {
-            let service = await this.getVssService();
-            return service.getDocuments(this.webContext.collection.name);
+            let service = await this.getVssServiceAsync();
+            return await service.getDocuments(this.webContext.collection.name);
         } catch (err) {
             LogExtension.log("votingDataService.getAllVotings: Could not get documents", err);
             return [];
         }
     }
 
-    public async getDocument(id: string): Promise<VotingDocument> {
-        const service = await this.getVssService();
+    public async getDocumentAsync(id: string): Promise<VotingDocument> {
+        const service = await this.getVssServiceAsync();
 
         try {
             var doc = await service.getDocument(this.webContext.collection.name, id) as VotingDocument;
@@ -50,9 +50,9 @@ export class VotingDataService {
         }
     }
 
-    public async updateDocument(doc: VotingDocument): Promise<VotingDocument> {
+    public async updateDocumentAsync(doc: VotingDocument): Promise<VotingDocument> {
         try {
-            const service = await this.getVssService();
+            const service = await this.getVssServiceAsync();
             return await service.setDocument(this.webContext.collection.name, doc);
         } catch (err) { 
             LogExtension.log("votingDataService.updateDocument: Could not update document", err);
@@ -60,7 +60,7 @@ export class VotingDataService {
         }
     }
 
-    private async getVssService(): Promise<IExtensionDataService> {
+    private async getVssServiceAsync(): Promise<IExtensionDataService> {
         return await VSS.getService(VSS.ServiceIds.ExtensionData) as IExtensionDataService;
     }
 }

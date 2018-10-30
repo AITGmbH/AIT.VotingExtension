@@ -9,33 +9,33 @@ export class AdminPageService extends BaseDataService {
         super();
     }
 
-    public async addToExclude(item: string) {
+    public async addToExcludeAsync(item: string) {
         if (this.excludes.indexOf(item) === -1) {
             this.excludes.push(item);
             this.witFieldNames.splice(this.witFieldNames.indexOf(item), 1);
         }
 
-        const doc = await this.votingDataService.getDocument(this.documentId);
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         doc.excludes = this.excludes;
 
-        const uDoc = await this.votingDataService.updateDocument(doc);
+        const uDoc = await this.votingDataService.updateDocumentAsync(doc);
         LogExtension.log("saveVoting: document updated", uDoc.id);
     }
 
-    public async addToInclude(item: string) {
+    public async addToIncludeAsync(item: string) {
         if (this.witFieldNames.indexOf(item) === -1) {
             this.witFieldNames.push(item);
             this.excludes.splice(this.excludes.indexOf(item), 1);
         }
 
-        const doc = await this.votingDataService.getDocument(this.documentId);
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         doc.excludes = this.excludes;
 
-        const uDoc = await this.votingDataService.updateDocument(doc);
+        const uDoc = await this.votingDataService.updateDocumentAsync(doc);
         LogExtension.log("saveVoting: document updated", uDoc.id);
     }
 
-    public async createNewVoting(): Promise<Voting> {
+    public async createNewVotingAsync(): Promise<Voting> {
         var newDoc = {
             id: this.documentId,
             voting: new Voting(),
@@ -44,34 +44,34 @@ export class AdminPageService extends BaseDataService {
             _etag: -1
         } as VotingDocument;
 
-        const cDoc = await this.votingDataService.updateDocument(newDoc);
+        const cDoc = await this.votingDataService.updateDocumentAsync(newDoc);
         LogExtension.log("Doc id: " + cDoc.id);
         this.actualSetting = new Voting();
         return this.actualSetting;
     }
 
-    public async resetVoting() {
-        const doc = await this.votingDataService.getDocument(this.documentId);
+    public async resetVotingAsync() {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         doc.voting = new Voting();
         doc.vote = [];
         doc.excludes = this.excludes;
 
         try {
-            await this.votingDataService.updateDocument(doc);
+            await this.votingDataService.updateDocumentAsync(doc);
         } catch (err) {
             LogExtension.log("resetVoting error", err);
         }
     }
 
-    public async saveVoting(voting: Voting) {
-        const doc = await this.votingDataService.getDocument(this.documentId);
+    public async saveVotingAsync(voting: Voting) {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         doc.voting = voting;
         doc.excludes = this.excludes;
 
         try {
-            const uDoc = await this.votingDataService.updateDocument(doc);
+            const uDoc = await this.votingDataService.updateDocumentAsync(doc);
             LogExtension.log("saveVoting: document updated", uDoc.id);
 
             if (voting.isVotingEnabled) {
@@ -89,13 +89,13 @@ export class AdminPageService extends BaseDataService {
                 _etag: -1
             } as VotingDocument;
 
-            const cDoc = await this.votingDataService.updateDocument(newDoc);
+            const cDoc = await this.votingDataService.updateDocumentAsync(newDoc);
             try {
                 LogExtension.log("Doc id: " + cDoc.id);
                 cDoc.voting = voting;
 
                 try {
-                    const uDoc = await this.votingDataService.updateDocument(doc);
+                    const uDoc = await this.votingDataService.updateDocumentAsync(doc);
                     LogExtension.log("saveVoting: document updated", uDoc.id);
 
                     if (voting.isVotingEnabled) {

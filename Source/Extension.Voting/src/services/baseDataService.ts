@@ -89,12 +89,12 @@ export class BaseDataService {
         window.location.href = window.location.href;
     }
 
-    public async load() {
-        await this.loadProject();
-        await this.loadTeams();
+    public async loadAsync() {
+        await this.loadProjectAsync();
+        await this.loadTeamsAsync();
     }
 
-    public async loadTeams(): Promise<void> {
+    public async loadTeamsAsync(): Promise<void> {
         var coreClient = getCoreClient();
 
         try {
@@ -106,7 +106,7 @@ export class BaseDataService {
         }
     }
 
-    public async loadProject(): Promise<void> {
+    public async loadProjectAsync(): Promise<void> {
         var coreClient = getCoreClient();
 
         try {
@@ -119,7 +119,7 @@ export class BaseDataService {
         }
     }
 
-    public async loadWITFieldNames(): Promise<void> {
+    public async loadWITFieldNamesAsync(): Promise<void> {
         var witclient = getWitClient();
 
         try {
@@ -132,8 +132,8 @@ export class BaseDataService {
         }
     }
 
-    public async loadVoting(): Promise<VotingStatus> {
-        var doc = await this.votingDataService.getDocument(this.documentId);
+    public async loadVotingAsync(): Promise<VotingStatus> {
+        var doc = await this.votingDataService.getDocumentAsync(this.documentId);
         LogExtension.log(doc);
 
         if (doc == null) {

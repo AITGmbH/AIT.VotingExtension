@@ -34,9 +34,9 @@ export class AdminPageController extends BaseController {
         this.initializeAdminpageAsync();
     }
 
-    private createNewVoting() {
+    private async createNewVotingAsync() {
         this.actualVoting = new Voting();
-        this.adminPageService.resetVoting();
+        await this.adminPageService.resetVotingAsync();
 
         this.generateLevelDropDown();
         
@@ -92,8 +92,8 @@ export class AdminPageController extends BaseController {
         this.waitControl.startWait();
 
         try {
-            await this.adminPageService.load();
-            await this.adminPageService.loadWITFieldNames();
+            await this.adminPageService.loadAsync();
+            await this.adminPageService.loadWITFieldNamesAsync();
 
             this.generateCombos();        
             this.generateTeamPivot();
@@ -111,11 +111,11 @@ export class AdminPageController extends BaseController {
         this.waitControl.startWait();
 
         try {
-            var votingStatus = await this.adminPageService.loadVoting();
+            var votingStatus = await this.adminPageService.loadVotingAsync();
             if (votingStatus === VotingStatus.ActiveVoting) {
                 this.actualVoting = this.adminPageService.getSettings();
             } else if (votingStatus === VotingStatus.NoVoting) {
-                this.actualVoting = await this.adminPageService.createNewVoting();
+                this.actualVoting = await this.adminPageService.createNewVotingAsync();
             } else if (votingStatus === VotingStatus.NoActiveVoting) {
                 this.actualVoting = new Voting();
             }
@@ -196,7 +196,7 @@ export class AdminPageController extends BaseController {
         }
     }
 
-    private saveSettings(isEnabled: boolean): void {
+    private async saveSettingsAsync(isEnabled: boolean) {
         const voting = this.actualVoting;
 
         voting.title = escapeText(voting.title);
@@ -220,7 +220,7 @@ export class AdminPageController extends BaseController {
             LogExtension.log("New Level:", voting.level);
         }
 
-        this.adminPageService.saveVoting(voting);
+        await this.adminPageService.saveVotingAsync(voting);
 
         if (voting.isVotingEnabled) {
             this.actualVoting = voting;
@@ -244,13 +244,13 @@ export class AdminPageController extends BaseController {
         LogExtension.log("finished resetting");
     }
 
-    private addToExclude(item: string) {
-        this.adminPageService.addToExclude(item);
+    private async addToExcludeAsync(item: string) {
+        await this.adminPageService.addToExcludeAsync(item);
         this.generateLevelDropDown();
     }
 
-    private addToInclude(item: string) {
-        this.adminPageService.addToInclude(item);
+    private async addToIncludeAsync(item: string) {
+        await this.adminPageService.addToIncludeAsync(item);
         this.generateLevelDropDown();
     }
 
@@ -303,16 +303,16 @@ export class AdminPageController extends BaseController {
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
-                this.createNewVoting();
+                this.createNewVotingAsync();
                 break;
             case "saveSettings":
-                this.saveSettings(true);
+                this.saveSettingsAsync(true);
                 break;
             case "infoButton":
                 this.showInfo();
                 break;
             case "terminateVoting":
-                this.saveSettings(false);
+                this.saveSettingsAsync(false);
                 break;
             case "excludeList":
                 this.loadExcludeList();
@@ -412,7 +412,7 @@ export class AdminPageController extends BaseController {
         const text = ev.dataTransfer.getData("text");
 
         $("#includeListbody").append(document.getElementById(id));
-        this.addToInclude(text);
+        this.addToIncludeAsync(text);
     }
 
     private addToExcludes(ev) {
@@ -422,7 +422,7 @@ export class AdminPageController extends BaseController {
         const text = ev.dataTransfer.getData("text");
 
         $("#excludeListbody").append(document.getElementById(id));
-        this.addToExclude(text);
+        this.addToExcludeAsync(text);
     }
 
     private startDrag(ev) {

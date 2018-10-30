@@ -15,6 +15,7 @@ import * as dialogs from "VSS/Controls/Dialogs";
 import * as navigation from "VSS/Controls/Navigation";
 import * as menus from "VSS/Controls/Menus";
 import { parseEmail } from "../shared/common";
+import { TfvcHistoryList } from "TFS/VersionControl/Controls";
 
 export class VotingPageController extends BaseController {
     private grid: any;
@@ -41,7 +42,6 @@ export class VotingPageController extends BaseController {
 
         this.votingService = new VotingPageService();
         this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
-        this.votingService.initializeVotingpage = () => this.initAsync();
         this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.votingService.calculating = () => {
             this.calculating();
@@ -76,7 +76,7 @@ export class VotingPageController extends BaseController {
                 TeamProject: this.votingService.context.project.id,
             });
 
-            this.saveVoting(voteId, true);
+            this.saveVotingAsync(voteId, true);
         }
     }
 
@@ -90,7 +90,7 @@ export class VotingPageController extends BaseController {
                 TeamProject: this.votingService.context.project.id,
             });
 
-            this.saveVoting(voteId, false);
+            this.saveVotingAsync(voteId, false);
         }
     }
 
@@ -114,12 +114,52 @@ export class VotingPageController extends BaseController {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.load();
+            await this.votingService.loadAsync();
 
+            this.createVotingMenue();
             this.createVotingTable();
             this.generateTeamPivot();
+            this.updateTeam(this.votingService.team);
 
-            await this.initAsync();
+            await this.refreshAsync();
+        } finally {
+            this.waitControl.endWait();
+        }
+    }
+
+    private async refreshAsync() {
+        this.waitControl.startWait();
+
+        try {
+            LogExtension.log("loadVoting");
+            var voting = await this.votingService.loadVotingAsync();
+
+            if (voting === VotingStatus.NoActiveVoting) {
+                this.votingInactive();
+                return;
+            } else if (voting === VotingStatus.NoVoting) {
+                this.votingInactive();
+                return;
+            } else {
+                this.votingActive();
+            }
+
+            LogExtension.log("getAreas");
+            await this.votingService.getAreasAsync();
+
+            LogExtension.log("loadRequirements");
+            await this.votingService.loadRequirementsAsync();
+
+            const hasAcceptedDataProtection = this.cookieService.isCookieSet();
+            if (hasAcceptedDataProtection) {
+                await this.initAsync();
+                this.nothingToVote(true);
+            } else {
+                LogExtension.log("loadUserConfirmationDialog");
+
+                this.initializeDataProtectionDialog();
+                this.notAllowedToVote();
+            }
         } finally {
             this.waitControl.endWait();
         }
@@ -129,45 +169,12 @@ export class VotingPageController extends BaseController {
         this.waitControl.startWait();
 
         try {
-            this.createAdminpageUri();
+            LogExtension.log("loadVotes");
+            await this.votingService.loadVotesAsync();
 
-            this.setAttributes(this.votingService.context.user, this.votingService.team);
-
-            const hasAcceptedDataProtection = this.cookieService.isCookieSet();
-
-            if (hasAcceptedDataProtection) {
-                LogExtension.log("loadVoting");
-                var voting = await this.votingService.loadVoting();
-
-                if (voting === VotingStatus.NoActiveVoting) {
-                    this.votingInactive();
-                    return;
-                } else if (voting === VotingStatus.NoVoting) {
-                    this.votingInactive();
-                    return;
-                } else {
-                    this.votingActive();
-                }
-
-                LogExtension.log("loadVotes");
-                await this.votingService.loadVotes();
-
-                LogExtension.log("getAreas");
-                await this.votingService.getAreas();
-
-                LogExtension.log("loadRequirements");
-                await this.votingService.loadRequirements();
-
-                this.actualVoting = this.votingService.getSettings();
-                this.calculating();
-                this.buildVotingTable();
-                this.nothingToVote(true);
-            } else {
-                LogExtension.log("loadUserConfirmationDialog");
-
-                this.initializeDataProtectionDialog();
-                this.notAllowedToVote();
-            }
+            this.actualVoting = this.votingService.getSettings();
+            this.calculating();
+            this.buildVotingTable();
         } finally {
             this.waitControl.endWait();
         }
@@ -244,10 +251,6 @@ export class VotingPageController extends BaseController {
         this.lockButtons = false;
 
         LogExtension.log("Data online");
-
-        if (this.user.isAdmin) {
-            this.createVotingMenue();
-        }
     }
 
     private setVotingSettings() {
@@ -282,7 +285,7 @@ export class VotingPageController extends BaseController {
         document.getElementById("notAllowedToVote").classList.add("hide");
     }
 
-    private saveVoting(id: number, upVote: boolean) {
+    private async saveVotingAsync(id: number, upVote: boolean) {
         if (upVote) {
             for (const item of this.actualVotingItems) {
                 if (item.id === id) {
@@ -296,11 +299,13 @@ export class VotingPageController extends BaseController {
                     vote.votingId = this.actualVoting.created;
                     vote.workItemId = id;
 
-                    this.votingService.saveVote(vote);
+                    await this.votingService.saveVoteAsync(vote);
+                    await this.initAsync();
                 }
             }
         } else {
-            this.votingService.deleteVote(id, this.user.id);
+            await this.votingService.deleteVoteAsync(id, this.user.id);
+            await this.initAsync();
         }
     }
 
@@ -332,24 +337,17 @@ export class VotingPageController extends BaseController {
         }
     }
 
-    private applyToBacklog() {
-        this.votingService.applyToBacklog();
-    }
-
-    private removeAllUservotes(): any {
-        this.removeAllUservotesDialog();
-    }
-
-    private removeAllUservotesDialog() {
+    private showRemoveAllUserVotesDialog() {
         let htmlContentString: string = "<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>";
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Delete all user data",
             content: dialogContent,
             buttons: {
-                "Delete": () => {
-                    this.votingService.removeAllUservotes(this.user.id);
+                "Delete": async () => {
                     dialog.close();
+
+                    this.removeAllUserVotesAsync();
                 },
                 "Cancel": () => {
                     dialog.close();
@@ -372,7 +370,7 @@ export class VotingPageController extends BaseController {
                     this.cookieService.setCookie();
                     dialog.close();
 
-                    this.initAsync();
+                    this.refreshAsync();
                 },
                 "Decline": () => {
                     dialog.close();
@@ -415,23 +413,43 @@ export class VotingPageController extends BaseController {
                 var command = args.get_commandName();
                 switch (command) {
                     case "applyToBacklog":
-                        this.applyToBacklog();
+                        this.applyToBacklogAsync();
                         break;
                     case "adminpageLink":
-                        var url = this.adminpageUri;
-                        window.open(url, '_blank');
+                        window.open(this.adminpageUri, '_blank');
                         break;
                     case "refresh":
-                        this.initializeVotingpageAsync();
+                        this.refreshAsync();
                         break;
                     case "removeAllUserdata":
-                        this.removeAllUservotes();
+                        this.showRemoveAllUserVotesDialog();
                         break;
                 }
             }
         });
 
-        $('#votingMenue-container').remove("hide");
+        document.getElementById("votingMenue-container").classList.remove("hide");
+    }
+
+    private async applyToBacklogAsync() {
+        this.waitControl.startWait();
+
+        try {
+            await this.votingService.applyToBacklogAsync();
+        } finally {
+            this.waitControl.endWait();
+        }
+    }
+
+    private async removeAllUserVotesAsync() {
+        this.waitControl.startWait();
+
+        try {
+            await this.votingService.removeAllUserVotesAsync(this.user.id);
+            await this.refreshAsync();
+        } finally {
+            this.waitControl.endWait();
+        }
     }
 
     private createVotingTable() {
@@ -544,9 +562,15 @@ export class VotingPageController extends BaseController {
                 };
             }).sort((a, b) => a.text.localeCompare(b.text)),
             change: (item) => {
-                this.votingService.team = item;
-                this.initAsync();
+                this.updateTeam(item);
+                this.refreshAsync();
             }
         });
+    }
+
+    private updateTeam(team) {
+        this.votingService.team = team;
+        this.createAdminpageUri();
+        this.setAttributes(this.votingService.context.user, this.votingService.team);
     }
 }
