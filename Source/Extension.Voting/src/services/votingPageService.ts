@@ -40,10 +40,8 @@ export class VotingPageService extends BaseDataService {
     }
 
     public async getAreasAsync() {
-        LogExtension.log("in require");
         const client = getClient();
-        LogExtension.log("got REST-Client");
-        let tempAreas = "AND ( ";
+        let areas = "AND ( ";
 
         const teamcontext: TeamContext = {
             project: null,
@@ -57,19 +55,17 @@ export class VotingPageService extends BaseDataService {
 
         for (let i = 0; i < teamfieldvalues.values.length; i++) {
             const value = teamfieldvalues.values[i];
+            areas += `[System.AreaPath] ${value.includeChildren ? "UNDER" : "="} '${value.value}'`;
 
-            tempAreas += "[System.AreaPath] UNDER '";
-            tempAreas += value.value;
-            tempAreas += "'";
             if (i < (teamfieldvalues.values.length - 1)) {
-                tempAreas += " OR ";
+                areas += " OR ";
             } else {
-                tempAreas += " )";
+                areas += " )";
             }
         }
 
-        LogExtension.log(tempAreas);
-        this.areas = tempAreas;
+        LogExtension.log(areas);
+        this.areas = areas;
         LogExtension.log("finish area");
     }
 
