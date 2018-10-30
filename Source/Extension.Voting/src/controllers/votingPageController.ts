@@ -271,18 +271,21 @@ export class VotingPageController extends BaseController {
         document.getElementById("grid-container").classList.add("hide");
         document.getElementById("contentVotingActive").classList.add("hide");
         document.getElementById("contentVotingInactive").classList.remove("hide");
+        document.getElementById("votingMenue-container").classList.add("hide");
     }
 
     private notAllowedToVote() {
         document.getElementById("grid-container").classList.add("hide");
         document.getElementById("contentVotingActive").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.remove("hide");
+        document.getElementById("votingMenue-container").classList.add("hide");
     }
 
     private votingActive() {
         document.getElementById("contentVotingActive").classList.remove("hide");
         document.getElementById("contentVotingInactive").classList.add("hide");
         document.getElementById("notAllowedToVote").classList.add("hide");
+        document.getElementById("votingMenue-container").classList.remove("hide");
     }
 
     private async saveVotingAsync(id: number, upVote: boolean) {
@@ -427,8 +430,6 @@ export class VotingPageController extends BaseController {
                 }
             }
         });
-
-        document.getElementById("votingMenue-container").classList.remove("hide");
     }
 
     private async applyToBacklogAsync() {
