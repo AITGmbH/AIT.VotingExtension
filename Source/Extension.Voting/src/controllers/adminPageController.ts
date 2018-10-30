@@ -31,7 +31,7 @@ export class AdminPageController extends BaseController {
             message: "Loading..."
         });
 
-        this.initializeAdminpage();
+        this.initializeAdminpageAsync();
     }
 
     private createNewVoting() {
@@ -88,7 +88,7 @@ export class AdminPageController extends BaseController {
         });
     }
 
-    private async initializeAdminpage(): Promise<void> {
+    private async initializeAdminpageAsync(): Promise<void> {
         this.waitControl.startWait();
 
         try {
@@ -101,13 +101,13 @@ export class AdminPageController extends BaseController {
 
             this.bindEvents();
 
-            this.init();
+            await this.initAsync();
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    private async init() {
+    private async initAsync() {
         this.waitControl.startWait();
 
         try {
@@ -335,7 +335,7 @@ export class AdminPageController extends BaseController {
             }).sort((a, b) => a.text.localeCompare(b.text)),
             change: (item) => {
                 this.adminPageService.team = item;
-                this.init();
+                this.initAsync();
             }
         });
     }
