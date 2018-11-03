@@ -14,7 +14,6 @@ export class BaseDataService {
     protected template: string;
     protected process: string;
 
-    public actualVoting: Voting;
     public excludes: string[] = [];
     public teams: any[] = [];
     
@@ -130,23 +129,16 @@ export class BaseDataService {
         }
     }
 
-    public async loadVotingAsync(): Promise<VotingStatus> {
+    public async loadVotingAsync(): Promise<Voting> {
         var doc = await this.votingDataService.getDocumentAsync(this.documentId);
         LogExtension.log(doc);
 
-        if (doc == null) {
-            return VotingStatus.NoVoting;
-        }
+        this.excludes = doc == null || doc.excludes == null ? [] : doc.excludes;
 
-        this.excludes = doc.excludes || [];
-
-        if (doc.voting == null || !doc.voting.isVotingEnabled) {
-            this.actualVoting = new Voting();
-            return VotingStatus.NoActiveVoting;
+        if (doc == null || doc.voting == null) {
+            return new Voting();
         } else {
-            this.actualVoting = doc.voting;
+            return doc.voting;
         }
-
-        return doc.voting.isVotingPaused ? VotingStatus.PausedVoting : VotingStatus.ActiveVoting;
     }
 }
