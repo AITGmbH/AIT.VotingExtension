@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "node",
+    "target": "es5",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "typings.d.ts"
+    ],
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
