@@ -41,7 +41,7 @@ export class AdminPageController extends BaseController {
 
         this.generateLevelDropDown();
 
-        this.toggleContent();
+        this.showContent();
 
         this.actualVoting.created = Math.round((new Date()).getTime() / 1000);
         this.createMenueBar(true);
@@ -154,7 +154,7 @@ export class AdminPageController extends BaseController {
             if (this.actualVoting.isVotingEnabled) {
                 LogExtension.log("actual voting enabled");
 
-                this.toggleContent();
+                this.showContent();
 
                 this.setEditable(false);
                 this.titleCombo.setText(this.actualVoting.title);
@@ -176,27 +176,27 @@ export class AdminPageController extends BaseController {
 
                 this.resetAdminpage();
 
-                this.toggleContent(false);
+                this.showErrors();
             }
         } else {
             this.actualVoting = new Voting();
             this.titleCombo.setInvalid(true);
             this.levelCombo.setText(this.levels[0]);
 
-            this.toggleContent();
+            this.showContent();
         }
-
-        LogExtension.log("finished initializing");
+        
+        this.adminPageService.createVotingreport(document.getElementById("reportcontainer"), this.actualVoting.team);
     }
 
-    private toggleContent(showContent: boolean = true) {
-        if (showContent) {
+    private showContent() {
             document.getElementById("content").classList.remove("hide");
             document.getElementById("errorMessage").classList.add("hide");
-        } else {
+    }   
+
+    private showErrors() {
             document.getElementById("content").classList.add("hide");
             document.getElementById("errorMessage").classList.remove("hide");
-        }
     }
 
     private async saveSettingsAsync(isEnabled: boolean, isPaused: boolean | null = null) {
@@ -214,7 +214,7 @@ export class AdminPageController extends BaseController {
 
         voting.isVotingEnabled = isEnabled;
         if (!isEnabled) {
-            this.toggleContent(false);
+            this.showErrors();
         }
 
         if (isPaused != null) {

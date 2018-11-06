@@ -3,10 +3,14 @@ import { LogExtension } from "../shared/logExtension";
 import { Voting } from "../entities/voting";
 import { bsNotify } from "../shared/common";
 import { VotingDocument } from "../entities/votingDocument";
+import { ReportCreationService } from "./reportService"
 
 export class AdminPageService extends BaseDataService {
+    private reportService: ReportCreationService;
+    
     constructor() {
         super();
+        this.reportService = new ReportCreationService();
     }
 
     public async addToExcludeAsync(item: string) {
@@ -113,4 +117,10 @@ export class AdminPageService extends BaseDataService {
             }
         }
     }
+
+    public async createVotingreport(container: HTMLElement, teamname: string){
+        let votingDoc = await this.votingDataService.getTeamVoting(teamname);
+        return this.reportService.createReport(container, votingDoc);
+    }
+
 }

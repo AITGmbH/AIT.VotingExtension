@@ -120,11 +120,9 @@
     <TypeScriptCompile Include="Controller\AdminpageController.ts" />
     <TypeScriptCompile Include="Controller\BasicController.ts" />
     <TypeScriptCompile Include="Controller\BasicDataController.ts" />
-    <TypeScriptCompile Include="Controller\IReportView.ts" />
     <TypeScriptCompile Include="Controller\LogExtension.ts" />
     <TypeScriptCompile Include="Controller\VotingpageController.ts" />
     <TypeScriptCompile Include="Entities\TinyRequirement.ts" />
-    <TypeScriptCompile Include="Entities\Document.ts" />
     <TypeScriptCompile Include="Entities\User.ts" />
     <TypeScriptCompile Include="Entities\VotingItem.ts" />
     <TypeScriptCompile Include="Controller\VotingpageDataController.ts" />
@@ -132,11 +130,7 @@
     <TypeScriptCompile Include="Controller\VotingpageMainController.ts" />
     <TypeScriptCompile Include="Entities\Vote.ts" />
     <TypeScriptCompile Include="Entities\Voting.ts" />
-    <TypeScriptCompile Include="Services\EmailService.ts" />
-    <TypeScriptCompile Include="Services\IEmailService.ts" />
-    <TypeScriptCompile Include="Services\IReportCreationService.ts" />
     <TypeScriptCompile Include="Services\IVotingDataService.ts" />
-    <TypeScriptCompile Include="Services\ReportCreationService.ts" />
     <TypeScriptCompile Include="Services\VssVotingDataService.ts" />
   </ItemGroup>
   <PropertyGroup>
@@ -192,10 +186,8 @@
   </PropertyGroup>
   <!--Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />-->
   <PropertyGroup>
-    <PostBuildEvent>powershell Set-Location "$(SolutionDir)../Tools/AjaxMinifier/"
-powershell -file "$(SolutionDir)../Tools/AjaxMinifier/minifyJS.ps1" --jsInputDir "$(SolutionDir)Extension.Voting/Scripts"
-
-</PostBuildEvent>
+    <PostBuildEvent>powershell Set-Location "$(SolutionDir)..\Tools\AjaxMinifier\"
+powershell -file "$(SolutionDir)..\Tools\AjaxMinifier\minifyJS.ps1" "$(ProjectDir)Scripts"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
