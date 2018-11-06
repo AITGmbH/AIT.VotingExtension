@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Voting</title>
+    <script src="vss.js"></script>
+    <% htmlWebpackPlugin.files.css.forEach(function (src) { %><link rel="stylesheet" href="<%= src.replace('dist/', '') %>"><% }) %>
+</head>
+
+<body>
+    <div id="waitContainerAdmin"></div>
+    <div class="vso-container">
+        <div class="row">
+            <h1 class="votingheadline">Voting settings</h1>
+            <div class="hub-pivot">
+                <div class="filters filter-container"></div>
+            </div>
+            <div id="progressBar" class="hub-progress pageProgressIndicator col-sm-12" style="display: none;"></div>
+        </div>
+        <div class="row">
+            <div id="no-permissions" class="error-message hide col-sm-4">
+                <span>You do not have the required permissions to perform any action.</span>
+            </div>
+        </div>
+        <div class="row">
+            <div id="menueBar-container" class="toolbar hide col-sm-12" style="padding-right:30px"></div>
+        </div>
+        <div id="content" style="padding-top: 10px;" class="row hide">
+            <div class="col-sm-3">
+                <div class="row" title="Title" id="titleDiv">
+                    <label style="margin-left: 5px">Title
+                        <span class="required">*</span>
+                    </label>
+                </div>
+                <div class="row" id="titleContainer"></div>
+            </div>
+            <div class="col-sm-6">
+                <div class="row">
+                    <label style="margin-left: 5px">Description </label>
+                </div>
+                <div class="row" id="descriptionContainer"></div>
+            </div>
+            <div class="col-sm-1">
+                <div class="row">
+                    <label>Multiple votes per item</label>
+                </div>
+                <div class="row" id="multipleVotesContainer"></div>
+            </div>
+            <div class="col-sm-2">
+                <div class="row">
+                    <label>Voting level</label>
+                </div>
+                <div class="row" id="levelContainer"></div>
+            </div>
+        </div>
+
+        <div class="row" style="padding-top: 10px;">
+            <div class="col-sm-12 hide" id="errorMessage">
+                <p id="votingdisabledmessage"> There is no voting available. Please create a new voting.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div name="itemPanel" id="workItemTypeList" class="panel panel-default" draggable="true" style="display:none;">
+        <div class="panel-body">
+        </div>
+    </div>
+    <div class="modal fade" id="excludeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">Included work item types</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="includeList" class="panel panel-default pull-left" style="width:45%">
+                        <div class="panel-heading">Included work item types</div>
+                        <div class="panel-body" id="includeListbody"></div>
+                    </div>
+                    <div id="excludeList" class="panel panel-default pull-right" style="width:45%">
+                        <div class="panel-heading">Excluded work item types</div>
+                        <div class="panel-body" id="excludeListbody"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <span id="appVersion" style="color:#FFF;float:right;"></span>
+
+    <script type="text/javascript">
+        VSS.init({
+            explicitNotifyLoaded: true,
+            usePlatformScripts: true,
+            usePlatformStyles: true,
+            moduleLoaderConfig: {}
+        });
+
+        VSS.require(["vendors.js", "admin.js"], function () {
+            VSS.notifyLoadSucceeded();
+        });
+    </script>
+</body>
+
+</html>

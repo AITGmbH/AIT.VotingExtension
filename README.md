@@ -27,16 +27,18 @@ Please note that the build and release infrastructure for the repo is hosted by 
 ## How to build
 
 ```shell
-# Install preconditions
-npm install  -g npm@5.2.0 
-npm install -g tfx-cli
 
 # Restore node-modules and create new extension version (run the following command from within the folder ~\Source\Extension.Voting)
 npm install
-tfx extension create --manifest-globs vss-extension.json
+npm run publish-debug-package
+
+# Start debugging locally
+npm run debug
 ```
+
+Install the debug version of the extension to your personal Azure DevOps account and start debugging.
 
 ## Additional links
 - [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production)
 - [AIT-Homepage](http://www.aitgmbh.de)
-- [AIT TFS-Tools](http://www.aitgmbh.de/downloads/team-foundation-server-tools.html)
+- [AIT TFS-Tools](https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc)

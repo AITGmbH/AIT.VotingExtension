@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
   "id": "asap-voting-aitgmb-de-preview",
-  "version": "0.1.15",
-  "publisher": "AITGmbh",
+  "version": "0.1.37",
+  "publisher": "aitgmbh",
   "public": false,
   "name": "AIT Voting Extension (Preview)",
   "description": "Democratize your backlog with Voting Extension. Ask your stakeholders to vote for their favorite backlog items. Align your work on your stakeholders' needs.",
@@ -16,18 +16,23 @@
   },
   "screenshots": [
     {
-      "path": "Images/Screenshots/VotingSettingsStarted.png"
+      "path": "images/screenshots/VotingSettingsStarted.png"
     },
     {
-      "path": "Images/Screenshots/VotingtableUnvoted.png"
+      "path": "images/screenshots/VotingtableUnvoted.png"
     },
     {
-      "path": "Images/Screenshots/VotingtableVoted.png"
+      "path": "images/screenshots/VotingtableVoted.png"
     }
   ],
-  "baseUri": "https://staging-ait-teamfoundation-extension-voting.azurewebsites.net/",
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    }
+  ],
   "icons": {
-    "default": "Images/Logo/AIT-Voting-Extension.png"
+    "default": "images/logo/AIT-Voting-Extension.png"
   },
   "tags": [
     "Planning"
@@ -54,24 +59,21 @@
       "properties": {
         "name": "Voting",
         "order": 99,
-        "uri": "/View/VotingVotingpage.html"
+        "uri": "dist/votingPage.html"
       }
     },
-
     {
       "id": "Voting.Administration",
       "type": "ms.vss-web.hub",
       "description": "Adds the voting administration hub to the project admin group.",
       "targets": [
         "ms.vss-web.project-admin-hub-group"
-
       ],
       "properties": {
         "name": "Voting",
         "order": 99,
-        "uri": "/View/VotingAdminpage.html"
+        "uri": "dist/adminPage.html"
       }
-
     }
   ],
   "links": {
