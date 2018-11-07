@@ -81,7 +81,7 @@ export class AdminPageController extends Vue {
     private showInfo() {
         dialogs.show(dialogs.ModalDialog, {
             title: "Help",
-            contentText: "During a voting you can only edit the title and the description of the voting.\nTo change other properties you have to stop the voting and create a new one.",
+            contentText: "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
             buttons: []
         });
     }
