@@ -4,7 +4,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ConcatPlugin = require('webpack-concat-plugin');
 const ProgressPlugin = require("webpack/lib/ProgressPlugin");
-const { NoEmitOnErrorsPlugin, SourceMapDevToolPlugin } = require("webpack");
+const { NoEmitOnErrorsPlugin, SourceMapDevToolPlugin, DefinePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
@@ -14,10 +14,6 @@ module.exports = {
 	performance: { hints: false },
 	module: {
 		rules: [
-			{
-				test: /\.js$/,
-				loader: 'raw-loader'
-			},
 			{
 				test: /\.ts$/,
 				loader: 'ts-loader'
@@ -51,6 +47,9 @@ module.exports = {
 	},
 	plugins: [
 		new CleanWebpackPlugin(["dist"]),
+		new DefinePlugin({
+		  'process.env.NODE_ENV': JSON.stringify('production')
+		}),
 		new SourceMapDevToolPlugin({
             filename: '[file].map'
         }),

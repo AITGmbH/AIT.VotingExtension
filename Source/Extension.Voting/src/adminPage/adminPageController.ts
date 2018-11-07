@@ -209,16 +209,19 @@ export class AdminPageController extends Vue {
     }
 
     private createMenueBar(isActive: boolean) {
-        this.menuBar = controls.create(menus.MenuBar, $("#menueBar-container"), {
-            showIcon: true,
-            items: this.getMenuItems(isActive),
-            executeAction: (args) => {
-                var command = args.get_commandName();
-                this.executeMenuAction(command);
-            }
-        });
+        if (this.menuBar == null) {
+            this.menuBar = controls.create(menus.MenuBar, $("#menueBar-container"), {
+                showIcon: true,
+                executeAction: (args) => {
+                    var command = args.get_commandName();
+                    this.executeMenuAction(command);
+                }
+            });
         
-        document.getElementById("menueBar-container").classList.remove("hide");
+            document.getElementById("menueBar-container").classList.remove("hide");
+        }
+
+        this.menuBar.updateItems(this.getMenuItems(isActive));
     }
 
     private executeMenuAction(command: string) {
