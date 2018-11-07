@@ -43,7 +43,7 @@ module.exports = {
 		modules: ["./node_modules"],
 		symlinks: true,
 		alias: {
-			'vue$': 'vue/dist/vue.esm.js' // 'vue/dist/vue.common.js' for webpack 1
+			'vue$': 'vue/dist/vue.esm.js'
 		}
 	},
 	plugins: [

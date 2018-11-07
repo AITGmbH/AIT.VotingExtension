@@ -32,8 +32,8 @@ module.exports = {
 		]
 	},
 	entry: {
-		voting: './src/views/votingPage.ts',
-		admin: './src/views/adminPage.ts'
+		voting: './src/votingPage/votingPage.ts',
+		admin: './src/adminPage/adminPage.ts'
 	},
 	output: {
 		filename: '[name].js',
@@ -44,7 +44,10 @@ module.exports = {
 	resolve: {
 		extensions: [".ts", ".tsx", ".js"],
 		modules: ["./node_modules"],
-		symlinks: true
+		symlinks: true,
+		alias: {
+			'vue$': 'vue/dist/vue.esm.js' 
+		}
 	},
 	plugins: [
 		new CleanWebpackPlugin(["dist"]),
@@ -75,12 +78,12 @@ module.exports = {
 		new NoEmitOnErrorsPlugin(),
 		new ProgressPlugin(),
 		new HtmlWebpackPlugin({
-			template: "./src/views/adminPage.html",
+			template: "./src/adminPage/adminPage.html",
 			filename: "adminPage.html",
 			inject: false
 		}),
 		new HtmlWebpackPlugin({
-			template: "./src/views/votingPage.html",
+			template: "./src/votingPage/votingPage.html",
 			filename: "votingPage.html",
 			inject: false
 		}),
