@@ -86,5 +86,9 @@
     "privacypolicy": {
       "uri": "https://www.aitgmbh.de/datenschutz"
     }
+  },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/AITGmbH/AIT.VotingExtension"
   }
 }
