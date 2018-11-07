@@ -15,10 +15,6 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.js$/,
-				loader: 'raw-loader'
-			},
-			{
 				test: /\.ts$/,
 				loader: 'ts-loader'
 			},
