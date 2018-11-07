@@ -19,6 +19,18 @@ Click the picture below to see a demo video.
 6. Each team member votes for the items it want to see on the top of the team backlog
 7. Appliy the (interim) results to backlog 
 
+## Changelog
+For more detailed release notes please refer to our <a href="https://www.aitgmbh.de/blog/" target="_blank">release blog posts</a>.
+
+- **Version "__BuildNumber__"**
+    - Support of the new Azure DevOps vertical navigation
+    - Possibility to pause voting
+    - Extension is now hosted directly in Azure DevOps 
+    - Redesign of admin page
+        - Configure number of votes for a voting 
+        - Change voting settings during a running voting
+    - Fixed link to the admin page on the voting page
+
 ## Additional Links
 - <a href="http://www.aitgmbh.de/" target="_blank">AIT-Homepage</a>
 - <a href="https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc" target="_blank">AIT TFS-Tools</a>
