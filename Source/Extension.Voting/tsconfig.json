@@ -12,7 +12,9 @@
     "lib": [
       "es2017",
       "dom"
-    ]
+    ],
+    "experimentalDecorators": true,
+    "esModuleInterop": true
   },
   "exclude": [
     "node_modules"

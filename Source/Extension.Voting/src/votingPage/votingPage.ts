@@ -1,5 +1,5 @@
 ﻿import { LogExtension } from "../shared/logExtension";
-import { VotingPageController } from "../controllers/votingPageController";
+import { VotingPageController } from "./votingPageController";
 
 (function () {
     LogExtension.debugEnabled = false;
@@ -7,7 +7,7 @@ import { VotingPageController } from "../controllers/votingPageController";
     try {
         VSS.ready(() => {
             LogExtension.log("VSS ready");
-            new VotingPageController();
+            new VotingPageController().$mount("#votingPage");
         });
     } catch (ex) {
         LogExtension.log(ex);

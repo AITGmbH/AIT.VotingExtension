@@ -1,12 +1,12 @@
 ﻿
-import { BaseController } from "./baseController";
+import { User } from "../entities/user";
 import { Vote } from "../entities/vote";
 import { VotingItem } from "../entities/votingItem";
-import { VotingPageService } from "../services/votingPageService";
-import { Voting } from "../entities/voting";
+import { VotingPageService } from "./votingPageService";
 import { LogExtension } from "../shared/logExtension";
 import { CookieService } from "../services/cookieService";
 import { VotingStatus } from "../entities/votingStatus";
+import { parseEmail } from "../shared/common";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
@@ -14,25 +14,33 @@ import * as wi from "TFS/WorkItemTracking/Services";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as navigation from "VSS/Controls/Navigation";
 import * as menus from "VSS/Controls/Menus";
-import { parseEmail } from "../shared/common";
-import { TfvcHistoryList } from "TFS/VersionControl/Controls";
+import Vue from "vue";
+import Component from "vue-class-component";
+import { Voting } from "../entities/voting";
 
-export class VotingPageController extends BaseController {
+@Component
+export class VotingPageController extends Vue {
     private grid: grids.Grid;
     private extensionContext: IExtensionContext;
-    private votingService: VotingPageService;
     private myVotes: Vote[];
     private allVotes: Vote[];
-    private adminpageUri: string;
     private lockButtons: boolean;
     private actualVotingItems: Array<VotingItem>;
-    private remainingVotes: number;
     private waitControl: statusIndicators.WaitControl;
     private cookieService: CookieService;
+    private user: User;
 
-    constructor() {
-        super();
+    public votingService: VotingPageService = new VotingPageService();
+    public remainingVotes: number = 0;
+    public adminpageUri: string = "";
+    public actualVoting: Voting = new Voting();
+    public status: VotingStatus = VotingStatus.NoVoting;
 
+    public created() {
+        document.getElementById("votingPage").classList.remove("hide");
+    }
+
+    public mounted() {
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });
@@ -41,7 +49,7 @@ export class VotingPageController extends BaseController {
         this.cookieService = new CookieService();
 
         this.votingService = new VotingPageService();
-        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.nothingToVote(isThereAnythingToVote);
+        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.status = !isThereAnythingToVote ? VotingStatus.NothingToVote : this.status;
         this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.votingService.calculating = () => {
             this.calculating();
@@ -63,7 +71,6 @@ export class VotingPageController extends BaseController {
         const uri = `${host}${project}/_settings/${publisher}.${extensionId}.Voting.Administration?teamId=${team.id}`;
 
         this.adminpageUri = uri;
-        document.getElementById("linkToAdminpage").setAttribute("href", uri);
     }
 
     private voteUpClicked(voteId: number) {
@@ -104,7 +111,7 @@ export class VotingPageController extends BaseController {
         voteDown.parentElement.classList.add("hide");
 
         if (this.remainingVotes > 0) {
-            if (votingItem.myVotes === 0 || this.votingService.actualVoting.isMultipleVotingEnabled) {
+            if (votingItem.myVotes === 0 || this.actualVoting.isMultipleVotingEnabled) {
                 voteUp.parentElement.classList.remove("hide");
             }
         }
@@ -136,32 +143,24 @@ export class VotingPageController extends BaseController {
 
         try {
             LogExtension.log("loadVoting");
-            var voting = await this.votingService.loadVotingAsync();
+            this.actualVoting = await this.votingService.loadVotingAsync();
+            this.setStatus();
 
-            if (voting === VotingStatus.NoActiveVoting) {
-                this.votingInactive();
-                return;
-            } else if (voting === VotingStatus.NoVoting) {
-                this.votingInactive();
-                return;
-            } else {
-                this.votingActive();
-                
+            if (this.status === VotingStatus.ActiveVoting || this.status === VotingStatus.PausedVoting) {
                 var columns = this.grid.getColumns();
-                columns[0].hidden = voting === VotingStatus.PausedVoting;
-                columns[1].hidden = voting === VotingStatus.PausedVoting;
+                columns[0].hidden = this.status === VotingStatus.PausedVoting;
+                columns[1].hidden = this.status === VotingStatus.PausedVoting;
             }
 
             LogExtension.log("getAreas");
             await this.votingService.getAreasAsync();
 
             LogExtension.log("loadRequirements");
-            await this.votingService.loadRequirementsAsync();
+            await this.votingService.loadRequirementsAsync(this.actualVoting.level);
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
             if (hasAcceptedDataProtection) {
                 await this.initAsync();
-                this.nothingToVote(true);
             } else {
                 LogExtension.log("loadUserConfirmationDialog");
 
@@ -188,20 +187,21 @@ export class VotingPageController extends BaseController {
     }
 
     private calculating() {
-        this.remainingVotes = this.votingService.actualVoting.numberOfVotes;
+        this.remainingVotes = this.actualVoting.isMultipleVotingEnabled ? this.actualVoting.numberOfVotes : 1;
         this.myVotes = new Array<Vote>();
         this.allVotes = new Array<Vote>();
+
         if (this.votingService.votes != null) {
-            for (const item of this.votingService.votes) {
-                if (item.votingId === this.votingService.actualVoting.created) {
-                    this.allVotes.push(item);
-                }
-            }
+            this.allVotes = this.votingService.votes;
         }
     }
 
     private calculateMyVotes() {
+        const userVotes = {};
+        const numberOfVotes = this.actualVoting.isMultipleVotingEnabled ? this.actualVoting.numberOfVotes : 1;
+
         this.actualVotingItems = new Array<VotingItem>();
+
         for (const reqItem of this.votingService.getRequirements()) {
             var votingItemTemp: VotingItem = {
                 ...reqItem,
@@ -212,6 +212,12 @@ export class VotingPageController extends BaseController {
             if (this.allVotes != null) {
                 for (const vote of this.allVotes) {
                     if (vote.workItemId === reqItem.id) {
+                        userVotes[vote.userId] = (userVotes[vote.userId] || 0) + 1;
+                        if (userVotes[vote.userId] > numberOfVotes) {
+                            // cheating protection
+                            continue;
+                        }
+
                         votingItemTemp.allVotes++;
 
                         if (vote.userId === this.user.id) {
@@ -228,30 +234,12 @@ export class VotingPageController extends BaseController {
         }
 
         LogExtension.log("finished calculating MyVotes");
-        return;
-    }
-
-    private displayRemainingVotes() {
-        const container = document.getElementById("remainingVotesDiv");
-
-        switch (this.remainingVotes) {
-            case 0:
-                container.innerHTML = "<p>You have no votes left</p>";
-                break;
-            case 1:
-                container.innerHTML = "<p>You have 1 vote left</p>";
-                break;
-            default:
-                container.innerHTML = `<p>You have ${this.remainingVotes} votes left</p>`;
-                break;
-        }
     }
 
     private buildVotingTable() {
         this.actualVotingItems = new Array<VotingItem>();
 
         this.calculateMyVotes();
-        this.displayRemainingVotes();
 
         LogExtension.log("set Data");
         this.grid.setDataSource(this.actualVotingItems);
@@ -260,43 +248,8 @@ export class VotingPageController extends BaseController {
         LogExtension.log("Data online");
     }
 
-    private setVotingSettings() {
-        if (this.votingService.actualVoting.title != null) {
-            document.getElementById("titleDiv").innerHTML = `<p>${this.votingService.actualVoting.title}</p>`;
-        }
-
-        if (this.votingService.actualVoting.description != null) {
-            document.getElementById("informationDiv").innerHTML = `<p>${this.votingService.actualVoting.description}</p>`;
-        }
-    }
-
-    private votingInactive() {
-        document.getElementById("grid-container").classList.add("hide");
-        document.getElementById("contentVotingActive").classList.add("hide");
-        document.getElementById("contentVotingPaused").classList.add("hide");
-        document.getElementById("contentVotingInactive").classList.remove("hide");
-        document.getElementById("votingMenue-container").classList.add("hide");
-    }
-
     private notAllowedToVote() {
-        document.getElementById("grid-container").classList.add("hide");
-        document.getElementById("contentVotingActive").classList.add("hide");
-        document.getElementById("contentVotingPaused").classList.add("hide");
-        document.getElementById("notAllowedToVote").classList.remove("hide");
-        document.getElementById("votingMenue-container").classList.add("hide");
-    }
-
-    private votingActive() {
-        document.getElementById("contentVotingActive").classList.remove("hide");
-        document.getElementById("contentVotingInactive").classList.add("hide");
-        document.getElementById("notAllowedToVote").classList.add("hide");
-        document.getElementById("votingMenue-container").classList.remove("hide");
-
-        if (this.votingService.actualVoting.isVotingPaused) {
-            document.getElementById("contentVotingPaused").classList.remove("hide");
-        } else {
-            document.getElementById("contentVotingPaused").classList.add("hide");
-        }
+        this.status = VotingStatus.NotAllowedToVote;
     }
 
     private async saveVotingAsync(id: number, upVote: boolean) {
@@ -310,10 +263,10 @@ export class VotingPageController extends BaseController {
                     }
 
                     vote.userId = this.user.id;
-                    vote.votingId = this.votingService.actualVoting.created;
+                    vote.votingId = this.actualVoting.created;
                     vote.workItemId = id;
 
-                    await this.votingService.saveVoteAsync(vote);
+                    await this.votingService.saveVoteAsync(vote, this.actualVoting.numberOfVotes);
                     await this.initAsync();
                 }
             }
@@ -337,18 +290,6 @@ export class VotingPageController extends BaseController {
         }
 
         return votingItem;
-    }
-
-    private nothingToVote(isThereAnythingToVote) {
-        this.setVotingSettings();
-
-        if (isThereAnythingToVote) {
-            document.getElementById("grid-container").classList.remove("hide");
-            document.getElementById("nothingToVote").classList.add("hide");
-        } else {
-            document.getElementById("grid-container").classList.add("hide");
-            document.getElementById("nothingToVote").classList.remove("hide");
-        }
     }
 
     private showRemoveAllUserVotesDialog() {
@@ -405,7 +346,7 @@ export class VotingPageController extends BaseController {
                     icon: "icon icon-refresh", disabled: false
                 },
                 {
-                    id: "applyToBacklog", title: "Apply to backlog",
+                    id: "applyToBacklog", title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
                     icon: "icon icon-tfs-query-edit", disabled: false
                 },
                 {
@@ -419,7 +360,7 @@ export class VotingPageController extends BaseController {
                     separator: true
                 },
                 {
-                    id: "removeAllUserdata", title: "Delete user data from storage",
+                    id: "removeAllUserdata", title: "Delete all your votes",
                     icon: "icon icon-delete", disabled: false
                 }
             ],
@@ -447,7 +388,7 @@ export class VotingPageController extends BaseController {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.applyToBacklogAsync();
+            await this.votingService.applyToBacklogAsync(this.actualVoting.level);
         } finally {
             this.waitControl.endWait();
         }
@@ -584,5 +525,25 @@ export class VotingPageController extends BaseController {
         this.votingService.team = team;
         this.createAdminpageUri();
         this.setAttributes(this.votingService.context.user, this.votingService.team);
+    }
+
+    private setAttributes(userContext: UserContext, teamContext: TeamContext) {
+        this.user = new User();
+        this.user.id = userContext.id;
+        this.user.name = userContext.name;
+        this.user.email = userContext.email;
+        this.user.uniqueName = userContext.uniqueName;
+        this.user.team = teamContext.id;
+        this.user.isAdmin = true;
+    }
+
+    private setStatus() {
+        if (!this.actualVoting.isVotingEnabled) {
+            this.status = VotingStatus.NoVoting;
+        } else if (this.actualVoting.isVotingPaused) {
+            this.status = VotingStatus.PausedVoting;
+        } else {
+            this.status = VotingStatus.ActiveVoting;
+        }
     }
 }

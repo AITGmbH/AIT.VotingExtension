@@ -1,5 +1,5 @@
 ﻿import { LogExtension } from "../shared/logExtension";
-import { AdminPageController } from "../controllers/adminPageController";
+import { AdminPageController } from "./adminPageController";
 
 (function () {
     LogExtension.debugEnabled = false;
@@ -7,7 +7,7 @@ import { AdminPageController } from "../controllers/adminPageController";
     try {
         VSS.ready(() => {
             LogExtension.log("VSS ready");
-            new AdminPageController();
+            new AdminPageController().$mount("#adminPage");
             $('#appVersion').text(VSS.getExtensionContext().version);
         });
     } catch (ex) {

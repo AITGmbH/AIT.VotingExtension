@@ -1,4 +1,4 @@
-import { BaseDataService } from "./baseDataService";
+import { BaseDataService } from "../services/baseDataService";
 import { Vote } from "../entities/vote";
 import { TinyRequirement } from "../entities/tinyRequirement";
 import { LogExtension } from "../shared/logExtension";
@@ -69,12 +69,12 @@ export class VotingPageService extends BaseDataService {
         LogExtension.log("finish area");
     }
 
-    public async loadRequirementsAsync() {
+    public async loadRequirementsAsync(level: string) {
         this.requirements = new Array<TinyRequirement>();
 
         const witClient = service.getCollectionClient(wit.WorkItemTrackingHttpClient);
         const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
-            + " AND [System.WorkItemType] = '" + this.actualVoting.level + "' " + this.areas;
+            + " AND [System.WorkItemType] = '" + level + "' " + this.areas;
         const wiqlJson = {
             query: wiql,
         };
@@ -138,7 +138,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async saveVoteAsync(vote: Vote) {
+    public async saveVoteAsync(vote: Vote, numberOfVotes: number) {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         const voting = doc.voting;
@@ -150,7 +150,7 @@ export class VotingPageService extends BaseDataService {
                 && v.votingId === vote.votingId
                 && v.workItemId === vote.workItemId);
 
-            if ((this.actualVoting.numberOfVotes - this.numberOfMyVotes()) < 1) {
+            if ((numberOfVotes - this.numberOfMyVotes()) < 1) {
                 bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
                 return;
             } else {
@@ -259,18 +259,18 @@ export class VotingPageService extends BaseDataService {
         }
 
         if (success) {
-            bsNotify("success", "Your Backlog has been successfully updated.");
+            bsNotify("success", "Your backlog has been successfully updated.");
         } else {
             bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
         }
     }
 
-    public async applyToBacklogAsync() {
+    public async applyToBacklogAsync(level: string) {
         try {
             await this.loadVotingAsync();
             await this.loadVotesAsync();
             await this.getAreasAsync();
-            await this.loadRequirementsAsync();
+            await this.loadRequirementsAsync(level);
 
             this.calculating();
 
@@ -308,7 +308,7 @@ export class VotingPageService extends BaseDataService {
             const promises = [];
             for (const doc of docs) {
                 doc.vote = doc.vote.filter((vote) => vote.userId !== userId);
-                 promises.push(this.votingDataService.updateDocumentAsync(doc));
+                promises.push(this.votingDataService.updateDocumentAsync(doc));
             }
 
             await Promise.all(promises);
