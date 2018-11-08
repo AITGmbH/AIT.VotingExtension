@@ -133,9 +133,9 @@ export class BaseDataService {
         var doc = await this.votingDataService.getDocumentAsync(this.documentId);
         LogExtension.log(doc);
 
-        this.excludes = doc == null || doc.excludes == null ? [] : doc.excludes;
+        this.excludes = doc.excludes || [];
 
-        if (doc == null || doc.voting == null) {
+        if (doc.voting == null) {
             return new Voting();
         } else {
             return doc.voting;

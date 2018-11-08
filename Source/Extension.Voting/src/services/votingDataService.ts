@@ -24,7 +24,7 @@ export class VotingDataService {
         try {
             var doc = await service.getDocument(this.webContext.collection.name, id) as VotingDocument;
             if (doc == null) {
-                return null;
+                return Promise.resolve(this.emptyDoc());
             }
 
             // map old string properties to new typed properties for backwards compatability
@@ -45,7 +45,7 @@ export class VotingDataService {
             return doc;
         } catch (err) {
             LogExtension.log("votingDataService.getDocument: Could not get document", err);
-            return null;
+            return Promise.resolve(this.emptyDoc());
         }
     }
 
@@ -55,12 +55,16 @@ export class VotingDataService {
             return await service.setDocument(this.webContext.collection.name, doc);
         } catch (err) { 
             LogExtension.log("votingDataService.updateDocument: Could not update document", err);
-            return null;
+            return doc;
         }
     }
 
     private async getVssServiceAsync(): Promise<IExtensionDataService> {
         return await VSS.getService(VSS.ServiceIds.ExtensionData) as IExtensionDataService;
+    }
+
+    private emptyDoc(): VotingDocument {
+        return <VotingDocument>{};
     }
 }
 

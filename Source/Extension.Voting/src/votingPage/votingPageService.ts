@@ -174,7 +174,7 @@ export class VotingPageService extends BaseDataService {
 
     public async deleteVoteAsync(id: number, userId: string) {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        if (doc == null) {
+        if (doc.voting == null) {
             bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
             return;
         }
