@@ -29,14 +29,13 @@ export class VotingDataService {
 
             // map old string properties to new typed properties for backwards compatability
             let voting = doc.voting;
-            if (doc.voting instanceof Array) {
+            if (doc.voting != null && doc.voting instanceof Array) {
                 voting = doc.voting[0];
                 for (var i = 1; i < doc.voting.length; i++) {
                     if (voting.lastModified < doc.voting[i].lastModified) {
                         voting = doc.voting[i];
                     }
-                }
-                
+                }                
             }
 
             voting.isVotingEnabled = voting.hasOwnProperty('votingEnabled') ? (<any>voting).votingEnabled === "true" : voting.isVotingEnabled;
@@ -60,7 +59,7 @@ export class VotingDataService {
     }
 
     private async getVssServiceAsync(): Promise<IExtensionDataService> {
-        return await VSS.getService(VSS.ServiceIds.ExtensionData) as IExtensionDataService;
+        return await VSS.getService<IExtensionDataService>(VSS.ServiceIds.ExtensionData);
     }
 
     private emptyDoc(): VotingDocument {

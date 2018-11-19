@@ -11,29 +11,35 @@ Click the picture below to see a demo video.
 
 ## Quick Steps
 1. Create a new voting 
-2. Specify the title and the description why the actual voting is necessary (Optional)
+2. Specify the title and the description of the voting
 3. Decide whether multiple voting per item is allowed
-4. Decides which Work Item Type should be displayed
-5. With click on save the voting got started
-6. Each team member votes for the items it want to see on the top of the team backlog
-7. Appliy the (interim) results to backlog 
-
-## References
-
-The Voting Extension is not a self-hosted extension but its resources are hosted in Azure. That implies that the [VSIX-package](https://docs.microsoft.com/en-us/visualstudio/extensibility/anatomy-of-a-vsix-package) does not include the necessary code files to run the extension but the extension manifest references an azure-hosted website provided by AIT. Thus in order to test your own adaptions you have to set up the appropriate Azure resources in your account and adapt the reference in the extension manifest. As an alternative way you can change the extension to be self-hosted.
-
-Please note that the build and release infrastructure for the repo is hosted by AIT.
+4. Decides which work item type should be displayed
+5. Click on save to start the voting
+6. Each team member votes for the items it want to see on the top of the backlog
+7. Apply the (interim) results to the backlog 
 
 ## How to build
+Run the following commands from within the Source\Extension.Voting folder.
 
 ```shell
-
-# Restore node-modules and create new extension version (run the following command from within the folder ~\Source\Extension.Voting)
+# Restore node-modules
 npm install
+
+# Set current publisher with whom you want to publish the debug extension
+SET tfx_publisher my_publisher_name
+
+# Create new extension version
 npm run publish-debug-package
 
 # Start debugging locally
 npm run debug
+```
+
+## How to test
+Run the following commands from within the Source\Extension.Voting folder.
+
+```shell
+npm run test
 ```
 
 Install the debug version of the extension to your personal Azure DevOps account and start debugging.
