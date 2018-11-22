@@ -22,7 +22,8 @@ export class BaseDataService {
     }
 
     constructor() {
-        const teamId = getUrlParameterByName("teamId", document.referrer) || window.localStorage.getItem("VotingExtension.SelectedTeamId");
+        const teamId = getUrlParameterByName("teamId", document.referrer)
+            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
@@ -66,7 +67,7 @@ export class BaseDataService {
             navigationService.updateHistoryEntry(null, { teamId: team.id });
         });
 
-        window.localStorage.setItem("VotingExtension.SelectedTeamId", team.id);
+        window.localStorage.setItem("VotingExtension.SelectedTeamId-" + this.context.project.id, team.id);
     }
 
     public getTemplate(): string {
