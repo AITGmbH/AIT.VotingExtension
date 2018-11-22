@@ -28,8 +28,15 @@ Please note that the build and release infrastructure for the repo is hosted by 
 
 ```shell
 
-# Restore node-modules and create new extension version (run the following command from within the folder ~\Source\Extension.Voting)
+# Restore node-modules
 npm install
+
+# Set tfx_publisher to your publisher name as environment variable 
+$env:tfx_publisher = "YourPublisherName"
+ 
+# Create new extension version 
+#   - run the following command from within the folder ~\Source\Extension.Voting 
+#   - enter your Personal Access Token when requested
 npm run publish-debug-package
 
 # Start debugging locally
@@ -37,6 +44,8 @@ npm run debug
 ```
 
 Install the debug version of the extension to your personal Azure DevOps account and start debugging.
+
+For information on how to create a publisher and to acquire a personal access token please refer to [Microsoft Docs: Publish from the command line](https://docs.microsoft.com/en-us/azure/devops/extend/publish/command-line?view=vsts).
 
 ## Additional links
 - [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production)
