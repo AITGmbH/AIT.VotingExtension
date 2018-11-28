@@ -2,10 +2,12 @@
     color: #000;
     font-family: Segoe UI Light,Segoe UI,Tahoma,Arial,Verdana;
     font-size: 12px;
+    background-color: rgba(var(--palette-neutral-2, 248, 248, 248), 1);
 }
 
 .vso-container {
     margin-left: 30px !important;
+    background-color: rgba(var(--palette-neutral-0, 255, 255, 255), 1);
 }
 
 .menueItemRight {
@@ -52,6 +54,7 @@
     font-size: 18px;
     padding-left: 10px;
     float: left;
+    color: rgba(var(--palette-neutral-100, 0, 0, 0), 1);
 }
 
 .bodytitle {
@@ -176,7 +179,7 @@ span.required {
 /* END: bootstrap notify */
 
 .voting-info-bar {
-    background-color: #e6e6e6;
+    background-color: rgba(var(--mainMenuBackgroundColor, #e6e6e6));
     margin: 0 -5px 0 -5px;
     padding-top: 5px;
 }
