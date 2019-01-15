@@ -485,7 +485,7 @@ export class VotingPageController extends Vue {
 
                 $(cellTitle).text('');
                 $(cellTitle).append(`<div class="work-item-color ${cssClass}-color"></div>`);
-                $(cellTitle).append(`<span>${title}</span>`);
+                $(cellTitle).append(`<span> ${title}</span>`);
                 $(cellAssignedTo).text(assignedTo);
 
                 var voteUpButton = $(cellAddButton).find('span > span.icon');
