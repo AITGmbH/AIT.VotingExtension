@@ -46,8 +46,7 @@ export class AdminPageService extends BaseDataService {
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
         doc.voting = <Voting>Object.assign({}, voting);         
 
-        if (doc.voting.isMultipleVotingEnabled !== voting.isMultipleVotingEnabled
-            || doc.voting.level !== voting.level
+        if (doc.voting.level !== voting.level
             || doc.voting.numberOfVotes !== voting.numberOfVotes) {
             doc.vote = [];
         }
