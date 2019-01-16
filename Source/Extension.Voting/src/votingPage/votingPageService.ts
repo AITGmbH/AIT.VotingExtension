@@ -141,11 +141,22 @@ export class VotingPageService extends BaseDataService {
     public async saveVoteAsync(vote: Vote, numberOfVotes: number) {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
+        const now = Date.now();
         const voting = doc.voting;
         const isEnabled = voting.isVotingEnabled;
         const isPaused = voting.isVotingPaused;
+        const isProspective = voting.useStartTime && now < voting.start;
+        const isOverdue = voting.useEndTime && now > voting.end;
 
-        if (isEnabled && !isPaused) {
+        if (!isEnabled) {
+            bsNotify("warning", "This voting session has been stopped. \nPlease refresh your browser window to get the actual content.");
+        } else if (isPaused) {
+            bsNotify("warning", "This voting session has been paused. \nPlease refresh your browser window to get the actual content.");
+        } else if (isProspective) {
+            bsNotify("warning", "This voting session has not yet started. \nPlease refresh your browser window to get the actual content.");
+        } else if (isOverdue) {
+            bsNotify("warning", "This voting session has expired. \nPlease refresh your browser window to get the actual content.");
+        } else {
             let multipleVotes = doc.vote.some(v => v.userId === vote.userId
                 && v.votingId === vote.votingId
                 && v.workItemId === vote.workItemId);
@@ -165,10 +176,6 @@ export class VotingPageService extends BaseDataService {
                     bsNotify("success", "Your vote has been saved.");
                 }
             }
-        } else if (!isEnabled) {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
-        } else if (isPaused) {
-            bsNotify("warning", "This voting has been paused. \nPlease refresh your browser window to get the actual content.");
         }
     }
 

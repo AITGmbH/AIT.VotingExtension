@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Voting</title>
     <script src="vss.js"></script>
+
     <% htmlWebpackPlugin.files.css.forEach(function (src) { %>
     <link rel="stylesheet" href="<%= src.replace('dist/', '') %>">
     <% }) %>
@@ -37,12 +38,12 @@
 
                 <div class="form-group">
                     <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
-                    <input type="text" class="form-control" v-model="actualVoting.title">
+                    <input type="text" class="form-control" v-model="actualVoting.title"/>
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    <input type="text" class="form-control" name="description" v-model="actualVoting.description">
+                    <input type="text" class="form-control" name="description" v-model="actualVoting.description"/>
                 </div>
 
                 <div class="form-group">
@@ -52,14 +53,55 @@
                     </select>
                 </div>
 
-                <div class="checkbox">
-                    <label><input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
-                        Multiple votes per item</span></label>
+                <hr />
+
+                <div class="row">
+                    <label class="col-sm-12">Voting session:</label>
+                    <div class="form-group col-sm-6">
+                        <label>
+                            <input type="checkbox" name="useStartTime" v-model="actualVoting.useStartTime"/>
+                            Start
+                        </label>
+                        <div class="row" v-if="actualVoting.useStartTime">
+                            <div class="col-xs-6">
+                                <input type="date" class="form-control" name="startDate" v-model="startDate" @change="validatePeriod"/>
+                            </div>
+                            <div class="col-xs-4">
+                                <input type="time" class="form-control" name="startTime" v-model="startTime" @change="validatePeriod"/>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="form-group col-sm-6">
+                        <label>
+                            <input type="checkbox" name="useEndTime" v-model="actualVoting.useEndTime"/>
+                            End
+                        </label>
+                        <div class="row" v-if="actualVoting.useEndTime">
+                            <div class="col-xs-6">
+                                <input type="date" class="form-control" name="endDate" v-model="endDate" @change="validatePeriod"/>
+                            </div>
+                            <div class="col-xs-4">
+                                <input type="time" class="form-control" name="endTime" v-model="endTime" @change="validatePeriod"/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group" v-if="actualVoting.isMultipleVotingEnabled">
-                    <label>Votes per item</label>
-                    <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes">
+                <hr />
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged"/>
+                                <span>Multiple votes per item</span></label>
+                        </div>
+        
+                        <div class="form-group" v-if="actualVoting.isMultipleVotingEnabled">
+                            <label>Votes per item</label>
+                            <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes"/>
+                        </div>
+                    </div>
                 </div>
             </div>
 

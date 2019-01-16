@@ -1,10 +1,8 @@
 ﻿import { Voting } from "../entities/voting";
-import { VotingStatus } from "../entities/votingStatus";
 import { AdminPageService } from "./adminPageService";
 import { LogExtension } from "../shared/logExtension";
 import { bsNotify, escapeText } from "../shared/common";
 import * as controls from "VSS/Controls";
-import * as combos from "VSS/Controls/Combos";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as menus from "VSS/Controls/Menus";
 import * as navigation from "VSS/Controls/Navigation";
@@ -22,6 +20,10 @@ export class AdminPageController extends Vue {
     public levels: string[] = [];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
+    public startDate: string = null;
+    public startTime: string = "00:00";
+    public endDate: string = null;
+    public endTime: string = "00:00";
 
     public created() {
         document.getElementById("adminPage").classList.remove("hide");
@@ -63,6 +65,27 @@ export class AdminPageController extends Vue {
         if (this.actualVoting.isMultipleVotingEnabled && this.actualVoting.numberOfVotes === 1) {
             this.actualVoting.numberOfVotes = 3;
         }
+    }
+
+    public validatePeriod() {
+        let now = Date.now();
+        let startStr = new Date(this.actualVoting.start ? this.actualVoting.start : now).toISOString();
+        let startDate = startStr.substr(0, 10);
+        let startTime = startStr.substr(11, 5);
+        
+        let endStr = new Date(this.actualVoting.end ? this.actualVoting.end : now).toISOString();
+        let endDate = endStr.substr(0, 10);
+        let endTime = endStr.substr(11, 5);
+
+        this.startTime = this.startTime ? this.startTime : startTime;
+        this.startDate = this.startDate ? this.startDate : startDate;
+        this.endTime = this.endTime ? this.endTime : endTime;
+        this.endDate = this.endDate ? this.endDate : endDate;
+
+        this.actualVoting.start = new Date(`${this.startDate} ${this.startTime}`).getTime();
+        this.actualVoting.end = new Date(`${this.endDate} ${this.endTime}`).getTime();
+
+        //console.log(`StartVote: ${new Date(this.actualVoting.start)} EndVote: ${new Date(this.actualVoting.end)}`);
     }
 
     private async createNewVotingAsync() {
@@ -107,6 +130,7 @@ export class AdminPageController extends Vue {
         try {
             this.actualVoting = await this.adminPageService.loadVotingAsync();
             this.buildAdminpage();
+            this.validatePeriod();
         } finally {
             this.waitControl.endWait();
         }

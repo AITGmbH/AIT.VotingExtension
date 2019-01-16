@@ -18,6 +18,8 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
 
+const timezoneOffset = new Date(Date.now()).getTimezoneOffset() * 60000;
+
 @Component
 export class VotingPageController extends Vue {
     private grid: grids.Grid;
@@ -138,6 +140,17 @@ export class VotingPageController extends Vue {
         }
     }
 
+    public isVisible(): boolean {
+        return this.status === VotingStatus.ActiveVoting
+            || this.status === VotingStatus.PausedVoting
+            || this.status === VotingStatus.ProspectiveVoting
+            || this.status === VotingStatus.OverdueVoting;
+    }
+
+    public isEditable(): boolean {
+        return this.status === VotingStatus.ActiveVoting;
+    }
+
     private async refreshAsync() {
         this.waitControl.startWait();
 
@@ -146,10 +159,10 @@ export class VotingPageController extends Vue {
             this.actualVoting = await this.votingService.loadVotingAsync();
             this.setStatus();
 
-            if (this.status === VotingStatus.ActiveVoting || this.status === VotingStatus.PausedVoting) {
+            if (this.isVisible()) {
                 var columns = this.grid.getColumns();
-                columns[0].hidden = this.status === VotingStatus.PausedVoting;
-                columns[1].hidden = this.status === VotingStatus.PausedVoting;
+                columns[0].hidden = !this.isEditable();
+                columns[1].hidden = !this.isEditable();
             }
 
             LogExtension.log("getAreas");
@@ -542,8 +555,17 @@ export class VotingPageController extends Vue {
             this.status = VotingStatus.NoVoting;
         } else if (this.actualVoting.isVotingPaused) {
             this.status = VotingStatus.PausedVoting;
+        } else if (this.actualVoting.useStartTime && Date.now() < this.actualVoting.start) {
+            this.status = VotingStatus.ProspectiveVoting;
+        } else if (this.actualVoting.useEndTime && Date.now() > this.actualVoting.end) {
+            this.status = VotingStatus.OverdueVoting;
         } else {
             this.status = VotingStatus.ActiveVoting;
         }
+    }
+
+    public getTimeStr(timestamp: number): string{
+        let str = new Date(timestamp - timezoneOffset).toISOString();
+        return `${str.substr(0,10)} ${str.substr(11,5)}`;
     }
 }

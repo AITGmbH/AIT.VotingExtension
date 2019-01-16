@@ -23,12 +23,12 @@
                 <div id="progressBar" class="hub-progress pageProgressIndicator" style="display: none;"></div>
                 <div class="row">
                     <div class="col-sm-12">
-                        <div id="votingMenue-container" class="toolbar" v-bind:class="{ hide: status !== 1 && status !== 2 }"></div>
+                        <div id="votingMenue-container" class="toolbar" v-bind:class="{ hide: !isVisible() }"></div>
                     </div>
                 </div>
             </div>
 
-            <div id="contentVotingActive" class="row voting-info-bar" v-bind:class="{ hide: status !== 1 && status !== 2 }">
+            <div id="contentVotingActive" class="row voting-info-bar" v-bind:class="{ hide: !isVisible() }">
                 <div id="titleDiv" class="col-sm-6 titleBar">
                     <p v-if="actualVoting != null">{{ actualVoting.title }}</p>
                 </div>
@@ -41,12 +41,20 @@
                 <div id="informationDiv" class="col-sm-12">
                     <p v-if="actualVoting != null">{{ actualVoting.description }}</p>
                 </div>
+                <div id="informationDiv" class="col-sm-6">
+                    <p v-if="status === 5">Starts: {{ getTimeStr(actualVoting.start) }}</p>
+                    <p v-else-if="actualVoting.useStartTime">Has started: {{ getTimeStr(actualVoting.start)}}</p>
+                </div>
+                <div id="informationDiv" class="col-sm-6">
+                    <p v-if="status === 6">Overdue since: {{ getTimeStr(actualVoting.end) }}</p>
+                    <p v-else-if="actualVoting.useEndTime">Ends: {{ getTimeStr(actualVoting.end) }}</p>
+                </div>
             </div>
 
             <div id="contentVotingInactive" class="row" v-bind:class="{ hide: status !== 0 }">
                 <div class="col-sm-12" id="errorMessage">
                     <p id="votingdisabledmessage">
-                        Voting is disabled. Create a new voting at the
+                        Voting session is disabled. Create a new voting at the
                         <a id="linkToAdminpage" :href="adminpageUri" target="_blank">admin page</a>
                     </p>
                 </div>
@@ -55,7 +63,7 @@
             <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 2 }">
                 <div class="col-sm-12" id="errorMessage">
                     <p id="votingdisabledmessage">
-                        Voting is paused. You can only view the voting result.
+                        Voting session is paused. You can only view the voting result.
                     </p>
                 </div>
             </div>
@@ -63,15 +71,31 @@
             <div id="notAllowedToVote" class="row" v-bind:class="{ hide: status !== 4 }">
                 <div class="col-sm-12" id="errorMessage">
                     <p id="userInformationNotConfirmedMessage">
-                        Voting is disabled since the terms of use are not confirmed. To be able to vote refresh the
+                        Voting session is disabled since the terms of use are not confirmed. To be able to vote refresh the
                         page and confirm the terms of use in
                         the upcoming dialog.
                     </p>
                 </div>
             </div>
 
+            <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 5 }">
+                <div class="col-sm-12" id="errorMessage">
+                    <p id="votingdisabledmessage">
+                        Voting session has not yet started, but you can take a look at the vote list.
+                    </p>
+                </div>
+            </div>
+
+            <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 6 }">
+                <div class="col-sm-12" id="errorMessage">
+                    <p id="votingdisabledmessage">
+                        Voting session has expired. You can only view the voting result.
+                    </p>
+                </div>
+            </div>
+
             <div class="row">
-                <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: status !== 1 && status !== 2 }">
+                <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: !isVisible() }">
                 </div>
 
                 <div id="nothingToVote" class="col-sm-12" v-bind:class="{ hide: status !== 3 }">
