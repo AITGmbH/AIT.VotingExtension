@@ -1,10 +1,8 @@
 ﻿import { Voting } from "../entities/voting";
-import { VotingStatus } from "../entities/votingStatus";
 import { AdminPageService } from "./adminPageService";
 import { LogExtension } from "../shared/logExtension";
 import { bsNotify, escapeText } from "../shared/common";
 import * as controls from "VSS/Controls";
-import * as combos from "VSS/Controls/Combos";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as menus from "VSS/Controls/Menus";
 import * as navigation from "VSS/Controls/Navigation";
@@ -106,6 +104,7 @@ export class AdminPageController extends Vue {
 
         try {
             this.actualVoting = await this.adminPageService.loadVotingAsync();
+            console.log(this.actualVoting.hiddenColumns);
             this.buildAdminpage();
         } finally {
             this.waitControl.endWait();

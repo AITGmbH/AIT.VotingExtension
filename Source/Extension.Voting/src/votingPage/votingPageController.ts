@@ -126,24 +126,27 @@ export class VotingPageController extends Vue {
 
         try {
             await this.votingService.loadAsync();
+            this.actualVoting = await this.votingService.loadVotingAsync();
 
             this.createVotingMenue();
             this.createVotingTable();
             this.generateTeamPivot();
             this.updateTeam(this.votingService.team);
 
-            await this.refreshAsync();
+            await this.refreshAsync(true);
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    private async refreshAsync() {
+    private async refreshAsync(lazy: boolean = false) {
         this.waitControl.startWait();
 
         try {
             LogExtension.log("loadVoting");
-            this.actualVoting = await this.votingService.loadVotingAsync();
+            if (!lazy) {
+                this.actualVoting = await this.votingService.loadVotingAsync();
+            }
             this.setStatus();
 
             if (this.status === VotingStatus.ActiveVoting || this.status === VotingStatus.PausedVoting) {
@@ -407,6 +410,10 @@ export class VotingPageController extends Vue {
 
     private createVotingTable() {
         const that = this;
+        const ignore = this.actualVoting.hiddenColumns != null;
+        const check = (key: string) => {
+            return ignore && this.actualVoting.hiddenColumns[key] === false;
+        }
 
         this.grid = controls.create(grids.Grid, $("#grid-container"), {
             height: "400px",
@@ -441,13 +448,13 @@ export class VotingPageController extends Vue {
                         return element;
                     }
                 },
-                { tooltip: "Work Item ID", text: "ID", index: "id", width: 50, fieldId: "itemId" },
-                { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
-                { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
-                { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
-                { tooltip: "All votes per item", text: "Votes", index: "allVotes", width: 60 },
-                { tooltip: "My Votes per item", text: "My Votes", index: "myVotes", width: 60 },
+                { tooltip: "Work Item ID", text: "ID", index: "id", width: 50, fieldId: "itemId", hidden: check('id') },
+                { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100, hidden: check('workItemType') },
+                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650, hidden: check('title') },
+                { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125, hidden: check('assignedTo') },
+                { tooltip: "Work Item State", text: "State", index: "state", width: 100, hidden: check('state') },
+                { tooltip: "All votes per item", text: "Votes", index: "allVotes", width: 60, hidden: check('allVotes') },
+                { tooltip: "My Votes per item", text: "My Votes", index: "myVotes", width: 60, hidden: check('myVotes') },
                 { text: "Order", index: "order", width: 50, hidden: true }
             ],
             openRowDetail: async (index) => {

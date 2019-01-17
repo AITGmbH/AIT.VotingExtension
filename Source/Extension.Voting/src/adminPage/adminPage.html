@@ -53,14 +53,52 @@
                 </div>
 
                 <div class="checkbox">
-                    <label><input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
-                        Multiple votes per item</span></label>
+                    <label>
+                        <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
+                        Multiple votes per item
+                    </label>
                 </div>
 
                 <div class="form-group" v-if="actualVoting.isMultipleVotingEnabled">
                     <label>Votes per item</label>
                     <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes">
                 </div>
+
+                <hr/>
+
+                <label>Visible columns</label>
+
+                <div class="form-group">
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideID" checked="true" v-model="actualVoting.hiddenColumns['id']"/>
+                        ID
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideType" checked="true" v-model="actualVoting.hiddenColumns['workItemType']"/>
+                        Type
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideTitle" checked="true" v-model="actualVoting.hiddenColumns['title']"/>
+                        Title
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideAssigned" checked="true" v-model="actualVoting.hiddenColumns['assignedTo']"/>
+                        AssignedTo
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideState" checked="true" v-model="actualVoting.hiddenColumns['state']"/>
+                        State
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideAllVotes" checked="true" v-model="actualVoting.hiddenColumns['allVotes']"/>
+                        Totel Votes
+                    </div>
+                    <div class="panel col-md-2 col-sm-3 col-xs-4">
+                        <input type="checkbox" name="hideMyVotes" checked="true" v-model="actualVoting.hiddenColumns['myVotes']"/>
+                        Personal Votes
+                    </div>
+                </div>
+
             </div>
 
             <div class="row" style="padding-top: 10px;">

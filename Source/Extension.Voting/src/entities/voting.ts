@@ -1,4 +1,5 @@
-﻿export class Voting {
+﻿
+export class Voting {
     public description = "";
     public isVotingEnabled = false;
     public numberOfVotes: number = 3; 
@@ -10,4 +11,5 @@
     public created: number;
     public lastModified: number;
     public title = "";
+    public hiddenColumns = {};
 }
