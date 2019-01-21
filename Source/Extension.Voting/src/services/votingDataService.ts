@@ -2,9 +2,10 @@
 import { TinyRequirement } from "../entities/tinyRequirement";
 import { LogExtension } from "../shared/logExtension";
 import WitRestClient = require("TFS/WorkItemTracking/RestClient");
+import * as service from "VSS/Service";
 
 export class VotingDataService {
-     private webContext: WebContext;
+    private webContext: WebContext;
     public assignedToUnassignedText: string = "";
 
     public constructor() {
@@ -25,7 +26,7 @@ export class VotingDataService {
         const service = await this.getVssServiceAsync();
 
         try {
-            var doc = await service.getDocument(this.webContext.collection.name, id) as VotingDocument;
+            let doc = await service.getDocument(this.webContext.collection.name, id) as VotingDocument;
             if (doc == null) {
                 return Promise.resolve(this.emptyDoc());
             }
@@ -34,7 +35,7 @@ export class VotingDataService {
             let voting = doc.voting;
             if (doc.voting != null && doc.voting instanceof Array) {
                 voting = doc.voting[0];
-                for (var i = 1; i < doc.voting.length; i++) {
+                for (let i = 1; i < doc.voting.length; i++) {
                     if (voting.lastModified < doc.voting[i].lastModified) {
                         voting = doc.voting[i];
                     }
@@ -97,26 +98,25 @@ export class VotingDataService {
         return retval;
     }
 
-    public async getWorkItems(workItemIdArray: number[], asyncCallback: (obj: TinyRequirement[]) => void) : Promise<TinyRequirement[]> {
-        var client = WitRestClient.getClient();
+    public async getWorkItems(workItemIdArray: number[], asyncCallback: (obj: TinyRequirement[]) => void = null) : Promise<TinyRequirement[]> {
+        let client = WitRestClient.getClient();
+        let items = await client.getWorkItems(workItemIdArray);
+        let workitems = new Array<TinyRequirement>();
 
-        if(workItemIdArray.length ==0)
-            return null;
-            
-        var items = await client.getWorkItems(workItemIdArray,null,null,null,null,null);
-      
-         let workitems = new Array<TinyRequirement>();
         items.forEach(item => {
             let tinyItem = this.createTinyRequirementFromAnnonymous(item);
             workitems.push(tinyItem);
         });
-        console.debug(workitems);
+
+        if (asyncCallback) {
+            asyncCallback(workitems);
+        }
+
         return workitems;
     }
 
     private createTinyRequirementFromAnnonymous(object): TinyRequirement {
-
-        var tempRequirement = new TinyRequirement();
+        let tempRequirement = new TinyRequirement();
         tempRequirement.id = object.id;
         if (object.fields['Microsoft.VSTS.Common.StackRank'] != undefined) {
             tempRequirement.order = object.fields['Microsoft.VSTS.Common.StackRank'];
@@ -136,13 +136,13 @@ export class VotingDataService {
         tempRequirement.description = object.fields['System.Description'];
 
         return tempRequirement;
-    };
+    }
 
     private getNameOfWiResponsiveness(req: any): string {
         const assignedTo = req.fields["System.AssignedTo"];
-        var displayName = (assignedTo == undefined) ? this.assignedToUnassignedText : assignedTo.displayName;
+        let displayName = (assignedTo == undefined) ? this.assignedToUnassignedText : assignedTo.displayName;
         return displayName;
-    };
+    }
 }
 
 

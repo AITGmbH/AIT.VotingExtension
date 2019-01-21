@@ -4,23 +4,16 @@ import { TinyRequirement } from "../entities/tinyRequirement";
 import { LogExtension } from "../shared/logExtension";
 import { VotingItem } from "../entities/votingItem";
 import { bsNotify } from "../shared/common";
-import { getClient } from "TFS/Work/RestClient";
-import { TeamContext } from "TFS/Core/Contracts";
-import * as service from "VSS/Service";
 import * as wit from "TFS/WorkItemTracking/RestClient";
 import * as _ from "lodash";
 
 export class VotingPageService extends BaseDataService {
-    private areas: string;
-    private requirements: TinyRequirement[];
-
-    private static assignedToUnassignedText: string = "";
-
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
     public numberOfMyVotes: () => number;
     public calculating: () => void;
     public getActualVotingItems: () => VotingItem[];
+    private requirements: TinyRequirement[];
 
     constructor() {
         super();
@@ -39,103 +32,10 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async getAreasAsync() {
-        const client = getClient();
-        let areas = "AND ( ";
-
-        const teamcontext: TeamContext = {
-            project: null,
-            projectId: this.context.project.id,
-            team: null,
-            teamId: this.team.id,
-        };
-
-        const teamfieldvalues = await client.getTeamFieldValues(teamcontext);
-        LogExtension.log(teamfieldvalues);
-
-        for (let i = 0; i < teamfieldvalues.values.length; i++) {
-            const value = teamfieldvalues.values[i];
-            areas += `[System.AreaPath] ${value.includeChildren ? "UNDER" : "="} '${value.value}'`;
-
-            if (i < (teamfieldvalues.values.length - 1)) {
-                areas += " OR ";
-            } else {
-                areas += " )";
-            }
-        }
-
-        LogExtension.log(areas);
-        this.areas = areas;
-        LogExtension.log("finish area");
-    }
-
-    public async loadRequirementsAsync(level: string) {
-        this.requirements = new Array<TinyRequirement>();
-
-        const witClient = service.getCollectionClient(wit.WorkItemTrackingHttpClient);
-        const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
-            + " AND [System.WorkItemType] = '" + level + "' " + this.areas;
-        const wiqlJson = {
-            query: wiql,
-        };
-
-        LogExtension.log("WIQL-Abfrage: " + wiql);
-
-        const idJson = await witClient.queryByWiql(wiqlJson, this.context.project.id);
-        LogExtension.log(idJson);
-        const headArray = new Array();
-        let tempArray = new Array();
-        LogExtension.log(idJson.workItems);
-        for (let i = 0; i < idJson.workItems.length; i++) {
-            const item = idJson.workItems[i];
-
-            if ((i + 1) % 200 !== 0) {
-                tempArray.push(item.id);
-            } else {
-                headArray.push(tempArray);
-                tempArray = new Array<string>();
-                tempArray.push(item.id);
-            }
-        }
-
-        headArray.push(tempArray);
-
-        for (const array of headArray) {
-            try {
-                if (array == null || array.length == 0) {
-                    continue;
-                }
-
-                const result = await witClient.getWorkItems(array);
-                for (const req of result) {
-                    LogExtension.log(req);
-
-                    const tempRequirement = new TinyRequirement();
-                    tempRequirement.id = req.id;
-                    if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
-                    } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
-                    } else {
-                        tempRequirement.order = "0";
-                    }
-                    tempRequirement.title = req.fields["System.Title"];
-                    tempRequirement.workItemType = req.fields["System.WorkItemType"];
-                    tempRequirement.state = req.fields["System.State"];
-                    tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
-                    tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
-                    tempRequirement.iterationPath = req.fields["System.IterationPath"];
-                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
-                    tempRequirement.description = req.fields["System.Description"];
-
-                    this.requirements.push(tempRequirement);
-                }
-            } catch (err) {
-                LogExtension.log("Error at getWorkItems()");
-                LogExtension.log(err);
-                this.nothingToVote(false);
-            }
-        }
+    public async loadRequirementsAsync(level: string) : Promise<TinyRequirement[]>{
+        let areas = await this.loadAreasAsync();
+        this.requirements = await super.loadRequirementsAsync(level, areas);
+        return this.requirements;
     }
 
     public async saveVoteAsync(vote: Vote, numberOfVotes: number) {
@@ -269,7 +169,6 @@ export class VotingPageService extends BaseDataService {
         try {
             await this.loadVotingAsync();
             await this.loadVotesAsync();
-            await this.getAreasAsync();
             await this.loadRequirementsAsync(level);
 
             this.calculating();
@@ -317,11 +216,5 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
-    }
-
-    private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        const displayName = (assignedTo === undefined) ? VotingPageService.assignedToUnassignedText : assignedTo.displayName;
-        return displayName;
     }
 }

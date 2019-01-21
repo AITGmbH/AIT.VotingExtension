@@ -36,11 +36,8 @@ export class VotingPageController extends Vue {
     public actualVoting: Voting = new Voting();
     public status: VotingStatus = VotingStatus.NoVoting;
 
-    public created() {
-        document.getElementById("votingPage").classList.remove("hide");
-    }
-
     public mounted() {
+        this.$el.classList.remove("hide");
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });

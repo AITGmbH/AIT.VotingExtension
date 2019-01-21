@@ -1,13 +1,17 @@
 ﻿import { Voting } from "../entities/voting";
-import { VotingStatus } from "../entities/votingStatus";
+import { TinyRequirement } from "../entities/tinyRequirement";
 import { LogExtension } from "../shared/logExtension";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
+import { getClient as getWorkClient } from "TFS/Work/RestClient";
+import { TeamContext as TFSTeamContext } from "TFS/Core/Contracts";
 import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
 
 export class BaseDataService {
+    public assignedToUnassignedText: string = "";
+
     private _witFieldNames: string[] = [];
 
     protected votingDataService: VotingDataService;
@@ -17,18 +21,17 @@ export class BaseDataService {
     public excludes: string[] = [];
     public teams: any[] = [];
     
-    public get witFieldNames() {
-        return this._witFieldNames.filter(w => this.excludes.indexOf(w) < 0);
-    }
-
     constructor() {
         const teamId = getUrlParameterByName("teamId", document.referrer)
-            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
+        || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
-
         this.votingDataService = new VotingDataService();
+    }
+    
+    public get witFieldNames() {
+        return this._witFieldNames.filter(w => this.excludes.indexOf(w) < 0);
     }
 
     public get documentId() {
@@ -141,5 +144,109 @@ export class BaseDataService {
         } else {
             return doc.voting;
         }
+    }
+
+    public async loadAreasAsync() : Promise<string> {
+        const client = getWorkClient();
+        let areas = "AND ( ";
+
+        const teamcontext: TFSTeamContext = {
+            project: null,
+            projectId: this.context.project.id,
+            team: null,
+            teamId: this.team.id,
+        };
+
+        const teamfieldvalues = await client.getTeamFieldValues(teamcontext);
+        LogExtension.log(teamfieldvalues);
+
+        for (let i = 0; i < teamfieldvalues.values.length; i++) {
+            const value = teamfieldvalues.values[i];
+            areas += `[System.AreaPath] ${value.includeChildren ? "UNDER" : "="} '${value.value}'`;
+
+            if (i < (teamfieldvalues.values.length - 1)) {
+                areas += " OR ";
+            } else {
+                areas += " )";
+            }
+        }
+
+        LogExtension.log(areas);
+        LogExtension.log("finish area");
+        return areas;
+    }
+
+    public async loadRequirementsAsync(level: string, areas: string): Promise<TinyRequirement[]>{
+        let requirements = new Array<TinyRequirement>();
+        
+        const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
+            + " AND [System.WorkItemType] = '" + level + "' " + areas;
+        const wiqlJson = {
+            query: wiql,
+        };
+
+        LogExtension.log("WIQL-Abfrage: " + wiql);
+
+        const idJson = await getWitClient().queryByWiql(wiqlJson, this.context.project.id);
+        LogExtension.log(idJson);
+        const headArray = new Array();
+        let tempArray = new Array();
+        LogExtension.log(idJson.workItems);
+        for (let i = 0; i < idJson.workItems.length; i++) {
+            const item = idJson.workItems[i];
+
+            if ((i + 1) % 200 !== 0) {
+                tempArray.push(item.id);
+            } else {
+                headArray.push(tempArray);
+                tempArray = new Array<string>();
+                tempArray.push(item.id);
+            }
+        }
+
+        headArray.push(tempArray);
+
+        for (const array of headArray) {
+            try {
+                if (array == null || array.length == 0) {
+                    continue;
+                }
+
+                const result = await getWitClient().getWorkItems(array);
+                for (const req of result) {
+                    LogExtension.log(req);
+
+                    const tempRequirement = new TinyRequirement();
+                    tempRequirement.id = req.id;
+                    if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
+                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
+                    } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
+                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
+                    } else {
+                        tempRequirement.order = "0";
+                    }
+                    tempRequirement.title = req.fields["System.Title"];
+                    tempRequirement.workItemType = req.fields["System.WorkItemType"];
+                    tempRequirement.state = req.fields["System.State"];
+                    tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
+                    tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
+                    tempRequirement.iterationPath = req.fields["System.IterationPath"];
+                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
+                    tempRequirement.description = req.fields["System.Description"];
+
+                    requirements.push(tempRequirement);
+                }
+            } catch (err) {
+                LogExtension.log("Error at getWorkItems()");
+                LogExtension.log(err);
+            }
+        }
+        return requirements;
+    }
+
+    private getNameOfWiResponsiveness(req: any): string {
+        const assignedTo = req.fields["System.AssignedTo"];
+        let displayName = (assignedTo == undefined) ? this.assignedToUnassignedText : assignedTo.displayName;
+        return displayName;
     }
 }
