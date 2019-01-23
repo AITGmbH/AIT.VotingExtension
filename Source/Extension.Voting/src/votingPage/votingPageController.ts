@@ -125,24 +125,27 @@ export class VotingPageController extends Vue {
         try {
             await this.votingService.loadProjectAsync();
             await this.votingService.loadTeamsAsync();
+            <Voting>Object.assign(this.actualVoting, await this.votingService.loadVotingAsync()); //assign keeps bindings!!!
 
             this.createVotingMenue();
             this.createVotingTable();
             this.generateTeamPivot();
             this.updateTeam(this.votingService.team);
 
-            await this.refreshAsync();
+            await this.refreshAsync(true);
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    private async refreshAsync() {
+    private async refreshAsync(lazy?: boolean) {
         this.waitControl.startWait();
 
         try {
-            LogExtension.log("loadVoting");
-            <Voting>Object.assign(this.actualVoting, await this.votingService.loadVotingAsync()); //assign keeps bindings!!!
+            if (!lazy) {
+                LogExtension.log("reloadVoting");
+                <Voting>Object.assign(this.actualVoting, await this.votingService.loadVotingAsync()); //assign keeps bindings!!!
+            }
             this.setStatus();
 
             if (this.status === VotingStatus.ActiveVoting || this.status === VotingStatus.PausedVoting) {
@@ -202,7 +205,7 @@ export class VotingPageController extends Vue {
 
         this.actualVotingItems = new Array<VotingItem>();
 
-        for (const reqItem of this.votingService.getRequirements()) {
+        for (const reqItem of this.votingService.requirements) {
             var votingItemTemp: VotingItem = {
                 ...reqItem,
                 myVotes: 0,
@@ -342,26 +345,39 @@ export class VotingPageController extends Vue {
             showIcon: true,
             items: [
                 {
-                    id: "refresh", title: "Refresh",
-                    icon: "icon icon-refresh", disabled: false
+                    id: "refresh", 
+                    title: "Refresh",
+                    icon: "icon icon-refresh", 
+                    disabled: false
                 },
                 {
-                    id: "applyToBacklog", title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
-                    icon: "icon icon-tfs-query-edit", disabled: false
+                    separator: true,
+                    hidden: !this.isApplyable()
+                },
+                {
+                    id: "applyToBacklog", 
+                    title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
+                    icon: "icon icon-tfs-query-edit", 
+                    disabled: !this.isApplyable(), 
+                    hidden: !this.isApplyable()
                 },
                 {
                     separator: true
                 },
                 {
-                    id: "adminpageLink", title: "Visit settings page",
-                    icon: "icon icon-settings", disabled: false
+                    id: "adminpageLink", 
+                    title: "Visit settings page",
+                    icon: "icon icon-settings",
+                    disabled: false
                 },
                 {
                     separator: true
                 },
                 {
-                    id: "removeAllUserdata", title: "Delete all your votes",
-                    icon: "icon icon-delete", disabled: false
+                    id: "removeAllUserdata",
+                    title: "Delete all your votes",
+                    icon: "icon icon-delete",
+                    disabled: false
                 }
             ],
             executeAction: (args) => {
@@ -388,7 +404,7 @@ export class VotingPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.applyToBacklogAsync(this.actualVoting.level);
+            await this.votingService.applyToBacklogAsync();
         } finally {
             this.waitControl.endWait();
         }
@@ -545,5 +561,12 @@ export class VotingPageController extends Vue {
         } else {
             this.status = VotingStatus.ActiveVoting;
         }
+    }
+
+    /**
+     * Determines whether this voting is applyable to backlog.
+     */
+    public isApplyable() {
+        return this.actualVoting.type === VotingTypes.LEVEL;
     }
 }

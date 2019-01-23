@@ -11,10 +11,8 @@ import { VotingTypes } from "../entities/votingTypes";
 import * as _ from "lodash";
 
 export class VotingPageService extends BaseDataService {
-    private areas: string;
-    private requirements: TinyRequirement[];
-
-    private static assignedToUnassignedText: string = "";
+    private _areas: string;
+    private _requirements: TinyRequirement[];
 
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
@@ -26,8 +24,8 @@ export class VotingPageService extends BaseDataService {
         super();
     }
 
-    public getRequirements(): TinyRequirement[] {
-        return this.requirements;
+    public get requirements(): TinyRequirement[] {
+        return this._requirements;
     }
 
     public async loadVotesAsync(): Promise<void> {
@@ -65,12 +63,12 @@ export class VotingPageService extends BaseDataService {
         }
 
         LogExtension.log(areas);
-        this.areas = areas;
+        this._areas = areas;
         LogExtension.log("finish area");
     }
 
     public async loadWorkItemsAsync(id: string, type: string = VotingTypes.LEVEL): Promise<void> {
-        this.requirements = new Array<TinyRequirement>();
+        this._requirements = new Array<TinyRequirement>();
         const witClient = getWitClient();
 
         switch (type) {
@@ -79,7 +77,7 @@ export class VotingPageService extends BaseDataService {
                     + " WHERE [System.State] <> 'Closed'"
                     + " AND [System.State] <> 'Done'"
                     + " AND [System.State] <> 'Removed'"
-                    + " AND [System.WorkItemType] = '" + id + "' " + this.areas;
+                    + " AND [System.WorkItemType] = '" + id + "' " + this._areas;
                 break;
             case VotingTypes.QUERY:
                 let query = await this.getQueryById(id);
@@ -87,8 +85,6 @@ export class VotingPageService extends BaseDataService {
                 break;
             default: 
         }
-
-        console.log(wiql);
         
         const wiqlJson = {
             query: wiql,
@@ -140,7 +136,7 @@ export class VotingPageService extends BaseDataService {
                     tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
                     tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
                     tempRequirement.iterationPath = req.fields["System.IterationPath"];
-                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
+                    tempRequirement.assignedTo = req.fields["System.AssignedTo"] || "";
                     tempRequirement.description = req.fields["System.Description"];
 
                     this.requirements.push(tempRequirement);
@@ -280,12 +276,11 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async applyToBacklogAsync(level: string): Promise<void> {
+    public async applyToBacklogAsync(): Promise<void> {
         try {
             await this.loadVotingAsync();
             await this.loadVotesAsync();
             await this.getAreasAsync();
-            await this.loadWorkItemsAsync(level);
 
             this.calculating();
 
@@ -332,11 +327,5 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
-    }
-
-    private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        const displayName = (assignedTo === undefined) ? VotingPageService.assignedToUnassignedText : assignedTo.displayName;
-        return displayName;
     }
 }

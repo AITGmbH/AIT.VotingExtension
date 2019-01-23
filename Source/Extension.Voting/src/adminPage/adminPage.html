@@ -55,17 +55,24 @@
                         </select>
                     </div>
 
-                    <div class="form-group col-md-8" v-show="isLevel" >
-                        <label>Vote on level</label>
+                    <div class="form-group col-md-8" v-show="isBacklogBased">
+                        <label>Vote on Backlog</label>
                         <select class="form-control" name="level" v-model="actualVoting.level">
-                            <option v-for="level in levels">{{ level }}</option>
+                            <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
                         </select>
                     </div>
 
-                    <div class="form-group col-md-8" v-show="isQuery">
-                        <label>Vote on query</label>
+                    <div class="form-group col-md-8" v-show="isItemBased">
+                        <label>Vote on WorkItemType</label>
+                        <select class="form-control" name="item" v-model="actualVoting.item">
+                            <option v-for="item in items">{{ item }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-8" v-show="isQueryBased">
+                        <label>Vote on Query</label>
                         <select class="form-control" name="query" v-model="actualVoting.query">
-                            <option v-for="query in queries" v-bind:value="query.id">{{ query.path }}</option>
+                            <option v-for="query in queries" v-bind:value="query.id">{{ query.name }}</option>
                         </select>
                     </div>
                 </div>

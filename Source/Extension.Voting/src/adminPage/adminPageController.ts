@@ -18,12 +18,16 @@ export class AdminPageController extends Vue {
     
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
-    public types: string[] = [ VotingTypes.LEVEL, VotingTypes.QUERY ];
+    public types: string[] = [ VotingTypes.LEVEL, VotingTypes.ITEM, VotingTypes.QUERY ];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
     
     public get levels() {
+        return this.adminPageService.witLevelNames;
+    }
+
+    public get items() {
         return this.adminPageService.witTypeNames;
     }
 
@@ -48,25 +52,45 @@ export class AdminPageController extends Vue {
         }
     }
 
+    /**
+     * Helper function since direct binding runs into race-condition.
+     */
     public updateVotingType() {
         this.votingType = this.actualVoting.type;
     }
 
-    public get isLevel() {
+    public get isBacklogBased() {
         return this.votingType == VotingTypes.LEVEL;
     }
 
-    public get isQuery() {
+    public get isItemBased() {
+        return this.votingType == VotingTypes.ITEM;
+    }
+
+    public get isQueryBased() {
         return this.votingType == VotingTypes.QUERY;
     }
 
-    private async createNewVotingAsync() {
-        <Voting>Object.assign(this.actualVoting, new Voting()); //assign so we keep bindings!!!
+    /**
+     * Initialize and binds a vote setting to this controller.
+     * If origin is null or undefined, a new vote setting will be created.
+     * 
+     * @param origin Binds a loaded setting to this contoller.  
+     */
+    private initVoting(origin?: Voting) {
+        if (origin === null || origin == undefined) {
+            origin = new Voting();
+            origin.created = Math.round((new Date()).getTime() / 1000);
+        }
+        <Voting>Object.assign(this.actualVoting, origin); //assign so we keep bindings!!!
         this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
-        this.actualVoting.level = this.actualVoting.level || this.levels[0];
+        this.actualVoting.level = this.actualVoting.level || this.levels[0].id;
+        this.actualVoting.item = this.actualVoting.item || this.items[0];
         this.actualVoting.query = this.actualVoting.query || this.queries[0].id;
-        this.actualVoting.created = Math.round((new Date()).getTime() / 1000);
+    }
 
+    private createNewVoting() {
+        this.initVoting();
         this.showContent = true;
         this.createMenueBar(true);
     }
@@ -99,12 +123,10 @@ export class AdminPageController extends Vue {
 
         try {
             await this.adminPageService.loadWitTypeNamesAsync();
+            await this.adminPageService.loadWitLevelNamesAsync();
             await this.adminPageService.loadFlatQueryNamesAsync();
 
-            <Voting>Object.assign(this.actualVoting, await this.adminPageService.loadVotingAsync()); //assign so we keep bindings!!!
-            this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
-            this.actualVoting.level = this.actualVoting.level || this.levels[0];
-            this.actualVoting.query = this.actualVoting.query || this.queries[0].id;
+            this.initVoting(await this.adminPageService.loadVotingAsync());
             this.updateVotingType();
             this.buildAdminpage();
         } finally {
@@ -196,7 +218,7 @@ export class AdminPageController extends Vue {
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
-                this.createNewVotingAsync();
+                this.createNewVoting();
                 break;
             case "saveSettings":
                 this.saveSettingsAsync(true);

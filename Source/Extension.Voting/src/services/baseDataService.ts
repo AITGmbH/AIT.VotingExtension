@@ -2,6 +2,7 @@
 import { LogExtension } from "../shared/logExtension";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
+import { getClient as getWorkClient } from "TFS/Work/RestClient";
 import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
@@ -9,8 +10,9 @@ import { QueryExpand, QueryType, QueryHierarchyItem } from "TFS/WorkItemTracking
 
 export class BaseDataService {
     private _witTypeNames: string[] = [];
-    private _flatQueryNames: any[] = [];
-    private _teams: any[] = [];
+    private _witLevelNames: IdToName[] = [];
+    private _flatQueryNames: IdToName[] = [];
+    private _teams: TeamContext[] = [];
 
     protected votingDataService: VotingDataService;
     protected template: string;
@@ -18,9 +20,12 @@ export class BaseDataService {
     
     constructor() {
         const teamId = getUrlParameterByName("teamId", document.referrer)
-        || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
+            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
         if (teamId != null) {
-            this.team = { id: teamId, name: "" };
+            this.team = {
+                id: teamId,
+                name: ""
+            };
         }
         
         this.votingDataService = new VotingDataService();
@@ -28,6 +33,10 @@ export class BaseDataService {
     
     public get witTypeNames() {
         return this._witTypeNames;
+    }
+
+    public get witLevelNames() {
+        return this._witLevelNames;
     }
 
     public get flatQueryNames() {
@@ -119,12 +128,16 @@ export class BaseDataService {
         }
     }
 
+    /**
+     * Loads all names of available item types.
+     * Use "witTypeNames" for results.
+     */
     public async loadWitTypeNamesAsync(): Promise<void> {
         const witclient = getWitClient();
 
         try {
-            const witcat = await witclient.getWorkItemTypes(this.context.project.id);
-            this._witTypeNames = witcat.map(w => w.name);
+            const wittyp = await witclient.getWorkItemTypes(this.context.project.id);
+            this._witTypeNames = wittyp.map(w => w.name);
 
             LogExtension.log(this.witTypeNames);
         } catch (error) {
@@ -132,6 +145,39 @@ export class BaseDataService {
         }
     }
 
+    /**
+     * Loads all names of configured backlog levels.
+     * Use "witLevelNames" for results.
+     */
+    public async loadWitLevelNamesAsync(): Promise<void> {
+        try {
+            const context = this.context
+            const backlogConf = await getWorkClient().getBacklogConfigurations({
+                project: context.project.name,
+                projectId: context.project.id,
+                team: context.team.name,
+                teamId: context.team.id
+            });
+
+            this._witLevelNames = backlogConf.portfolioBacklogs.filter(p => !p.isHidden).map(p => ({ id: p.defaultWorkItemType.name, name: p.name }));
+            if (!backlogConf.requirementBacklog.isHidden) {
+                let req = {
+                    id: backlogConf.requirementBacklog.defaultWorkItemType.name,
+                    name: backlogConf.requirementBacklog.name
+                }
+                this._witLevelNames.push(req);
+            }
+
+            LogExtension.log(this.witLevelNames);
+        } catch (error) {
+            LogExtension.log(error);
+        }
+    }
+
+    /**
+     * Loads all names of shared flat queries.
+     * Use "flatQueryNames" for results.
+     */
     public async loadFlatQueryNamesAsync(): Promise<void> {
         const witClient = getWitClient();
         const that = this;
@@ -145,7 +191,7 @@ export class BaseDataService {
                     recursiveSearch(item.children);
                 }
                 else if (item.queryType == QueryType.Flat){
-                    that._flatQueryNames.push({ 'id':item.id, 'path':item.path });
+                    that._flatQueryNames.push({ id: item.id, name: item.path });
                 }
             }
         }
@@ -177,10 +223,15 @@ export class BaseDataService {
         }
     }
 
+    /**
+     * Call all resources async.
+     * We are greedy, arn't we?
+     */
     public async loadGreedyAsync() {
         await this.loadProjectAsync();
         await this.loadTeamsAsync();
         await this.loadWitTypeNamesAsync();
+        await this.loadWitLevelNamesAsync()
         await this.loadFlatQueryNamesAsync();
         await this.loadVotingAsync();
     }
