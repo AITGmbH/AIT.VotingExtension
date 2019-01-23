@@ -1,77 +1,70 @@
 ﻿import { Voting } from "../entities/voting";
-import { VotingStatus } from "../entities/votingStatus";
 import { AdminPageService } from "./adminPageService";
 import { LogExtension } from "../shared/logExtension";
 import { bsNotify, escapeText } from "../shared/common";
 import * as controls from "VSS/Controls";
-import * as combos from "VSS/Controls/Combos";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as menus from "VSS/Controls/Menus";
 import * as navigation from "VSS/Controls/Navigation";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
 import Vue from "vue";
 import Component from "vue-class-component";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class AdminPageController extends Vue {
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
-
+    
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
-    public levels: string[] = [];
+    public types: string[] = [ VotingTypes.LEVEL, VotingTypes.QUERY ];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
-
-    public created() {
-        document.getElementById("adminPage").classList.remove("hide");
+    public votingType: string = VotingTypes.LEVEL;
+    
+    public get levels() {
+        return this.adminPageService.witTypeNames;
     }
 
+    public get queries() {
+        return this.adminPageService.flatQueryNames;
+    }
+    
     public mounted() {
+        document.getElementById(this.$el.id).classList.remove("hide");
         this.adminPageService = new AdminPageService();
-
+        
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });
-
+        
         this.initializeAdminpageAsync();
     }
-
-    public async addToIncludes(ev) {
-        ev.preventDefault();
-
-        const text = ev.dataTransfer.getData("text");
-        await this.addToIncludeAsync(text);
-    }
-
-    public async addToExcludes(ev) {
-        ev.preventDefault();
-
-        const text = ev.dataTransfer.getData("text");
-        await this.addToExcludeAsync(text);
-    }
-
-    public startDrag(ev) {
-        ev.dataTransfer.setData("text", ev.target.innerText.trim())
-    }
-
-    public onDragOver(ev) {
-        ev.preventDefault();
-    }
-
+    
     public isMultipleVotingEnabledChanged() {
         if (this.actualVoting.isMultipleVotingEnabled && this.actualVoting.numberOfVotes === 1) {
             this.actualVoting.numberOfVotes = 3;
         }
     }
 
+    public updateVotingType() {
+        this.votingType = this.actualVoting.type;
+    }
+
+    public get isLevel() {
+        return this.votingType == VotingTypes.LEVEL;
+    }
+
+    public get isQuery() {
+        return this.votingType == VotingTypes.QUERY;
+    }
+
     private async createNewVotingAsync() {
-        this.actualVoting = new Voting();
-
-        if (this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
-
+        <Voting>Object.assign(this.actualVoting, new Voting()); //assign so we keep bindings!!!
+        this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
+        this.actualVoting.level = this.actualVoting.level || this.levels[0];
+        this.actualVoting.query = this.actualVoting.query || this.queries[0].id;
         this.actualVoting.created = Math.round((new Date()).getTime() / 1000);
 
         this.showContent = true;
@@ -90,8 +83,8 @@ export class AdminPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.adminPageService.loadAsync();
-            await this.adminPageService.loadWITFieldNamesAsync();
+            await this.adminPageService.loadProjectAsync();
+            await this.adminPageService.loadTeamsAsync();
 
             this.generateTeamPivot();
 
@@ -105,23 +98,21 @@ export class AdminPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            this.actualVoting = await this.adminPageService.loadVotingAsync();
+            await this.adminPageService.loadWitTypeNamesAsync();
+            await this.adminPageService.loadFlatQueryNamesAsync();
+
+            <Voting>Object.assign(this.actualVoting, await this.adminPageService.loadVotingAsync()); //assign so we keep bindings!!!
+            this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
+            this.actualVoting.level = this.actualVoting.level || this.levels[0];
+            this.actualVoting.query = this.actualVoting.query || this.queries[0].id;
+            this.updateVotingType();
             this.buildAdminpage();
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    private generateLevelDropDown() {
-        const fieldNames = this.adminPageService.witFieldNames;
-        if (fieldNames != null) {
-            this.levels = fieldNames;
-        }
-    }
-
     private buildAdminpage() {
-        this.generateLevelDropDown();
-
         if (this.actualVoting.isVotingEnabled) {
             LogExtension.log("actual voting enabled");
 
@@ -154,38 +145,17 @@ export class AdminPageController extends Vue {
             voting.isVotingPaused = isPaused;
         }
 
-        LogExtension.log("Level:", voting.level);
+        LogExtension.log("Voting:", voting);
 
         await this.adminPageService.saveVotingAsync(voting);
-
         await this.initAsync();
-    }
-
-    private async addToExcludeAsync(item: string) {
-        await this.adminPageService.addToExcludeAsync(item);
-        this.levels = this.adminPageService.witFieldNames;
-
-        if (this.actualVoting.level === item && this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
-    }
-
-    private async addToIncludeAsync(item: string) {
-        await this.adminPageService.addToIncludeAsync(item);
-        this.levels = this.adminPageService.witFieldNames;
-
-        if (this.actualVoting.level == null && this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
     }
 
     private getMenuItems(isActive: boolean): IContributedMenuItem[] {
         if (this.actualVoting == null || !this.actualVoting.isVotingEnabled) {
             if (!isActive) {
                 return [
-                    { id: "createNewVoting", text: "Create new voting", icon: "icon icon-add", disabled: !this.userIsAdmin },
-                    { separator: true },
-                    { id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin }
+                    { id: "createNewVoting", text: "Create new voting", icon: "icon icon-add", disabled: !this.userIsAdmin }
                 ];
             }
         }
@@ -203,7 +173,6 @@ export class AdminPageController extends Vue {
         items.push({ id: "terminateVoting", title: "Stop voting", icon: "icon icon-delete", disabled: !this.userIsAdmin });
         items.push({ separator: true });
         items.push({ id: "infoButton", title: "Help", icon: "icon icon-info", disabled: false });
-        items.push({ id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin });
 
         return items;
     }
@@ -243,9 +212,6 @@ export class AdminPageController extends Vue {
                 break;
             case "terminateVoting":
                 this.saveSettingsAsync(false);
-                break;
-            case "excludeList":
-                $('#excludeModal').modal();
                 break;
         }
     }

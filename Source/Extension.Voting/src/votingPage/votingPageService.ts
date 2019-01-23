@@ -6,8 +6,8 @@ import { VotingItem } from "../entities/votingItem";
 import { bsNotify } from "../shared/common";
 import { getClient } from "TFS/Work/RestClient";
 import { TeamContext } from "TFS/Core/Contracts";
-import * as service from "VSS/Service";
-import * as wit from "TFS/WorkItemTracking/RestClient";
+import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
+import { VotingTypes } from "../entities/votingTypes";
 import * as _ from "lodash";
 
 export class VotingPageService extends BaseDataService {
@@ -30,7 +30,7 @@ export class VotingPageService extends BaseDataService {
         return this.requirements;
     }
 
-    public async loadVotesAsync() {
+    public async loadVotesAsync(): Promise<void> {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         this.votes = [];
 
@@ -39,7 +39,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async getAreasAsync() {
+    public async getAreasAsync(): Promise<void> {
         const client = getClient();
         let areas = "AND ( ";
 
@@ -69,12 +69,27 @@ export class VotingPageService extends BaseDataService {
         LogExtension.log("finish area");
     }
 
-    public async loadRequirementsAsync(level: string) {
+    public async loadWorkItemsAsync(id: string, type: string = VotingTypes.LEVEL): Promise<void> {
         this.requirements = new Array<TinyRequirement>();
+        const witClient = getWitClient();
 
-        const witClient = service.getCollectionClient(wit.WorkItemTrackingHttpClient);
-        const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
-            + " AND [System.WorkItemType] = '" + level + "' " + this.areas;
+        switch (type) {
+            case VotingTypes.LEVEL:
+                var wiql = "SELECT [System.Id] FROM WorkItems"
+                    + " WHERE [System.State] <> 'Closed'"
+                    + " AND [System.State] <> 'Done'"
+                    + " AND [System.State] <> 'Removed'"
+                    + " AND [System.WorkItemType] = '" + id + "' " + this.areas;
+                break;
+            case VotingTypes.QUERY:
+                let query = await this.getQueryById(id);
+                var wiql = query.wiql;
+                break;
+            default: 
+        }
+
+        console.log(wiql);
+        
         const wiqlJson = {
             query: wiql,
         };
@@ -138,7 +153,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async saveVoteAsync(vote: Vote, numberOfVotes: number) {
+    public async saveVoteAsync(vote: Vote, numberOfVotes: number): Promise<void> {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         const voting = doc.voting;
@@ -172,7 +187,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async deleteVoteAsync(id: number, userId: string) {
+    public async deleteVoteAsync(id: number, userId: string): Promise<void> {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
         if (doc.voting == null) {
             bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
@@ -202,7 +217,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async updateBacklogAsync(wis: VotingItem[], firstBacklogItem: VotingItem) {
+    public async updateBacklogAsync(wis: VotingItem[], firstBacklogItem: VotingItem): Promise<void> {
         LogExtension.log("begin updating");
 
         const order = this.getTemplate();
@@ -228,7 +243,7 @@ export class VotingPageService extends BaseDataService {
                 },
             ];
 
-            const witClient = wit.getClient();
+            const witClient = getWitClient();
 
             try {
                 await witClient.updateWorkItem(newJson, item.id);
@@ -265,12 +280,12 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async applyToBacklogAsync(level: string) {
+    public async applyToBacklogAsync(level: string): Promise<void> {
         try {
             await this.loadVotingAsync();
             await this.loadVotesAsync();
             await this.getAreasAsync();
-            await this.loadRequirementsAsync(level);
+            await this.loadWorkItemsAsync(level);
 
             this.calculating();
 
@@ -301,7 +316,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async removeAllUserVotesAsync(userId: string) {
+    public async removeAllUserVotesAsync(userId: string): Promise<void> {
         const docs = await this.votingDataService.getAllVotingsAsync();
 
         try {

@@ -1,34 +1,41 @@
 ﻿import { Voting } from "../entities/voting";
-import { VotingStatus } from "../entities/votingStatus";
 import { LogExtension } from "../shared/logExtension";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
 import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
+import { QueryExpand, QueryType, QueryHierarchyItem } from "TFS/WorkItemTracking/Contracts";
 
 export class BaseDataService {
-    private _witFieldNames: string[] = [];
+    private _witTypeNames: string[] = [];
+    private _flatQueryNames: any[] = [];
+    private _teams: any[] = [];
 
     protected votingDataService: VotingDataService;
     protected template: string;
     protected process: string;
-
-    public excludes: string[] = [];
-    public teams: any[] = [];
     
-    public get witFieldNames() {
-        return this._witFieldNames.filter(w => this.excludes.indexOf(w) < 0);
-    }
-
     constructor() {
         const teamId = getUrlParameterByName("teamId", document.referrer)
-            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
+        || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
-
+        
         this.votingDataService = new VotingDataService();
+    }
+    
+    public get witTypeNames() {
+        return this._witTypeNames;
+    }
+
+    public get flatQueryNames() {
+        return this._flatQueryNames;
+    }
+
+    public get teams() {
+        return this._teams;
     }
 
     public get documentId() {
@@ -48,8 +55,8 @@ export class BaseDataService {
     }
 
     public get team(): TeamContext {
-        let webContext = this.context;
-        let configuration = this.configuration;
+        const webContext = this.context;
+        const configuration = this.configuration;
 
         if ("team" in configuration) {
             return configuration.team;
@@ -87,16 +94,11 @@ export class BaseDataService {
         window.location.href = window.location.href;
     }
 
-    public async loadAsync() {
-        await this.loadProjectAsync();
-        await this.loadTeamsAsync();
-    }
-
     public async loadTeamsAsync(): Promise<void> {
-        var coreClient = getCoreClient();
+        const coreClient = getCoreClient();
 
         try {
-            this.teams = await coreClient.getTeams(this.context.project.id, false);
+            this._teams = await coreClient.getTeams(this.context.project.id, false);
 
             LogExtension.log(this.teams);
         } catch (error) {
@@ -105,7 +107,7 @@ export class BaseDataService {
     }
 
     public async loadProjectAsync(): Promise<void> {
-        var coreClient = getCoreClient();
+        const coreClient = getCoreClient();
 
         try {
             const project = await coreClient.getProject(this.context.project.id, true);
@@ -117,29 +119,69 @@ export class BaseDataService {
         }
     }
 
-    public async loadWITFieldNamesAsync(): Promise<void> {
-        var witclient = getWitClient();
+    public async loadWitTypeNamesAsync(): Promise<void> {
+        const witclient = getWitClient();
 
         try {
             const witcat = await witclient.getWorkItemTypes(this.context.project.id);
-            this._witFieldNames = witcat.map(w => w.name);
+            this._witTypeNames = witcat.map(w => w.name);
 
-            LogExtension.log(this.witFieldNames);
+            LogExtension.log(this.witTypeNames);
         } catch (error) {
             LogExtension.log(error);
         }
     }
 
-    public async loadVotingAsync(): Promise<Voting> {
-        var doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        LogExtension.log(doc);
+    public async loadFlatQueryNamesAsync(): Promise<void> {
+        const witClient = getWitClient();
+        const that = this;
 
-        this.excludes = doc.excludes || [];
+        function recursiveSearch(items: QueryHierarchyItem[]) {
+            for (let item of items) {
+                if (!item.isPublic) {
+                    continue;
+                }
+                else if (item.isFolder) {
+                    recursiveSearch(item.children);
+                }
+                else if (item.queryType == QueryType.Flat){
+                    that._flatQueryNames.push({ 'id':item.id, 'path':item.path });
+                }
+            }
+        }
+        
+        try {
+            const queries = await witClient.getQueries(this.context.project.id, QueryExpand.None, 2); //An SQL query might be easier
+            this._flatQueryNames = [];
+            recursiveSearch(queries);
+
+            LogExtension.log(this.flatQueryNames);
+        } catch (error) {
+            LogExtension.log(error);
+        }
+    }
+
+    public async getQueryById(id: string): Promise<QueryHierarchyItem> {
+        const witClient = getWitClient();
+        return witClient.getQuery(this.context.project.id, id, QueryExpand.Wiql);
+    }
+
+    public async loadVotingAsync(): Promise<Voting> {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        LogExtension.log(doc);
 
         if (doc.voting == null) {
             return new Voting();
         } else {
             return doc.voting;
         }
+    }
+
+    public async loadGreedyAsync() {
+        await this.loadProjectAsync();
+        await this.loadTeamsAsync();
+        await this.loadWitTypeNamesAsync();
+        await this.loadFlatQueryNamesAsync();
+        await this.loadVotingAsync();
     }
 }

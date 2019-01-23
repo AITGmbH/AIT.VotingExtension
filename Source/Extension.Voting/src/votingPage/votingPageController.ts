@@ -17,6 +17,7 @@ import * as menus from "VSS/Controls/Menus";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class VotingPageController extends Vue {
@@ -35,12 +36,9 @@ export class VotingPageController extends Vue {
     public adminpageUri: string = "";
     public actualVoting: Voting = new Voting();
     public status: VotingStatus = VotingStatus.NoVoting;
-
-    public created() {
-        document.getElementById("votingPage").classList.remove("hide");
-    }
-
+    
     public mounted() {
+        document.getElementById(this.$el.id).classList.remove("hide");
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });
@@ -125,7 +123,8 @@ export class VotingPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.loadAsync();
+            await this.votingService.loadProjectAsync();
+            await this.votingService.loadTeamsAsync();
 
             this.createVotingMenue();
             this.createVotingTable();
@@ -143,7 +142,7 @@ export class VotingPageController extends Vue {
 
         try {
             LogExtension.log("loadVoting");
-            this.actualVoting = await this.votingService.loadVotingAsync();
+            <Voting>Object.assign(this.actualVoting, await this.votingService.loadVotingAsync()); //assign keeps bindings!!!
             this.setStatus();
 
             if (this.status === VotingStatus.ActiveVoting || this.status === VotingStatus.PausedVoting) {
@@ -155,8 +154,9 @@ export class VotingPageController extends Vue {
             LogExtension.log("getAreas");
             await this.votingService.getAreasAsync();
 
-            LogExtension.log("loadRequirements");
-            await this.votingService.loadRequirementsAsync(this.actualVoting.level);
+            LogExtension.log("loadWorkItems");
+            let id = this.actualVoting.type == VotingTypes.LEVEL ? this.actualVoting.level : this.actualVoting.query;
+            await this.votingService.loadWorkItemsAsync(id, this.actualVoting.type);
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
             if (hasAcceptedDataProtection) {
