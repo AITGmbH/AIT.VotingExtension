@@ -13,6 +13,7 @@
 <body>
     <div class="hide" id="adminPage">
         <div id="waitContainerAdmin"></div>
+
         <div class="vso-container">
             <div class="row">
                 <h1 class="votingheadline">Voting settings</h1>
@@ -28,71 +29,82 @@
                 </div>
             </div>
 
+            <div class="row" style="padding-top: 10px;">
+                <div class="col-sm-12" id="errorMessage" v-show="!showContent">
+                    <p id="votingdisabledmessage">There is no voting available. Please create a new voting.</p>
+                </div>
+            </div>
+
             <div class="row">
                 <div id="menueBar-container" class="toolbar col-sm-12 hide" style="padding-right:30px"></div>
             </div>
 
-            <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
-                <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
+            <div style="overflow-y: auto; height: 80vh">
+                <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
+                    <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
 
-                <div class="form-group">
-                    <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
-                    <input type="text" class="form-control" v-model="actualVoting.title">
-                </div>
-
-                <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" class="form-control" name="description" v-model="actualVoting.description" />
-                </div>
-
-                <hr />
-
-                <div class="row">
-                    <div class="form-group col-md-4">
-                        <label>Type</label>
-                        <select class="form-control" name="type" v-model="actualVoting.type" @change="updateVotingType">
-                            <option v-for="type in types">{{ type }}</option>
-                        </select>
+                    <div class="form-group" data-toggle="tooltip" title="Set an authentic title for this vote session. (required)">
+                        <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
+                        <input type="text" class="form-control" v-model="actualVoting.title">
                     </div>
 
-                    <div class="form-group col-md-8" v-show="isBacklogBased">
-                        <label>Vote on Backlog</label>
-                        <select class="form-control" name="level" v-model="actualVoting.level">
-                            <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
-                        </select>
+                    <div class="form-group" data-toggle="tooltip" title="Space for further descriptions.">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="description" v-model="actualVoting.description" />
                     </div>
 
-                    <div class="form-group col-md-8" v-show="isItemBased">
-                        <label>Vote on WorkItemType</label>
-                        <select class="form-control" name="item" v-model="actualVoting.item">
-                            <option v-for="item in items">{{ item }}</option>
-                        </select>
+                    <hr />
+
+                    <div class="row">
+                        <div class="form-group col-md-3" data-toggle="tooltip" title="Choose a type of the vote session.">
+                            <label>Type</label>
+                            <select class="form-control" name="type" v-model="actualVoting.type" @change="updateVotingType">
+                                <option v-for="type in types">{{ type }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isBacklogBased" data-toggle="tooltip" title="Start a vote session to a particular backlog level.">
+                            <label>Vote on Backlog</label>
+                            <select class="form-control" name="level" v-model="actualVoting.level">
+                                <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip" title="Start a vote session to a particular type of Work Items.">
+                            <label>Vote on WorkItemType</label>
+                            <select class="form-control" name="item" v-model="actualVoting.item">
+                                <option v-for="item in items">{{ item }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip" title="Start a vote session to a particular shared query.">
+                            <label>Vote on Query</label>
+                            <!--<select class="form-control" name="query" v-model="actualVoting.query">
+                                <option v-for="query in queries" v-bind:value="query.id">{{ query.name }}</option>
+                            </select>-->
+                            <div class="form-control">
+                                <span id="query-select-button"></span>
+                                <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown" style="margin: -5px -10px -5px -5px">
+                                    <span class="caret"></span>
+                                </button>
+                                <div id="query-tree-container" class="dropdown-menu pull-right" style="margin: 0px 15px 0px 0px"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group col-md-8" v-show="isQueryBased">
-                        <label>Vote on Query</label>
-                        <select class="form-control" name="query" v-model="actualVoting.query">
-                            <option v-for="query in queries" v-bind:value="query.id">{{ query.name }}</option>
-                        </select>
+                    <hr/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multible votes per item.">
+                            <label>
+                                <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
+                                Multiple votes per item
+                            </label>
+                            <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes" v-show="actualVoting.isMultipleVotingEnabled">
+                        </div>
                     </div>
-                </div>
 
-                <hr/>
-
-                <div class="row">
-                    <div class="form-group col-sm-12">
-                        <label>
-                            <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
-                            Multiple votes per item
-                        </label>
-                        <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes" v-show="actualVoting.isMultipleVotingEnabled">
-                    </div>
-                </div>
-            </div>
-
-            <div class="row" style="padding-top: 10px;">
-                <div class="col-sm-12" id="errorMessage" v-bind:class="{ hide: showContent }">
-                    <p id="votingdisabledmessage">There is no voting available. Please create a new voting.</p>
+                    <div class="row" style="height: 15vh"><!--Required whitespace--></div>
                 </div>
             </div>
         </div>

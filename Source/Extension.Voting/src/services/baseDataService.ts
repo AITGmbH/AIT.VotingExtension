@@ -159,10 +159,19 @@ export class BaseDataService {
                 teamId: context.team.id
             });
 
-            this._witLevelNames = backlogConf.portfolioBacklogs.filter(p => !p.isHidden).map(p => ({ id: p.defaultWorkItemType.name, name: p.name }));
+            console.log(backlogConf);
+
+            this._witLevelNames = backlogConf.portfolioBacklogs
+                .sort((a, b) => b.rank - a.rank)
+                .filter(p => !p.isHidden)
+                .map(p => ({
+                    id: p.workItemTypes.map(i => i.name).join(','), 
+                    name: p.name
+                }));
+
             if (!backlogConf.requirementBacklog.isHidden) {
                 let req = {
-                    id: backlogConf.requirementBacklog.defaultWorkItemType.name,
+                    id: backlogConf.requirementBacklog.workItemTypes.map(i => i.name).join(','),
                     name: backlogConf.requirementBacklog.name
                 }
                 this._witLevelNames.push(req);
@@ -180,26 +189,34 @@ export class BaseDataService {
      */
     public async loadFlatQueryNamesAsync(): Promise<void> {
         const witClient = getWitClient();
+        const projectId = this.context.project.id;
         const that = this;
 
-        function recursiveSearch(items: QueryHierarchyItem[]) {
-            for (let item of items) {
-                if (!item.isPublic) {
-                    continue;
+        async function recursiveSearch (item: QueryHierarchyItem) {
+            if (item.hasOwnProperty('children')) {
+                for (let child of item.children) {
+                    recursiveSearch(child);
                 }
-                else if (item.isFolder) {
-                    recursiveSearch(item.children);
-                }
-                else if (item.queryType == QueryType.Flat){
-                    that._flatQueryNames.push({ id: item.id, name: item.path });
-                }
+            }
+            else if (item.hasChildren) {
+                let child = await witClient.getQuery(projectId, item.id, QueryExpand.None, 1);
+                await recursiveSearch(child);
+            }
+            else if (item.isFolder) {
+                //ignore folder without children...
+            }
+            else if (!item.isPublic) {
+                //ignore non-public queries...
+            }
+            else if (item.queryType == QueryType.Flat){
+                that._flatQueryNames.push({ id: item.id, name: item.path });
             }
         }
         
         try {
-            const queries = await witClient.getQueries(this.context.project.id, QueryExpand.None, 2); //An SQL query might be easier
+            const queries = await witClient.getQuery(projectId, "Shared Queries", QueryExpand.None);
             this._flatQueryNames = [];
-            recursiveSearch(queries);
+            await recursiveSearch(queries);
 
             LogExtension.log(this.flatQueryNames);
         } catch (error) {
@@ -207,9 +224,9 @@ export class BaseDataService {
         }
     }
 
-    public async getQueryById(id: string): Promise<QueryHierarchyItem> {
+    public async getQueryById(id: string, depth: number = 0): Promise<QueryHierarchyItem> {
         const witClient = getWitClient();
-        return witClient.getQuery(this.context.project.id, id, QueryExpand.Wiql);
+        return witClient.getQuery(this.context.project.id, id, QueryExpand.Wiql, depth);
     }
 
     public async loadVotingAsync(): Promise<Voting> {

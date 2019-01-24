@@ -9,6 +9,7 @@ import { TeamContext } from "TFS/Core/Contracts";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { VotingTypes } from "../entities/votingTypes";
 import * as _ from "lodash";
+import { Voting } from "../entities/voting";
 
 export class VotingPageService extends BaseDataService {
     private _areas: string;
@@ -39,7 +40,7 @@ export class VotingPageService extends BaseDataService {
 
     public async getAreasAsync(): Promise<void> {
         const client = getClient();
-        let areas = "AND ( ";
+        let areas = "( ";
 
         const teamcontext: TeamContext = {
             project: null,
@@ -67,23 +68,33 @@ export class VotingPageService extends BaseDataService {
         LogExtension.log("finish area");
     }
 
+    /**
+     * Loads WorkItems backlog-level-based or Query-based.
+     * 
+     * @param id Id of a query or comma separated string of required WorkItemTypes.
+     * @param type Type of vorting session.
+     * @see VotingTypes
+     */
     public async loadWorkItemsAsync(id: string, type: string = VotingTypes.LEVEL): Promise<void> {
         this._requirements = new Array<TinyRequirement>();
         const witClient = getWitClient();
 
         switch (type) {
             case VotingTypes.LEVEL:
+                let wtyps = id.replace(',', "' OR [System.WorkItemType] = '");
                 var wiql = "SELECT [System.Id] FROM WorkItems"
                     + " WHERE [System.State] <> 'Closed'"
                     + " AND [System.State] <> 'Done'"
                     + " AND [System.State] <> 'Removed'"
-                    + " AND [System.WorkItemType] = '" + id + "' " + this._areas;
+                    + " AND ( [System.WorkItemType] = '" + wtyps + "' )" 
+                    + " AND " + this._areas;
                 break;
             case VotingTypes.QUERY:
                 let query = await this.getQueryById(id);
                 var wiql = query.wiql;
                 break;
-            default: 
+            default:
+                break;
         }
         
         const wiqlJson = {
@@ -278,9 +289,15 @@ export class VotingPageService extends BaseDataService {
 
     public async applyToBacklogAsync(): Promise<void> {
         try {
-            await this.loadVotingAsync();
+            const voting = new Voting();
+            <Voting>Object.assign(voting, await this.loadVotingAsync());
             await this.loadVotesAsync();
             await this.getAreasAsync();
+
+            if (!voting.isBacklogBased) {
+                bsNotify("danger", "This voting is not applyable.\nPlease refresh the page and try again.");
+                return;
+            }
 
             this.calculating();
 

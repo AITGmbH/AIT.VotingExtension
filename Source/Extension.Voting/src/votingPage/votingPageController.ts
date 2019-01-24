@@ -132,19 +132,20 @@ export class VotingPageController extends Vue {
             this.generateTeamPivot();
             this.updateTeam(this.votingService.team);
 
-            await this.refreshAsync(true);
         } finally {
             this.waitControl.endWait();
         }
+        await this.refreshAsync(true);
     }
 
-    private async refreshAsync(lazy?: boolean) {
+    private async refreshAsync(lazy: boolean = false) {
         this.waitControl.startWait();
 
         try {
             if (!lazy) {
                 LogExtension.log("reloadVoting");
                 <Voting>Object.assign(this.actualVoting, await this.votingService.loadVotingAsync()); //assign keeps bindings!!!
+                this.createVotingMenue();
             }
             this.setStatus();
 
@@ -341,6 +342,7 @@ export class VotingPageController extends Vue {
     }
 
     private createVotingMenue() {
+        $("#votingMenue-container").text("");
         controls.create(menus.MenuBar, $("#votingMenue-container"), {
             showIcon: true,
             items: [
