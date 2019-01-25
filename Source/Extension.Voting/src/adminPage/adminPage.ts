@@ -7,15 +7,22 @@ import { AdminPageController } from "./adminPageController";
     try {
         VSS.ready(() => {
             LogExtension.log("VSS ready");
-            var controller = new AdminPageController().$mount("#adminPage");
+            let controller = new AdminPageController().$mount("#adminPage");
             $('#appVersion').text(VSS.getExtensionContext().version);
 
-            var querySelectButton = $('#query-select-button');
-            var queryTreeContainer = $('#query-tree-container');
+            let form = $('#admin-form');
+            let querySelectButton = $('#query-select-button');
+            let queryTreeContainer = $('#query-tree-container');
 
             queryTreeContainer.bind('selectionchanged', function (e, args) {
-                querySelectButton.text(args.selectedNode.application.path);
-                controller.actualVoting.query = args.selectedNode.application.id;
+                if (args.selectedNode.application) {
+                    querySelectButton.text(args.selectedNode.application.path);
+                    controller.actualVoting.query = args.selectedNode.application.id;
+                }
+            });
+
+            window.addEventListener('resize', function () {
+                form.height(window.innerHeight * 0.9 - 100);
             });
         });
     } catch (ex) {

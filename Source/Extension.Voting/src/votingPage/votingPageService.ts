@@ -7,7 +7,6 @@ import { bsNotify } from "../shared/common";
 import { getClient } from "TFS/Work/RestClient";
 import { TeamContext } from "TFS/Core/Contracts";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
-import { VotingTypes } from "../entities/votingTypes";
 import * as _ from "lodash";
 import { Voting } from "../entities/voting";
 
@@ -69,33 +68,41 @@ export class VotingPageService extends BaseDataService {
     }
 
     /**
-     * Loads WorkItems backlog-level-based or Query-based.
+     * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
      * 
-     * @param id Id of a query or comma separated string of required WorkItemTypes.
-     * @param type Type of vorting session.
+     * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
      * @see VotingTypes
      */
-    public async loadWorkItemsAsync(id: string, type: string = VotingTypes.LEVEL): Promise<void> {
+    public async loadWorkItemsByTypes(types: string): Promise<void> {
+        const wiql = "SELECT [System.Id] FROM WorkItems"
+        + " WHERE [System.State] <> 'Closed'"
+        + " AND [System.State] <> 'Done'"
+        + " AND [System.State] <> 'Removed'"
+        + " AND ( [System.WorkItemType] = '" + types.replace(',', "' OR [System.WorkItemType] = '") + "' )" 
+        + " AND " + this._areas;
+        
+        return this.loadWorkItemsAsync(wiql);
+    }
+
+    /**
+     * Loads WorkItems based on a Query.
+     * 
+     * @param queryId Id of a query.
+     * @see VotingTypes
+     */
+    public async loadWorkItemsByQuery(queryId: string): Promise<void> {
+        const query = await this.getQueryById(queryId);
+        return this.loadWorkItemsAsync(query.wiql);
+    }
+
+    /**
+     * Loads WorkItems based on a WIQL string.
+     * 
+     * @param wiql Id of a query or comma separated string of required WorkItemTypes.
+     */
+    private async loadWorkItemsAsync(wiql: string): Promise<void> {
         this._requirements = new Array<TinyRequirement>();
         const witClient = getWitClient();
-
-        switch (type) {
-            case VotingTypes.LEVEL:
-                let wtyps = id.replace(',', "' OR [System.WorkItemType] = '");
-                var wiql = "SELECT [System.Id] FROM WorkItems"
-                    + " WHERE [System.State] <> 'Closed'"
-                    + " AND [System.State] <> 'Done'"
-                    + " AND [System.State] <> 'Removed'"
-                    + " AND ( [System.WorkItemType] = '" + wtyps + "' )" 
-                    + " AND " + this._areas;
-                break;
-            case VotingTypes.QUERY:
-                let query = await this.getQueryById(id);
-                var wiql = query.wiql;
-                break;
-            default:
-                break;
-        }
         
         const wiqlJson = {
             query: wiql,

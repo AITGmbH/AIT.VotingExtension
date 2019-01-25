@@ -159,8 +159,6 @@ export class BaseDataService {
                 teamId: context.team.id
             });
 
-            console.log(backlogConf);
-
             this._witLevelNames = backlogConf.portfolioBacklogs
                 .sort((a, b) => b.rank - a.rank)
                 .filter(p => !p.isHidden)
@@ -195,7 +193,7 @@ export class BaseDataService {
         async function recursiveSearch (item: QueryHierarchyItem) {
             if (item.hasOwnProperty('children')) {
                 for (let child of item.children) {
-                    recursiveSearch(child);
+                    await recursiveSearch(child);
                 }
             }
             else if (item.hasChildren) {
@@ -217,7 +215,7 @@ export class BaseDataService {
             const queries = await witClient.getQuery(projectId, "Shared Queries", QueryExpand.None);
             this._flatQueryNames = [];
             await recursiveSearch(queries);
-
+            
             LogExtension.log(this.flatQueryNames);
         } catch (error) {
             LogExtension.log(error);

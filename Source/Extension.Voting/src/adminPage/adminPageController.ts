@@ -58,6 +58,23 @@ export class AdminPageController extends Vue {
      */
     public updateVotingType() {
         this.votingType = this.actualVoting.type;
+
+        switch (this.votingType) {
+            case VotingTypes.LEVEL:
+                this.waitControl.startWait();
+                this.adminPageService.loadWitLevelNamesAsync().then(() => this.waitControl.endWait(), () => this.waitControl.endWait());
+                break;
+            case VotingTypes.ITEM:
+                this.waitControl.startWait();
+                this.adminPageService.loadWitTypeNamesAsync().then(() => this.waitControl.endWait(), () => this.waitControl.endWait());
+                break;
+            case VotingTypes.QUERY:
+                this.createQueryTree();
+                break;
+            default:
+                LogExtension.log("warning:", "Unknown VotingType!");
+                break;
+        }
     }
 
     public get isBacklogBased() {
@@ -91,7 +108,7 @@ export class AdminPageController extends Vue {
 
         <Voting>Object.assign(this.actualVoting, origin); //assign so we keep bindings!!!
         this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
-        this.actualVoting.level = this.actualVoting.level || (this.levels.length ? this.levels[0].id : null);
+        this.actualVoting.level = this.actualVoting.level || (this.levels.length ? this.levels[this.levels.length - 1].id : null);
         this.actualVoting.item = this.actualVoting.item || (this.items.length ? this.items[0] : null);
         this.actualVoting.query = this.actualVoting.query || (this.queries.length ? this.queries[0].id : null);
     }
@@ -129,10 +146,6 @@ export class AdminPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.adminPageService.loadWitTypeNamesAsync();
-            await this.adminPageService.loadWitLevelNamesAsync();
-            await this.adminPageService.loadFlatQueryNamesAsync();
-
             this.initVoting(await this.adminPageService.loadVotingAsync());
             this.updateVotingType();
             this.buildAdminpage();
@@ -142,18 +155,23 @@ export class AdminPageController extends Vue {
     }
 
     private buildAdminpage() {
-        if (this.actualVoting.isVotingEnabled) {
-            LogExtension.log("actual voting enabled");
+        this.waitControl.startWait();
 
-            this.showContent = true;
-            this.createMenueBar(true);
-        } else {
-            LogExtension.log("actual voting disabled");
-
-            this.showContent = false;
-            this.createMenueBar(false);
+        try {
+            if (this.actualVoting.isVotingEnabled) {
+                LogExtension.log("actual voting enabled");
+    
+                this.showContent = true;
+                this.createMenueBar(true);
+            } else {
+                LogExtension.log("actual voting disabled");
+    
+                this.showContent = false;
+                this.createMenueBar(false);
+            }
+        } finally {
+            this.waitControl.endWait();
         }
-        this.createQueryTree();
     }
 
     private async saveSettingsAsync(isEnabled: boolean, isPaused: boolean | null = null) {
@@ -162,6 +180,21 @@ export class AdminPageController extends Vue {
         voting.title = escapeText(voting.title);
         if ((voting.title == null || voting.title === "") && isEnabled) {
             bsNotify("danger", "Please provide a title for the voting.");
+            return;
+        }
+
+        if (voting.type == VotingTypes.LEVEL && !voting.level) {
+            bsNotify("danger", "Please select a backlog level for the voting.");
+            return;
+        }
+
+        if (voting.type == VotingTypes.ITEM && !voting.item) {
+            bsNotify("danger", "Please select a work item type for the voting.");
+            return;
+        }
+
+        if (voting.type == VotingTypes.QUERY && !voting.query) {
+            bsNotify("danger", "Please select a query for the voting.");
             return;
         }
 
@@ -224,14 +257,14 @@ export class AdminPageController extends Vue {
     }
 
     private createQueryTree() {
-        const queries = this.queries;
+        const that = this;
         const pathTree: any = {};
         const options = {
             nodes: []
         };
         
         function createPathTree() {
-            for (let query of queries) {
+            for (let query of that.queries) {
                 let path = query.name.split('/');
                 let node = pathTree;
                 for (let key of path) {
@@ -272,12 +305,19 @@ export class AdminPageController extends Vue {
             }
         }
 
-        createPathTree();
-        createNodes();
-
-        $("#query-tree-container").text("");
-        controls.create(TreeView, $("#query-tree-container"), options);
-        $('#query-select-button').text(this.currentQueryName);
+        this.waitControl.startWait();
+        this.adminPageService.loadFlatQueryNamesAsync().then(() => {
+            try {
+                createPathTree();
+                createNodes();
+                
+                $("#query-tree-container").text("");
+                controls.create(TreeView, $("#query-tree-container"), options);
+                $('#query-select-button').text(this.currentQueryName);
+            } finally {
+                this.waitControl.endWait();
+            }
+        }, () => this.waitControl.endWait());
     }
 
     private executeMenuAction(command: string) {

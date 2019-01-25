@@ -159,8 +159,18 @@ export class VotingPageController extends Vue {
             await this.votingService.getAreasAsync();
 
             LogExtension.log("loadWorkItems");
-            let id = this.actualVoting.type == VotingTypes.LEVEL ? this.actualVoting.level : this.actualVoting.query;
-            await this.votingService.loadWorkItemsAsync(id, this.actualVoting.type);
+
+            switch (this.actualVoting.type) {
+                case VotingTypes.LEVEL:
+                    await this.votingService.loadWorkItemsByTypes(this.actualVoting.level);
+                    break;
+                case VotingTypes.QUERY:
+                    await this.votingService.loadWorkItemsByQuery(this.actualVoting.query);
+                    break;
+                default:
+                    LogExtension.log("error:", "Unknown VotingType!");
+                    return;
+            }
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
             if (hasAcceptedDataProtection) {

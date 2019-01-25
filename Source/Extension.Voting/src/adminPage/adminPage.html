@@ -39,7 +39,7 @@
                 <div id="menueBar-container" class="toolbar col-sm-12 hide" style="padding-right:30px"></div>
             </div>
 
-            <div style="overflow-y: auto; height: 80vh">
+            <div id="admin-form" style="overflow-y: auto; height: 80vh">
                 <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
                     <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
 
@@ -84,7 +84,7 @@
                             </select> //Could be alternatively used if the browser doesn't support the fancy stuff-->
                             <div class="form-control">
                                 <span id="query-select-button"></span>
-                                <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown" style="margin: -5px -10px -5px -5px">
+                                <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown" style="margin: -5px -10px -5px -5px" @click="createQueryTree">
                                     <span class="caret"></span>
                                 </button>
                                 <div id="query-tree-container" class="dropdown-menu pull-right" style="margin: 0px 15px 0px 0px"></div>
