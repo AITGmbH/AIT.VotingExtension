@@ -427,7 +427,7 @@ export class VotingPageController extends Vue {
         const that = this;
 
         this.grid = controls.create(grids.Grid, $("#grid-container"), {
-            height: "400px",
+            height: "70vh",
             allowMultiSelect: false,
             columns: [
                 {
@@ -461,7 +461,7 @@ export class VotingPageController extends Vue {
                 },
                 { tooltip: "Work Item ID", text: "ID", index: "id", width: 50, fieldId: "itemId" },
                 { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
+                { tooltip: "Work Item Title", text: "Title", index: "title", width: 600 },
                 { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
                 { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
                 { tooltip: "All votes per item", text: "Votes", index: "allVotes", width: 60 },
@@ -518,6 +518,7 @@ export class VotingPageController extends Vue {
         });
 
         observer.observe(document.getElementById('grid-container'), { childList: true, subtree: true });
+        $('#grid-container').append("<div style='height: 20vh'><!--Whitespace--></div>");
     }
 
     private generateTeamPivot() {
