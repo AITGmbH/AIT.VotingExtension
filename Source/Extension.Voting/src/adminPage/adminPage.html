@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="form-group" v-if="actualVoting.isMultipleVotingEnabled">
-                    <label>Limit votes per item</label>
+                    <label>Limit votes per work item</label>
                     <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit" @change="validateInput">
                 </div>
             </div>
