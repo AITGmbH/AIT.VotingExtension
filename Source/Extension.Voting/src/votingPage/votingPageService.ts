@@ -151,7 +151,7 @@ export class VotingPageService extends BaseDataService {
             if ((numberOfVotes - this.numberOfMyVotes()) < 1) {
                 bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
             } else if (voteItem.myVotes >= voting.voteLimit) {
-                bsNotify("warning", `This item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
+                bsNotify("warning", `This work item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
             } else {
                 doc.vote.push(vote);
                 const uDoc = await this.votingDataService.updateDocumentAsync(doc);
