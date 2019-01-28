@@ -150,7 +150,7 @@ export class VotingPageController extends Vue {
             }
 
             LogExtension.log("getAreas");
-            await this.votingService.getAreasAsync();
+            await this.votingService.loadAreasAsync();
 
             LogExtension.log("loadRequirements");
             await this.votingService.loadRequirementsAsync(this.actualVoting.level);

@@ -215,25 +215,7 @@ export class BaseDataService {
                 const result = await getWitClient().getWorkItems(array);
                 for (const req of result) {
                     LogExtension.log(req);
-
-                    const tempRequirement = new TinyRequirement();
-                    tempRequirement.id = req.id;
-                    if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
-                    } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
-                    } else {
-                        tempRequirement.order = "0";
-                    }
-                    tempRequirement.title = req.fields["System.Title"];
-                    tempRequirement.workItemType = req.fields["System.WorkItemType"];
-                    tempRequirement.state = req.fields["System.State"];
-                    tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
-                    tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
-                    tempRequirement.iterationPath = req.fields["System.IterationPath"];
-                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
-                    tempRequirement.description = req.fields["System.Description"];
-
+                    const tempRequirement = this.createTinyRequirement(req);
                     requirements.push(tempRequirement);
                 }
             } catch (err) {
@@ -244,9 +226,48 @@ export class BaseDataService {
         return requirements;
     }
 
+    public async getWorkItemsAsync(ids: number[]) : Promise<TinyRequirement[]> {
+        const workitems = new Array<TinyRequirement>();
+        
+        if (ids.length == 0) {
+            return workitems;
+        }
+
+        const client = getWitClient();
+        const items = await client.getWorkItems(ids);
+
+        items.forEach(item => {
+            const tinyItem = this.createTinyRequirement(item);
+            workitems.push(tinyItem);
+        });
+
+        return workitems;
+    }
+
+    private createTinyRequirement(req: any): TinyRequirement {
+        const tempRequirement = new TinyRequirement();
+        tempRequirement.id = req.id;
+        if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
+            tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
+        } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
+            tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
+        } else {
+            tempRequirement.order = "0";
+        }
+        tempRequirement.title = req.fields["System.Title"];
+        tempRequirement.workItemType = req.fields["System.WorkItemType"];
+        tempRequirement.state = req.fields["System.State"];
+        tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
+        tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
+        tempRequirement.iterationPath = req.fields["System.IterationPath"];
+        tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
+        tempRequirement.description = req.fields["System.Description"];
+
+        return tempRequirement;
+    }
+
     private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        let displayName = (assignedTo == undefined) ? this.assignedToUnassignedText : assignedTo.displayName;
-        return displayName;
+        const assignedTo = req.fields['System.AssignedTo'];
+        return assignedTo ? assignedTo : this.assignedToUnassignedText;
     }
 }

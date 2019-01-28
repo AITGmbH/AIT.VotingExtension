@@ -2,10 +2,9 @@
 import { LogExtension } from "../shared/logExtension";
 import { Voting } from "../entities/voting";
 import { bsNotify } from "../shared/common";
-import { VotingDocument } from "../entities/votingDocument";
-import { convertValueToDisplayString } from "VSS/Utils/Core";
 
 export class AdminPageService extends BaseDataService {
+    
     constructor() {
         super();
     }

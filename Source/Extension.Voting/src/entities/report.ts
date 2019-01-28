@@ -6,12 +6,6 @@ export class Report {
     workItemTypeName: string;
     title: string;
     description: string;
-
-    workItemArray: ReportItem[];
-
-    userlist: User[];
-
-    addVote(itemId: number) {
-        this.workItemArray.find(x => x.id == itemId).totalVotes++;
-    }
+    workItems: ReportItem[];
+    users: User[];
 }
