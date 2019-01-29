@@ -114,21 +114,29 @@
     </div>
     
     <div id="reportPage" class="hide">
-        <div class="vso-container" v-if="report != null">
+        <div class="vso-container" v-show="report">            
+            <div class="row">
+                <h1 class="votingheadline">Report</h1>
+            </div>
+
+            <div class="row">
+                <div id="report-menu-container" class="toolbar col-sm-12" style="padding-right:30px"></div>
+            </div>
+
             <div id="report-header" class="row voting-info-bar">
-                <div id="report-title" class="col-sm-6 panel-heading titleBar">
-                    <p>{{ report.title }}</p>
+                <div id="report-title" class="col-sm-6 titleBar">
+                    <p>{{ report ? report.title : "" }}</p>
                 </div>
-                <div id="report-type" class="col-sm-6 titleBar" style="text-align: right">
-                    <p>{{ report.workItemTypeName }}</p>
+                <div id="report-type" class="col-sm-6" style="text-align: right">
+                    <p>Voting Type: <span style="font-weight: bold">{{ report ? report.workItemTypeName : "" }}</span></p>
                 </div>
-                <div id="informationDiv" class="col-sm-12">
-                    <p>{{ report.description }}</p>
+                <div id="report-description" class="col-sm-12">
+                    <p>{{ report ? report.description : "" }}</p>
                 </div>
             </div>
-                
-            <div class="row" style="padding-top: 10px;">
-                <div id="grid-container" class="col-sm-12"></div>
+
+            <div class="row container" style="padding-top: 10px;">
+                <div id="report-grid-container" class="form-group"></div>
             </div>
         </div>
     </div>

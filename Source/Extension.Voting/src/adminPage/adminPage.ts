@@ -13,7 +13,8 @@ import { ReportPageController } from "../reportPage/reportPageController";
             const wc = apc.initWaitControl('#waitContainer');
 
             rpc.height = "30vh";
-            rpc.selector = "grid-container";
+            rpc.report_grid_container = "report-grid-container";
+            rpc.report_menu_container = "report-menu-container";
             rpc.waitControl = wc;
 
             apc.$mount("#adminPage");

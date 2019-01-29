@@ -340,7 +340,7 @@ export class VotingPageController extends Vue {
             items: [
                 {
                     id: "refresh", title: "Refresh",
-                    icon: "icon icon-refresh", disabled: false
+                    icon: "bowtie-icon bowtie-navigate-refresh", disabled: false
                 },
                 {
                     id: "applyToBacklog", title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",

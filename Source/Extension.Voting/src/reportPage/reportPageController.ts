@@ -2,6 +2,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
+import { MenuBar } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
 import { ReportPageService } from "./reportPageService";
@@ -13,11 +14,13 @@ export class ReportPageController extends Vue {
 
     private reportPageService: ReportPageService;
     private grid: grids.Grid;
-
+    
     public report: Report = null;
     public waitControl: WaitControl;
     public height: string = "30vh";
-    public selector: string = null;
+
+    public report_grid_container: string = "report-grid-container";
+    public report_menu_container: string = "report-menu-container";
 
     public mounted() {
         this.reportPageService = new ReportPageService();
@@ -27,38 +30,80 @@ export class ReportPageController extends Vue {
         this.$el.classList.remove("hide");
     }
 
-    private async initializeAsync() {
+    private async initializeAsync(): Promise<void> {
         this.waitControl.startWait();
         try {
-
+            this.createMenuBar();
+            this.createReportTable();
         } finally {
             this.waitControl.endWait();
         }
     }
     
-    public async refreshAsync() {
+    public async refreshAsync(lazy: boolean = false): Promise<void> {
         this.waitControl.startWait();
         try {
-            await this.loadReportAsync();
-            await this.createReportTable();
+            if (!lazy) {
+                await this.loadReportAsync();
+            }
             this.grid.setDataSource(this.report.workItems);
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    protected async createReportTable() {
-        if (!this.selector) {
-            this.selector = this.$el.id;
-        } 
-        const container = $(`#${this.selector}`);
-        container.text("");
-        
+    public async copyToClipboard(): Promise<void> {
+        this.waitControl.startWait();
+        try {
+            $(`#${this.report_grid_container}`).select();
+            this.grid.focus(0);
+            this.grid.selectAll();
+            document.execCommand("copy");
+        } finally {
+            this.waitControl.endWait();
+        }
+    }
+
+    protected createMenuBar() {
+        controls.create(MenuBar, $(`#${this.report_menu_container}`), {
+            showIcon: true,
+            items: [
+                {
+                    id: "refresh",
+                    title: "Refresh",
+                    icon: "bowtie-icon bowtie-navigate-refresh",
+                    disabled: false
+                },
+                {
+                    separator: true
+                },
+                {
+                    id: "copy",
+                    title: "Copy to clipboard",
+                    icon: "bowtie-icon bowtie-clone",
+                    disabled: false
+                }
+            ],
+            executeAction: (args) => {
+                var command = args.get_commandName();
+                switch (command) {
+                    case "refresh":
+                        this.refreshAsync();
+                        break;
+                    case "copy":
+                        this.copyToClipboard();
+                        break;
+                }
+            }
+        });
+    }
+
+    protected createReportTable() {
+        const container = $(`#${this.report_grid_container}`);        
         this.grid = controls.create(grids.Grid, container,
         {
             height: this.height,
-            allowMultiSelect: false,
-            source: this.report.workItems,
+            allowMultiSelect: true,
             columns: [
                 { tooltip: "Work Item ID", text: "ID", index: "id", width: 50 },
                 { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
@@ -91,14 +136,14 @@ export class ReportPageController extends Vue {
 
                 $(cellTitle).text('');
                 $(cellTitle).append(`<div class="work-item-color ${cssClass}-color"></div>`);
-                $(cellTitle).append(`<span> ${title}</span>`);
+                $(cellTitle).append(`<span>${title}</span>`);
                 $(cellAssignedTo).text(assignedTo);
             });
 
-            observer.observe(document.getElementById(this.selector), { childList: true, subtree: true });
+            observer.observe(document.getElementById(this.report_grid_container), { childList: true, subtree: true });
         });
 
-        observer.observe(document.getElementById(this.selector), { childList: true, subtree: true });
+        observer.observe(document.getElementById(this.report_grid_container), { childList: true, subtree: true });
     }
 
     protected async loadReportAsync(): Promise<void> {
