@@ -20,6 +20,7 @@ export class VotingPageService extends BaseDataService {
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
     public numberOfMyVotes: () => number;
     public calculating: () => void;
+    public getVoteItem: (id: number) => VotingItem;
     public getActualVotingItems: () => VotingItem[];
 
     constructor() {
@@ -142,6 +143,7 @@ export class VotingPageService extends BaseDataService {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         const now = Date.now();
+        const voteItem = this.getVoteItem(vote.workItemId)
         const voting = doc.voting;
         const isEnabled = voting.isVotingEnabled;
         const isPaused = voting.isVotingPaused;
@@ -163,18 +165,14 @@ export class VotingPageService extends BaseDataService {
 
             if ((numberOfVotes - this.numberOfMyVotes()) < 1) {
                 bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
-                return;
+            } else if (voteItem.myVotes >= voting.voteLimit) {
+                bsNotify("warning", `This work item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
             } else {
-                if (!voting.isMultipleVotingEnabled && multipleVotes) {
-                    bsNotify("warning", "You cannot vote again for this item. Please refresh your browser window to get the actual content.");
-                    return;
-                } else {
-                    doc.vote.push(vote);
-                    const uDoc = await this.votingDataService.updateDocumentAsync(doc);
-                    LogExtension.log("saveVote: document updated", uDoc.id);
+                doc.vote.push(vote);
+                const uDoc = await this.votingDataService.updateDocumentAsync(doc);
+                LogExtension.log("saveVote: document updated", uDoc.id);
 
-                    bsNotify("success", "Your vote has been saved.");
-                }
+                bsNotify("success", "Your vote has been saved.");
             }
         }
     }

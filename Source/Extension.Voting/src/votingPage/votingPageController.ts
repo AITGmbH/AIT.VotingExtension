@@ -57,6 +57,7 @@ export class VotingPageController extends Vue {
             this.calculating();
             this.calculateMyVotes();
         };
+        this.votingService.getVoteItem = (id: number) => this.actualVotingItem(id);
         this.votingService.getActualVotingItems = () => this.actualVotingItems;
 
         this.initializeVotingpageAsync();
@@ -113,7 +114,7 @@ export class VotingPageController extends Vue {
         voteDown.parentElement.classList.add("hide");
 
         if (this.remainingVotes > 0) {
-            if (votingItem.myVotes === 0 || this.actualVoting.isMultipleVotingEnabled) {
+            if (votingItem.myVotes < this.actualVoting.voteLimit) {
                 voteUp.parentElement.classList.remove("hide");
             }
         }
@@ -200,7 +201,7 @@ export class VotingPageController extends Vue {
     }
 
     private calculating() {
-        this.remainingVotes = this.actualVoting.isMultipleVotingEnabled ? this.actualVoting.numberOfVotes : 1;
+        this.remainingVotes = this.actualVoting.numberOfVotes;
         this.myVotes = new Array<Vote>();
         this.allVotes = new Array<Vote>();
 
@@ -211,7 +212,7 @@ export class VotingPageController extends Vue {
 
     private calculateMyVotes() {
         const userVotes = {};
-        const numberOfVotes = this.actualVoting.isMultipleVotingEnabled ? this.actualVoting.numberOfVotes : 1;
+        const numberOfVotes = this.actualVoting.numberOfVotes;
 
         this.actualVotingItems = new Array<VotingItem>();
 
