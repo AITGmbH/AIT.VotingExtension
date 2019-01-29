@@ -6,28 +6,24 @@ import * as controls from "VSS/Controls";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as menus from "VSS/Controls/Menus";
 import * as navigation from "VSS/Controls/Navigation";
-import * as statusIndicators from "VSS/Controls/StatusIndicator";
+import { WaitControl } from "VSS/Controls/StatusIndicator";
 import Vue from "vue";
 import Component from "vue-class-component";
 
 @Component
 export class AdminPageController extends Vue {
-    private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
-
+    
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
     public levels: string[] = [];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
+    public waitControl: WaitControl;
     
     public mounted() {
         this.adminPageService = new AdminPageService();
-        
-        this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
-            message: "Loading..."
-        });
-        
+        this.initWaitControl('#waitContainer');
         this.initializeAdminpageAsync();
         this.$el.classList.remove("hide");
     }
@@ -63,7 +59,7 @@ export class AdminPageController extends Vue {
     private async createNewVotingAsync() {
         this.actualVoting = new Voting();
 
-        if (this.levels.length > 0) {
+        if (this.levels.length) {
             this.actualVoting.level = this.levels[0];
         }
 
@@ -262,5 +258,14 @@ export class AdminPageController extends Vue {
                 this.initAsync();
             }
         });
+    }
+
+    public initWaitControl(ele: any): WaitControl {
+        if (!this.waitControl) {
+            this.waitControl = controls.create(WaitControl, $(ele), {
+                message: "Loading..."
+            });
+        } 
+        return this.waitControl;
     }
 }

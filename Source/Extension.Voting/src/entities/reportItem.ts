@@ -1,5 +1,5 @@
 ﻿import { TinyRequirement } from "./TinyRequirement";
 
 export class ReportItem extends TinyRequirement {
-    public totalVotes: number;
+    public totalVotes: number = 0;
 }

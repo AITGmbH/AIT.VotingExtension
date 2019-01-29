@@ -11,7 +11,9 @@
 </head>
 
 <body>
-    <div class="hide" id="adminPage">
+    <div id="waitContainer"></div>
+
+    <div id="adminPage" class="hide">
         <div class="vso-container">
             <div class="row">
                 <h1 class="votingheadline">Voting settings</h1>
@@ -47,7 +49,7 @@
                 <div class="form-group">
                     <label>Voting level</label>
                     <select class="form-control" name="level" v-model="actualVoting.level">
-                        <option v-for="value in levels">{{ value }}</option>
+                        <option v-for="level in levels">{{ level }}</option>
                     </select>
                 </div>
 
@@ -62,19 +64,13 @@
                 </div>
             </div>
 
-            <hr/>
-
-            <div class="row" style="padding-top: 10px;">
-                <h5>Report</h5>
-                <div class="col-sm-12" id="reportContainer"></div>
-            </div>
-
             <div class="row" style="padding-top: 10px;">
                 <div class="col-sm-12" id="errorMessage" v-bind:class="{ hide: showContent }">
                     <p id="votingdisabledmessage">There is no voting available. Please create a new voting.</p>
                 </div>
             </div>
         </div>
+
 
         <div class="modal fade" id="excludeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
@@ -115,9 +111,29 @@
                 </div>
             </div>
         </div>
-
-        <span id="appVersion" style="color:#FFF;float:right;"></span>
     </div>
+    
+    <div id="reportPage" class="hide">
+        <div class="vso-container" v-if="report != null">
+            <div id="report-header" class="row voting-info-bar">
+                <div id="report-title" class="col-sm-6 panel-heading titleBar">
+                    <p>{{ report.title }}</p>
+                </div>
+                <div id="report-type" class="col-sm-6 titleBar" style="text-align: right">
+                    <p>{{ report.workItemTypeName }}</p>
+                </div>
+                <div id="informationDiv" class="col-sm-12">
+                    <p>{{ report.description }}</p>
+                </div>
+            </div>
+                
+            <div class="row" style="padding-top: 10px;">
+                <div id="grid-container" class="col-sm-12"></div>
+            </div>
+        </div>
+    </div>
+
+    <span id="appVersion" style="color:#FFF;float:right;"></span>
 
     <script type="text/javascript">
         VSS.init({

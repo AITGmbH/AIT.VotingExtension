@@ -411,28 +411,28 @@ export class VotingPageController extends Vue {
             columns: [
                 {
                     tooltip: "Vote up", fieldId: "voteUp", canSortBy: false, width: 20, getCellContents: function (_, dataIndex) {
-                        var voteId = this.getRowData(dataIndex).id;
+                        const voteId = this.getRowData(dataIndex).id;
 
-                        var upVoteControl = '<div class="grid-cell grid-buttonVoteUp-holder" role="gridcell" style="width: 20px;">';
+                        let upVoteControl = '<div class="grid-cell grid-buttonVoteUp-holder" role="gridcell" style="width: 20px;">';
                         upVoteControl += '<span class="upvote-holder">';
                         upVoteControl += `<span class="icon icon-add voting-plus hide" aria-hidden="true"></span>`;
                         upVoteControl += '</span></div>';
 
-                        var element = $(upVoteControl);
+                        const element = $(upVoteControl);
                         element.find('.voting-plus').click(() => that.voteUpClicked(voteId));
 
                         return element;
                     }
                 }, {
                     tooltip: "Vote down", fieldId: "voteDown", canSortBy: false, width: 20, getCellContents: function (_, dataIndex) {
-                        var voteId = this.getRowData(dataIndex).id;
+                        const voteId = this.getRowData(dataIndex).id;
 
-                        var downVoteControl = '<div class="grid-cell grid-buttonVoteDown-holder" role="gridcell" style="width: 20px;">';
+                        let downVoteControl = '<div class="grid-cell grid-buttonVoteDown-holder" role="gridcell" style="width: 20px;">';
                         downVoteControl += '<span class="downvote-holder">';
                         downVoteControl += `<span class="icon icon-delete voting-remove hide" aria-hidden="true"></span>`;
                         downVoteControl += '</span></div>';
 
-                        var element = $(downVoteControl);
+                        const element = $(downVoteControl);
                         element.find('.voting-remove').click(() => that.voteDownClicked(voteId));
 
                         return element;
@@ -448,7 +448,7 @@ export class VotingPageController extends Vue {
                 { text: "Order", index: "order", width: 50, hidden: true }
             ],
             openRowDetail: async (index) => {
-                var item = this.grid.getRowData(index);
+                const item = this.grid.getRowData(index);
                 const service = await wi.WorkItemFormNavigationService.getService();
                 service.openWorkItem(item.id);
             },
@@ -469,24 +469,24 @@ export class VotingPageController extends Vue {
             observer.disconnect();
 
             $('.grid-row').each((_, element) => {
-                var cellAddButton = $(element).find('div:nth-child(1)');
-                var cellRemoveButton = $(element).find('div:nth-child(2)');
-                var cellId = $(element).find('div:nth-child(3)');
-                var cellWorkItemType = $(element).find('div:nth-child(4)');
-                var cellTitle = $(element).find('div:nth-child(5)');
-                var cellAssignedTo = $(element).find('div:nth-child(6)');
+                const cellAddButton = $(element).find('div:nth-child(1)');
+                const cellRemoveButton = $(element).find('div:nth-child(2)');
+                const cellId = $(element).find('div:nth-child(3)');
+                const cellWorkItemType = $(element).find('div:nth-child(4)');
+                const cellTitle = $(element).find('div:nth-child(5)');
+                const cellAssignedTo = $(element).find('div:nth-child(6)');
 
-                var title = $(cellTitle).text();
-                var cssClass = $(cellWorkItemType).text().toLowerCase().replace(/\s+/g, '');
-                var assignedTo = parseEmail($(cellAssignedTo).text());
+                const title = $(cellTitle).text();
+                const cssClass = $(cellWorkItemType).text().toLowerCase().replace(/\s+/g, '');
+                const assignedTo = parseEmail($(cellAssignedTo).text());
 
                 $(cellTitle).text('');
                 $(cellTitle).append(`<div class="work-item-color ${cssClass}-color"></div>`);
                 $(cellTitle).append(`<span> ${title}</span>`);
                 $(cellAssignedTo).text(assignedTo);
 
-                var voteUpButton = $(cellAddButton).find('span > span.icon');
-                var voteDownButton = $(cellRemoveButton).find('span > span.icon');
+                const voteUpButton = $(cellAddButton).find('span > span.icon');
+                const voteDownButton = $(cellRemoveButton).find('span > span.icon');
 
                 const voteId = parseInt($(cellId).text(), 10);
 

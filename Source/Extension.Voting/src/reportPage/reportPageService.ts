@@ -8,28 +8,42 @@ export class ReportPageService extends BaseDataService{
         super();
     }
 
-    public async loadReportData() : Promise<Report>{
-        let votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
-        let report = new Report();
+    public async loadReportData(sort: boolean = false, filter?: (req: ReportItem) => boolean) : Promise<Report>{
+        const votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
+        const workItems = await this.loadRequirementsAsync(votingDoc.voting.level, await this.loadAreasAsync());
+        const report = new Report();
+        let repItems = workItems.map(wit => <ReportItem>Object.assign(wit));
+
         report.description = votingDoc.voting.description;
         report.title = votingDoc.voting.title;
         report.workItemTypeName = votingDoc.voting.level;
         
-        // Create ReportItem from WorkItems
-        let relevantvotes = votingDoc.vote.filter(v => v.votingId == votingDoc.voting.created);
-        let workItemIdArray = relevantvotes.map(x => x.workItemId);
-        let workItems = await this.getWorkItemsAsync(workItemIdArray); //TODO check, dataservice is neccessary to use
-        report.workItems = workItems.map(wit => <ReportItem>Object.assign(wit));
-                     
-        // Count Votes
-        votingDoc.vote.forEach( vote => { this.countVotes(report.workItems, vote.workItemId) });
+        if (filter) {
+            repItems = repItems.filter(filter);
+        }
         
+        // Count Votes
+        votingDoc.vote.forEach( vote => { this.countVotes(repItems, vote.workItemId) });
+
+        if (sort) {
+            repItems = repItems
+                .sort((a, b) => parseInt(a.order) - parseInt(b.order))
+                .sort((a, b) => a.totalVotes - b.totalVotes);
+        }
+
+        report.workItems = repItems;
         return report;
     }
 
     private countVotes(workItems: ReportItem[], itemId: number) {
         const item = workItems.find(x => x.id == itemId);
-        if (item) {
+        if (!item) {
+            //ignore!
+        }
+        else if (!item.totalVotes) {
+            item.totalVotes = 1;
+        }
+        else {
             item.totalVotes++;
         }
     }
