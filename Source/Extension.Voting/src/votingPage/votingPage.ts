@@ -1,5 +1,7 @@
 ﻿import { LogExtension } from "../shared/logExtension";
 import { VotingPageController } from "./votingPageController";
+import Vue from "vue";
+import VueTimeago from "vue-timeago";
 
 (function () {
     LogExtension.debugEnabled = false;
@@ -9,6 +11,8 @@ import { VotingPageController } from "./votingPageController";
             LogExtension.log("VSS ready");
             new VotingPageController().$mount("#votingPage");
         });
+
+        Vue.use(VueTimeago);
     } catch (ex) {
         LogExtension.log(ex);
     }

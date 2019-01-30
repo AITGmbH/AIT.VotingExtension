@@ -50,30 +50,30 @@
                 <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
                     <p v-if="status === 5">
                         Starts:
-                        <time v-bind:datetime="getDatetimeString(actualVoting.start)">
+                        <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                             {{ getRelativeTimeString(actualVoting.start) }}
-                        </time>
+                        </timeago>
                     </p>
                     <p v-else-if="actualVoting.useStartTime">
                         Has started:
-                        <time v-bind:datetime="getDatetimeString(actualVoting.start)">
+                        <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                             {{ getRelativeTimeString(actualVoting.start) }}
-                        </time>
+                        </timeago>
                     </p>
                 </div>
 
                 <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
                     <p v-if="status === 6">
                         Overdue:
-                        <time v-bind:datetime="getDatetimeString(actualVoting.end)">
+                        <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
                             {{ getRelativeTimeString(actualVoting.end) }}
-                        </time>
+                        </timeago>
                     </p>
                     <p v-else-if="actualVoting.useEndTime">
                         Ends:
-                        <time v-bind:datetime="getDatetimeString(actualVoting.end)">
+                        <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
                             {{ getRelativeTimeString(actualVoting.end) }}
-                        </time>
+                        </timeago>
                     </p>
                 </div>
                 
