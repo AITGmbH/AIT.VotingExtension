@@ -9,6 +9,7 @@ import { TeamContext } from "TFS/Core/Contracts";
 import * as service from "VSS/Service";
 import * as wit from "TFS/WorkItemTracking/RestClient";
 import * as _ from "lodash";
+import { Voting } from "../entities/voting";
 
 export class VotingPageService extends BaseDataService {
     private areas: string;
@@ -139,53 +140,59 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async saveVoteAsync(vote: Vote, numberOfVotes: number) {
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-
+    private validateVote(voting: Voting, id: number, upVote: boolean): boolean {
         const now = Date.now();
-        const voteItem = this.getVoteItem(vote.workItemId)
-        const voting = doc.voting;
+        const voteItem = this.getVoteItem(id);
         const isEnabled = voting.isVotingEnabled;
         const isPaused = voting.isVotingPaused;
         const isProspective = voting.useStartTime && now < voting.start;
         const isOverdue = voting.useEndTime && now > voting.end;
 
-        if (!isEnabled) {
-            bsNotify("warning", "This voting session has been stopped. \nPlease refresh your browser window to get the actual content.");
+        if (voting == null) {
+            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
+            return;
+        } else if (!isEnabled) {
+            bsNotify("danger", "This voting session has been stopped. \nPlease refresh your browser window to get the actual content.");
+            return false;
         } else if (isPaused) {
-            bsNotify("warning", "This voting session has been paused. \nPlease refresh your browser window to get the actual content.");
+            bsNotify("danger", "This voting session has been paused. \nPlease refresh your browser window to get the actual content.");
+            return false;
         } else if (isProspective) {
-            bsNotify("warning", "This voting session has not yet started. \nPlease refresh your browser window to get the actual content.");
+            bsNotify("danger", "This voting session has not yet started. \nPlease refresh your browser window to get the actual content.");
+            return false;
         } else if (isOverdue) {
-            bsNotify("warning", "This voting session has expired. \nPlease refresh your browser window to get the actual content.");
+            bsNotify("danger", "This voting session has expired. \nPlease refresh your browser window to get the actual content.");
+            return false;
+        } else if (upVote && voting.numberOfVotes - this.numberOfMyVotes() < 1) {
+            bsNotify("danger", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
+            return false;
+        } else if (!upVote && voteItem.myVotes <= 0) {
+            bsNotify("danger", "There are no more votes of yours on this item. \nPlease refresh your browser window to get the actual content.");
+            return false;
+        } else if (upVote && voteItem.myVotes >= voting.voteLimit) {
+            bsNotify("danger", `This work item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
+            return false;
         } else {
-            let multipleVotes = doc.vote.some(v => v.userId === vote.userId
-                && v.votingId === vote.votingId
-                && v.workItemId === vote.workItemId);
+            return true;
+        }
+    }
 
-            if ((numberOfVotes - this.numberOfMyVotes()) < 1) {
-                bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
-            } else if (voteItem.myVotes >= voting.voteLimit) {
-                bsNotify("warning", `This work item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
-            } else {
-                doc.vote.push(vote);
-                const uDoc = await this.votingDataService.updateDocumentAsync(doc);
-                LogExtension.log("saveVote: document updated", uDoc.id);
+    public async saveVoteAsync(vote: Vote) {
+        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
-                bsNotify("success", "Your vote has been saved.");
-            }
+        if (this.validateVote(doc.voting, vote.workItemId, true)) {
+            doc.vote.push(vote);
+            const uDoc = await this.votingDataService.updateDocumentAsync(doc);
+            LogExtension.log("saveVote: document updated", uDoc.id);
+
+            bsNotify("success", "Your vote has been saved.");
         }
     }
 
     public async deleteVoteAsync(id: number, userId: string) {
         const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        if (doc.voting == null) {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
-            return;
-        }
 
-        let isEnabled = doc.voting.isVotingEnabled;
-        if (isEnabled) {
+        if (this.validateVote(doc.voting, id, false)) {
             LogExtension.log("Item Id", id);
 
             for (let i = 0; i < doc.vote.length; i++) {

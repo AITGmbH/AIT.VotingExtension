@@ -4,6 +4,7 @@ import { Vote } from "../entities/vote";
 import { VotingItem } from "../entities/votingItem";
 import { VotingPageService } from "./votingPageService";
 import { LogExtension } from "../shared/logExtension";
+import { bsNotify } from "../shared/common";
 import { CookieService } from "../services/cookieService";
 import { VotingStatus } from "../entities/votingStatus";
 import { parseEmail } from "../shared/common";
@@ -51,14 +52,13 @@ export class VotingPageController extends Vue {
 
         this.votingService = new VotingPageService();
         this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.status = !isThereAnythingToVote ? VotingStatus.NothingToVote : this.status;
-        this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.votingService.calculating = () => {
             this.calculating();
             this.calculateMyVotes();
         };
         this.votingService.getVoteItem = (id: number) => this.actualVotingItem(id);
         this.votingService.getActualVotingItems = () => this.actualVotingItems;
-
+        this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.initializeVotingpageAsync();
     }
 
@@ -279,14 +279,13 @@ export class VotingPageController extends Vue {
                     vote.votingId = this.actualVoting.created;
                     vote.workItemId = id;
 
-                    await this.votingService.saveVoteAsync(vote, this.actualVoting.numberOfVotes);
-                    await this.initAsync();
+                    await this.votingService.saveVoteAsync(vote);
                 }
             }
         } else {
             await this.votingService.deleteVoteAsync(id, this.user.id);
-            await this.initAsync();
         }
+        await this.initAsync();
     }
 
     private get numberOfMyVotes(): number {
@@ -294,15 +293,7 @@ export class VotingPageController extends Vue {
     }
 
     private actualVotingItem(id: number): VotingItem {
-        var votingItem;
-
-        for (const item of this.actualVotingItems) {
-            if (item.id === id) {
-                votingItem = item;
-            }
-        }
-
-        return votingItem;
+        return this.actualVotingItems.find(i => i.id == id);
     }
 
     private showRemoveAllUserVotesDialog() {
