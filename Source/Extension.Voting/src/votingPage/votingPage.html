@@ -32,25 +32,49 @@
                 <div id="titleDiv" class="col-sm-6 titleBar">
                     <p v-if="actualVoting != null">{{ actualVoting.title }}</p>
                 </div>
+
                 <div id="remainingVotesDiv" class="col-sm-2 col-sm-offset-2">
-                    <p v-if="remainingVotes > 1">You have {{ remainingVotes }}
-                        votes left</p>
+                    <p v-if="remainingVotes > 1">You have {{ remainingVotes }} votes left</p>
                     <p v-else-if="remainingVotes === 1">You have 1 vote left</p>
                     <p v-else>You have no votes left</p>
                 </div>
+
                 <div id="voteLimitDiv" class="col-sm-2" style="text-align: right">
-                        <p>Vote limit per work item: {{ actualVoting.voteLimit }}</p>
+                    <p>Vote limit per work item: {{ actualVoting.voteLimit }}</p>
                 </div>
+
                 <div id="informationDiv" class="col-sm-12">
                     <p v-if="actualVoting != null">{{ actualVoting.description }}</p>
                 </div>
-                <div id="informationDiv" class="col-xs-6">
-                    <p v-if="status === 5">Starts: {{ getTimeStr(actualVoting.start) }}</p>
-                    <p v-else-if="actualVoting.useStartTime">Has started: {{ getTimeStr(actualVoting.start)}}</p>
+
+                <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
+                    <p v-if="status === 5">
+                        Starts:
+                        <time v-bind:datetime="getDatetimeString(actualVoting.start)">
+                            {{ getRelativeTimeString(actualVoting.start) }}
+                        </time>
+                    </p>
+                    <p v-else-if="actualVoting.useStartTime">
+                        Has started:
+                        <time v-bind:datetime="getDatetimeString(actualVoting.start)">
+                            {{ getRelativeTimeString(actualVoting.start) }}
+                        </time>
+                    </p>
                 </div>
-                <div id="informationDiv" class="col-xs-6" style="text-align: right">
-                    <p v-if="status === 6">Overdue since: {{ getTimeStr(actualVoting.end) }}</p>
-                    <p v-else-if="actualVoting.useEndTime">Ends: {{ getTimeStr(actualVoting.end) }}</p>
+
+                <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
+                    <p v-if="status === 6">
+                        Overdue:
+                        <time v-bind:datetime="getDatetimeString(actualVoting.end)">
+                            {{ getRelativeTimeString(actualVoting.end) }}
+                        </time>
+                    </p>
+                    <p v-else-if="actualVoting.useEndTime">
+                        Ends:
+                        <time v-bind:datetime="getDatetimeString(actualVoting.end)">
+                            {{ getRelativeTimeString(actualVoting.end) }}
+                        </time>
+                    </p>
                 </div>
                 
                 <div class="col-sm-12" id="errorMessage" v-if="status === 0">

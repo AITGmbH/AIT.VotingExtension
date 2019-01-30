@@ -564,7 +564,15 @@ export class VotingPageController extends Vue {
         }
     }
 
-    public getTimeStr(timestamp: number): string{
+    public getLocaleTimeString(timestamp: number): string {
         return moment(timestamp).toLocaleString();
+    }
+
+    public getRelativeTimeString(timestamp: number): string {
+        return moment(timestamp).fromNow();
+    }
+
+    public getDatetimeString(timestamp: number): string {
+        return moment(timestamp).format("YYYY-MM-DD HH:mm");
     }
 }
