@@ -78,10 +78,10 @@
                         </label>
                         <div class="row" v-if="actualVoting.useStartTime">
                             <div class="col-xs-6">
-                                <input type="date" class="form-control" name="startDate" v-model="startDate" @change="validatePeriod"/>
+                                <input type="date" class="form-control" name="startDate" v-model="startDate"/>
                             </div>
                             <div class="col-xs-4">
-                                <input type="time" class="form-control" name="startTime" v-model="startTime" @change="validatePeriod"/>
+                                <input type="time" class="form-control" name="startTime" v-model="startTime"/>
                             </div>
                         </div>
                     </div>
@@ -93,10 +93,10 @@
                         </label>
                         <div class="row" v-if="actualVoting.useEndTime">
                             <div class="col-xs-6">
-                                <input type="date" class="form-control" name="endDate" v-model="endDate" @change="validatePeriod"/>
+                                <input type="date" class="form-control" name="endDate" v-model="endDate"/>
                             </div>
                             <div class="col-xs-4">
-                                <input type="time" class="form-control" name="endTime" v-model="endTime" @change="validatePeriod"/>
+                                <input type="time" class="form-control" name="endTime" v-model="endTime"/>
                             </div>
                         </div>
                     </div>

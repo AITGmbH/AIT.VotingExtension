@@ -9,21 +9,51 @@ import * as navigation from "VSS/Controls/Navigation";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
 import Vue from "vue";
 import Component from "vue-class-component";
+import moment from "moment";
 
 @Component
 export class AdminPageController extends Vue {
-    private waitControl: statusIndicators.WaitControl;
-    private menuBar: menus.MenuBar;
-
+    
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
     public levels: string[] = [];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
-    public startDate: string = null;
-    public startTime: string = "00:00";
-    public endDate: string = null;
-    public endTime: string = "00:00";
+
+    private waitControl: statusIndicators.WaitControl;
+    private menuBar: menus.MenuBar;
+
+    public get startDate(): string {
+        return moment(this.actualVoting && this.actualVoting.start ? this.actualVoting.start : Date.now()).format("YYYY-MM-DD");
+    }
+
+    public set startDate(value: string) {
+        this.actualVoting.start = moment(`${value} ${this.startTime}`, "YYYY-MM-DD HH:mm").valueOf();
+    }
+    
+    public get startTime(): string {
+        return moment(this.actualVoting && this.actualVoting.start ? this.actualVoting.start : Date.now()).format("HH:mm");
+    }
+
+    public set startTime(value: string) {
+        this.actualVoting.start = moment(`${this.startDate} ${value}`, "YYYY-MM-DD HH:mm").valueOf();
+    }
+
+    public get endDate(): string {
+        return moment(this.actualVoting && this.actualVoting.end ? this.actualVoting.end : Date.now()).format("YYYY-MM-DD");
+    }
+
+    public set endDate(value: string) {
+        this.actualVoting.end = moment(`${value} ${this.endTime}`, "YYYY-MM-DD HH:mm").valueOf();
+    }
+
+    public get endTime(): string {
+        return moment(this.actualVoting && this.actualVoting.end ? this.actualVoting.end : Date.now()).format("HH:mm");
+    }
+
+    public set endTime(value: string) {
+        this.actualVoting.end = moment(`${this.endDate} ${value}`, "YYYY-MM-DD HH:mm").valueOf();
+    }
 
     public created() {
         document.getElementById("adminPage").classList.remove("hide");
@@ -72,27 +102,6 @@ export class AdminPageController extends Vue {
         }
     }
 
-    public validatePeriod() {
-        let now = Date.now();
-        let startStr = new Date(this.actualVoting.start ? this.actualVoting.start : now).toISOString();
-        let startDate = startStr.substr(0, 10);
-        let startTime = startStr.substr(11, 5);
-        
-        let endStr = new Date(this.actualVoting.end ? this.actualVoting.end : now).toISOString();
-        let endDate = endStr.substr(0, 10);
-        let endTime = endStr.substr(11, 5);
-
-        this.startTime = this.startTime ? this.startTime : startTime;
-        this.startDate = this.startDate ? this.startDate : startDate;
-        this.endTime = this.endTime ? this.endTime : endTime;
-        this.endDate = this.endDate ? this.endDate : endDate;
-
-        this.actualVoting.start = new Date(`${this.startDate} ${this.startTime}`).getTime();
-        this.actualVoting.end = new Date(`${this.endDate} ${this.endTime}`).getTime();
-
-        //console.log(`StartVote: ${new Date(this.actualVoting.start)} EndVote: ${new Date(this.actualVoting.end)}`);
-    }
-
     private async createNewVotingAsync() {
         this.actualVoting = new Voting();
 
@@ -135,7 +144,6 @@ export class AdminPageController extends Vue {
         try {
             this.actualVoting = await this.adminPageService.loadVotingAsync();
             this.buildAdminpage();
-            this.validatePeriod();
         } finally {
             this.waitControl.endWait();
         }
@@ -170,6 +178,16 @@ export class AdminPageController extends Vue {
         voting.title = escapeText(voting.title);
         if ((voting.title == null || voting.title === "") && isEnabled) {
             bsNotify("danger", "Please provide a title for the voting.");
+            return;
+        }
+
+        if (!voting.useStartTime && !voting.useEndTime) {
+            //ignore!
+        } else if (voting.useEndTime && voting.end < Date.now()) {
+            bsNotify("danger", "Invalid time period. Please make sure that End is in the future!");
+            return;
+        } else if (voting.start >= voting.end) {
+            bsNotify("danger", "Invalid time period. Please make sure that End is later than Start!");
             return;
         }
 

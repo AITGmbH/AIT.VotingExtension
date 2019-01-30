@@ -17,8 +17,7 @@ import * as menus from "VSS/Controls/Menus";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
-
-const timezoneOffset = new Date(Date.now()).getTimezoneOffset() * 60000;
+import moment from "moment";
 
 @Component
 export class VotingPageController extends Vue {
@@ -566,7 +565,6 @@ export class VotingPageController extends Vue {
     }
 
     public getTimeStr(timestamp: number): string{
-        let str = new Date(timestamp - timezoneOffset).toISOString();
-        return `${str.substr(0,10)} ${str.substr(11,5)}`;
+        return moment(timestamp).toLocaleString();
     }
 }

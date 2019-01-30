@@ -38,63 +38,59 @@
                     <p v-else-if="remainingVotes === 1">You have 1 vote left</p>
                     <p v-else>You have no votes left</p>
                 </div>
-                <div id="voteLimitDiv" class="col-sm-2">
+                <div id="voteLimitDiv" class="col-sm-2" style="text-align: right">
                         <p>Vote limit per work item: {{ actualVoting.voteLimit }}</p>
                 </div>
                 <div id="informationDiv" class="col-sm-12">
                     <p v-if="actualVoting != null">{{ actualVoting.description }}</p>
                 </div>
-                <div id="informationDiv" class="col-sm-6">
+                <div id="informationDiv" class="col-xs-6">
                     <p v-if="status === 5">Starts: {{ getTimeStr(actualVoting.start) }}</p>
                     <p v-else-if="actualVoting.useStartTime">Has started: {{ getTimeStr(actualVoting.start)}}</p>
                 </div>
-                <div id="informationDiv" class="col-sm-6">
+                <div id="informationDiv" class="col-xs-6" style="text-align: right">
                     <p v-if="status === 6">Overdue since: {{ getTimeStr(actualVoting.end) }}</p>
                     <p v-else-if="actualVoting.useEndTime">Ends: {{ getTimeStr(actualVoting.end) }}</p>
                 </div>
-            </div>
-
-            <div id="contentVotingInactive" class="row" v-bind:class="{ hide: status !== 0 }">
-                <div class="col-sm-12" id="errorMessage">
+                
+                <div class="col-sm-12" id="errorMessage" v-if="status === 0">
                     <p id="votingdisabledmessage">
-                        Voting session is disabled. Create a new voting at the
+                        <span class="bowtie-icon bowtie-status-warning"></span>
+                        The voting session is disabled. Create a new voting at the
                         <a id="linkToAdminpage" :href="adminpageUri" target="_blank">admin page</a>
                     </p>
                 </div>
-            </div>
-
-            <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 2 }">
-                <div class="col-sm-12" id="errorMessage">
+                
+                <div class="col-sm-12" id="errorMessage" v-if="status === 2">
                     <p id="votingdisabledmessage">
-                        Voting session is paused. You can only view the voting result.
+                        <span class="bowtie-icon bowtie-status-warning"></span>
+                        The voting session is paused. You can only take a look at the voting result.
                     </p>
                 </div>
-            </div>
-
-            <div id="notAllowedToVote" class="row" v-bind:class="{ hide: status !== 4 }">
-                <div class="col-sm-12" id="errorMessage">
+                
+                <div class="col-sm-12" id="errorMessage" v-if="status === 4">
                     <p id="userInformationNotConfirmedMessage">
-                        Voting session is disabled since the terms of use are not confirmed. To be able to vote refresh the
+                        <span class="bowtie-icon bowtie-status-warning"></span>
+                        The voting session is disabled since the terms of use are not confirmed. To be able to vote refresh the
                         page and confirm the terms of use in
                         the upcoming dialog.
                     </p>
                 </div>
-            </div>
-
-            <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 5 }">
-                <div class="col-sm-12" id="errorMessage">
+                
+                <div class="col-sm-12" id="errorMessage" v-if="status === 5">
                     <p id="votingdisabledmessage">
-                        Voting session has not yet started, but you can take a look at the vote list.
+                        <span class="bowtie-icon bowtie-status-warning"></span>
+                        The voting session has not yet started, but you can take a look at the vote list.
                     </p>
                 </div>
-            </div>
-
-            <div id="contentVotingPaused" class="row" v-bind:class="{ hide: status !== 6 }">
-                <div class="col-sm-12" id="errorMessage">
+                
+                <div class="col-sm-12" id="errorMessage" v-if="status === 6">
                     <p id="votingdisabledmessage">
-                        Voting session has expired. You can only view the voting result.
+                        <span class="bowtie-icon bowtie-status-warning"></span>
+                        The voting session has expired. You can only take a look at the voting result.
                     </p>
                 </div>
+
             </div>
 
             <div class="row">
