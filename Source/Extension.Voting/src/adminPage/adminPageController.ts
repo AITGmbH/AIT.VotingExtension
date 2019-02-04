@@ -16,14 +16,14 @@ import { VotingTypes } from "../entities/votingTypes";
 export class AdminPageController extends Vue {
     private waitControl: statusIndicators.WaitControl;
     private menuBar: MenuBar;
-    
+
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
     public types: string[] = [ VotingTypes.LEVEL, VotingTypes.QUERY ];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
-    
+
     public get levels() {
         return this.adminPageService.witLevelNames;
     }
@@ -35,18 +35,18 @@ export class AdminPageController extends Vue {
     public get queries() {
         return this.adminPageService.flatQueryNames;
     }
-    
+
     public mounted() {
         document.getElementById(this.$el.id).classList.remove("hide");
         this.adminPageService = new AdminPageService();
-        
+
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
             message: "Loading..."
         });
 
         this.initializeAdminpageAsync();
     }
-    
+
     public isMultipleVotingEnabledChanged() {
         if (this.actualVoting.isMultipleVotingEnabled && this.actualVoting.numberOfVotes === 1) {
             this.actualVoting.numberOfVotes = 3;
@@ -97,8 +97,8 @@ export class AdminPageController extends Vue {
     /**
      * Initialize and binds a vote setting to this controller.
      * If origin is null or undefined, a new vote setting will be created.
-     * 
-     * @param origin Binds a loaded setting to this contoller.  
+     *
+     * @param origin Binds a loaded setting to this contoller.
      */
     private initVoting(origin?: Voting) {
         if (origin === null || origin == undefined) {
@@ -160,12 +160,12 @@ export class AdminPageController extends Vue {
         try {
             if (this.actualVoting.isVotingEnabled) {
                 LogExtension.log("actual voting enabled");
-    
+
                 this.showContent = true;
                 this.createMenueBar(true);
             } else {
                 LogExtension.log("actual voting disabled");
-    
+
                 this.showContent = false;
                 this.createMenueBar(false);
             }
@@ -249,7 +249,7 @@ export class AdminPageController extends Vue {
                     this.executeMenuAction(command);
                 }
             });
-        
+
             document.getElementById("menueBar-container").classList.remove("hide");
         }
 
@@ -262,7 +262,7 @@ export class AdminPageController extends Vue {
         const options = {
             nodes: []
         };
-        
+
         function createPathTree() {
             for (let query of that.queries) {
                 let path = query.name.split('/');
@@ -278,7 +278,7 @@ export class AdminPageController extends Vue {
             }
         }
 
-        function createNodesRecusive(root: TreeNode, pathTree: any) {
+        function createNodesRecursive(root: TreeNode, pathTree: any) {
             for (let key in pathTree) {
                 if (key == 'id' || key == 'path') {
                     root.application = { id: pathTree.id, path: pathTree.path };
@@ -290,18 +290,31 @@ export class AdminPageController extends Vue {
                     node.expanded = true;
                     node.icon = "bowtie-icon bowtie-folder";
                     root.add(node);
-                    createNodesRecusive(node, pathTree[key]);
+                    createNodesRecursive(node, pathTree[key]);
                 }
             }
         }
 
         function createNodes() {
+            var hasAtLeastOneNode : boolean;
             for (let key in pathTree) {
+                hasAtLeastOneNode = true;
                 let node = new TreeNode(key);
                 node.expanded = true;
                 node.icon = "bowtie-icon bowtie-folder";
                 options.nodes.push(node);
-                createNodesRecusive(node, pathTree[key])
+                createNodesRecursive(node, pathTree[key])
+            }
+
+            if (!hasAtLeastOneNode){
+                let rootNode = new TreeNode("Shared Queries");
+                rootNode.expanded = true;
+                rootNode.icon = "bowtie-icon bowtie-folder";
+                let emptyNode = new TreeNode("No queries defined");
+                emptyNode.icon = "bowtie-icon bowtie-view-list query-type-icon";
+
+                rootNode.add(emptyNode);
+                options.nodes.push(rootNode);
             }
         }
 
@@ -310,7 +323,7 @@ export class AdminPageController extends Vue {
             try {
                 createPathTree();
                 createNodes();
-                
+
                 $("#query-tree-container").text("");
                 controls.create(TreeView, $("#query-tree-container"), options);
                 $('#query-select-button').text(this.currentQueryName);

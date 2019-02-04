@@ -17,7 +17,7 @@ export class BaseDataService {
     protected votingDataService: VotingDataService;
     protected template: string;
     protected process: string;
-    
+
     constructor() {
         const teamId = getUrlParameterByName("teamId", document.referrer)
             || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
@@ -27,10 +27,10 @@ export class BaseDataService {
                 name: ""
             };
         }
-        
+
         this.votingDataService = new VotingDataService();
     }
-    
+
     public get witTypeNames() {
         return this._witTypeNames;
     }
@@ -163,7 +163,7 @@ export class BaseDataService {
                 .sort((a, b) => b.rank - a.rank)
                 .filter(p => !p.isHidden)
                 .map(p => ({
-                    id: p.workItemTypes.map(i => i.name).join(','), 
+                    id: p.workItemTypes.map(i => i.name).join(','),
                     name: p.name
                 }));
 
@@ -210,12 +210,12 @@ export class BaseDataService {
                 that._flatQueryNames.push({ id: item.id, name: item.path });
             }
         }
-        
+
         try {
             const queries = await witClient.getQuery(projectId, "Shared Queries", QueryExpand.None);
             this._flatQueryNames = [];
             await recursiveSearch(queries);
-            
+
             LogExtension.log(this.flatQueryNames);
         } catch (error) {
             LogExtension.log(error);

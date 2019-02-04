@@ -79,9 +79,6 @@
 
                         <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip" title="Select the query to vote on.">
                             <label>Vote on Query</label>
-                            <!--<select class="form-control" name="query" v-model="actualVoting.query">
-                                <option v-for="query in queries" v-bind:value="query.id">{{ query.name }}</option>
-                            </select> //Could be alternatively used if the browser doesn't support the fancy stuff-->
                             <div class="form-control">
                                 <span id="query-select-button"></span>
                                 <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown" style="margin: -5px -10px -5px -5px" @click="createQueryTree">

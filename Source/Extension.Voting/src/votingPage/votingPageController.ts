@@ -36,7 +36,7 @@ export class VotingPageController extends Vue {
     public adminpageUri: string = "";
     public actualVoting: Voting = new Voting();
     public status: VotingStatus = VotingStatus.NoVoting;
-    
+
     public mounted() {
         document.getElementById(this.$el.id).classList.remove("hide");
         this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
@@ -357,9 +357,9 @@ export class VotingPageController extends Vue {
             showIcon: true,
             items: [
                 {
-                    id: "refresh", 
+                    id: "refresh",
                     title: "Refresh",
-                    icon: "icon icon-refresh", 
+                    icon: "icon icon-refresh",
                     disabled: false
                 },
                 {
@@ -367,17 +367,17 @@ export class VotingPageController extends Vue {
                     hidden: !this.isApplyable()
                 },
                 {
-                    id: "applyToBacklog", 
+                    id: "applyToBacklog",
                     title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
-                    icon: "icon icon-tfs-query-edit", 
-                    disabled: !this.isApplyable(), 
+                    icon: "icon icon-tfs-query-edit",
+                    disabled: !this.isApplyable(),
                     hidden: !this.isApplyable()
                 },
                 {
                     separator: true
                 },
                 {
-                    id: "adminpageLink", 
+                    id: "adminpageLink",
                     title: "Visit settings page",
                     icon: "icon icon-settings",
                     disabled: false

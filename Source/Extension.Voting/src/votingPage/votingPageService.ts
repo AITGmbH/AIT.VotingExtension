@@ -69,7 +69,7 @@ export class VotingPageService extends BaseDataService {
 
     /**
      * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
-     * 
+     *
      * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
      * @see VotingTypes
      */
@@ -78,15 +78,15 @@ export class VotingPageService extends BaseDataService {
         + " WHERE [System.State] <> 'Closed'"
         + " AND [System.State] <> 'Done'"
         + " AND [System.State] <> 'Removed'"
-        + " AND ( [System.WorkItemType] = '" + types.replace(',', "' OR [System.WorkItemType] = '") + "' )" 
+        + " AND ( [System.WorkItemType] = '" + types.replace(',', "' OR [System.WorkItemType] = '") + "' )"
         + " AND " + this._areas;
-        
+
         return this.loadWorkItemsAsync(wiql);
     }
 
     /**
      * Loads WorkItems based on a Query.
-     * 
+     *
      * @param queryId Id of a query.
      * @see VotingTypes
      */
@@ -97,13 +97,13 @@ export class VotingPageService extends BaseDataService {
 
     /**
      * Loads WorkItems based on a WIQL string.
-     * 
+     *
      * @param wiql Id of a query or comma separated string of required WorkItemTypes.
      */
     private async loadWorkItemsAsync(wiql: string): Promise<void> {
         this._requirements = new Array<TinyRequirement>();
         const witClient = getWitClient();
-        
+
         const wiqlJson = {
             query: wiql,
         };
