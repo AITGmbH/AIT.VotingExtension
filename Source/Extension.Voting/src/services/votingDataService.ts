@@ -35,7 +35,7 @@ export class VotingDataService {
                     if (voting.lastModified < doc.voting[i].lastModified) {
                         voting = doc.voting[i];
                     }
-                }                
+                }
             }
 
             voting.isVotingEnabled = voting.hasOwnProperty('votingEnabled') ? (<any>voting).votingEnabled === "true" : voting.isVotingEnabled;
@@ -52,7 +52,7 @@ export class VotingDataService {
         try {
             const service = await this.getVssServiceAsync();
             return await service.setDocument(this.webContext.collection.name, doc);
-        } catch (err) { 
+        } catch (err) {
             LogExtension.log("votingDataService.updateDocument: Could not update document", err);
             return doc;
         }

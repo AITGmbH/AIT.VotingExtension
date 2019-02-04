@@ -16,14 +16,14 @@ export class BaseDataService {
 
     public excludes: string[] = [];
     public teams: any[] = [];
-    
+
     public get witFieldNames() {
         return this._witFieldNames.filter(w => this.excludes.indexOf(w) < 0);
     }
 
     constructor() {
         const teamId = getUrlParameterByName("teamId", document.referrer)
-            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
+            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + VSS.getWebContext().project.id);
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }

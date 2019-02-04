@@ -542,13 +542,14 @@ export class VotingPageController extends Vue {
     }
 
     private setStatus() {
+        var nowValue = moment.utc().valueOf();
         if (!this.actualVoting.isVotingEnabled) {
             this.status = VotingStatus.NoVoting;
         } else if (this.actualVoting.isVotingPaused) {
             this.status = VotingStatus.PausedVoting;
-        } else if (this.actualVoting.useStartTime && Date.now() < this.actualVoting.start) {
+        } else if (this.actualVoting.useStartTime && nowValue < this.actualVoting.start) {
             this.status = VotingStatus.ProspectiveVoting;
-        } else if (this.actualVoting.useEndTime && Date.now() > this.actualVoting.end) {
+        } else if (this.actualVoting.useEndTime && nowValue > this.actualVoting.end) {
             this.status = VotingStatus.OverdueVoting;
         } else {
             this.status = VotingStatus.ActiveVoting;
@@ -556,14 +557,14 @@ export class VotingPageController extends Vue {
     }
 
     public getLocaleTimeString(timestamp: number): string {
-        return moment(timestamp).toLocaleString();
+        return moment.utc(timestamp).toLocaleString();
     }
 
     public getRelativeTimeString(timestamp: number): string {
-        return moment(timestamp).fromNow();
+        return moment.utc(timestamp).fromNow();
     }
 
     public getDatetimeString(timestamp: number): string {
-        return moment(timestamp).format("YYYY-MM-DD HH:mm");
+        return moment.utc(timestamp).format("YYYY-MM-DD HH:mm");
     }
 }

@@ -76,7 +76,7 @@
                         </timeago>
                     </p>
                 </div>
-                
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 0">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
@@ -84,14 +84,14 @@
                         <a id="linkToAdminpage" :href="adminpageUri" target="_blank">admin page</a>
                     </p>
                 </div>
-                
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 2">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
                         The voting session is paused. You can only take a look at the voting result.
                     </p>
                 </div>
-                
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 4">
                     <p id="userInformationNotConfirmedMessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
@@ -100,14 +100,14 @@
                         the upcoming dialog.
                     </p>
                 </div>
-                
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 5">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
                         The voting session has not yet started, but you can take a look at the vote list.
                     </p>
                 </div>
-                
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 6">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>

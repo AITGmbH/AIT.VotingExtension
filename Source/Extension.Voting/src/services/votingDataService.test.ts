@@ -10,7 +10,7 @@ class VSS {
 }
 
 const vssMock = typemoq.Mock.ofType<VSS>();
-vssMock.setup(s => s.ServiceIds).returns(() => { 
+vssMock.setup(s => s.ServiceIds).returns(() => {
     return { ExtensionData: "extensionData" };
 });
 vssMock.setup(s => s.getWebContext()).returns(() => {
@@ -31,7 +31,7 @@ describe('getAllVotings', () => {
                     getDocuments: () => {
                         return votings;
                     }
-                } 
+                }
             });
 
         var service = new VotingDataService();

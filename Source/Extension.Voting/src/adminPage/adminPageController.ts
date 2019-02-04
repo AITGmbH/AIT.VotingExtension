@@ -13,7 +13,10 @@ import moment from "moment";
 
 @Component
 export class AdminPageController extends Vue {
-    
+    private static readonly StandardDatePattern = "YYYY-MM-DD";
+    private static readonly StandardTimePattern = "HH:mm";
+    private static readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
+
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
     public levels: string[] = [];
@@ -24,35 +27,87 @@ export class AdminPageController extends Vue {
     private menuBar: menus.MenuBar;
 
     public get startDate(): string {
-        return moment(this.actualVoting && this.actualVoting.start ? this.actualVoting.start : Date.now()).format("YYYY-MM-DD");
+        var hasBackendStartDate = this.actualVoting && this.actualVoting.start;
+        var startDate : string;
+        if (hasBackendStartDate) {
+            startDate = moment.utc(this.actualVoting.start).format(AdminPageController.StandardDatePattern);
+        }
+        else {
+            startDate = moment().format(AdminPageController.StandardDatePattern);
+        }
+
+        return startDate;
     }
 
     public set startDate(value: string) {
-        this.actualVoting.start = moment(`${value} ${this.startTime}`, "YYYY-MM-DD HH:mm").valueOf();
+        // converting newStartDate to UTC can give the incorrect date, due to "date overflow"
+        var newStartDate = moment(value, AdminPageController.StandardDatePattern);
+        var backendDateTime = moment.utc(this.actualVoting.start);
+        var newDate = backendDateTime.year(newStartDate.year()).month(newStartDate.month()).date(newStartDate.date());
+        this.actualVoting.start = newDate.valueOf();
     }
-    
+
     public get startTime(): string {
-        return moment(this.actualVoting && this.actualVoting.start ? this.actualVoting.start : Date.now()).format("HH:mm");
+        var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
+        var startTime : string;
+        if (hasBackendStartTime) {
+            startTime = moment.utc(this.actualVoting.start).format(AdminPageController.StandardTimePattern);
+        }
+        else {
+            startTime = moment().format(AdminPageController.StandardTimePattern);
+        }
+
+        return startTime;
     }
 
     public set startTime(value: string) {
-        this.actualVoting.start = moment(`${this.startDate} ${value}`, "YYYY-MM-DD HH:mm").valueOf();
+        var loc = moment(value, AdminPageController.StandardTimePattern);
+        var newStartTime = loc.utc();
+        var backendDateTime = moment.utc(this.actualVoting.start);
+        var newDate = backendDateTime.set({hours: newStartTime.hours(), minutes: newStartTime.minutes()});
+        this.actualVoting.start = newDate.valueOf();
     }
 
     public get endDate(): string {
-        return moment(this.actualVoting && this.actualVoting.end ? this.actualVoting.end : Date.now()).format("YYYY-MM-DD");
+        var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
+        var endDate : string;
+        if (hasBackendEndDate) {
+            endDate = moment.utc(this.actualVoting.end).format(AdminPageController.StandardDatePattern);
+        }
+        else {
+            endDate = moment().format(AdminPageController.StandardDatePattern);
+        }
+
+        return endDate;
     }
 
     public set endDate(value: string) {
-        this.actualVoting.end = moment(`${value} ${this.endTime}`, "YYYY-MM-DD HH:mm").valueOf();
+        // converting newEndDate to UTC can give the incorrect date, due to "date overflow"
+        var newEndDate = moment(value, AdminPageController.StandardDatePattern);
+        var backendDateTime = moment.utc(this.actualVoting.end);
+        var newDate = backendDateTime.year(newEndDate.year()).month(newEndDate.month()).date(newEndDate.date());
+        this.actualVoting.end = newDate.valueOf();
     }
 
     public get endTime(): string {
-        return moment(this.actualVoting && this.actualVoting.end ? this.actualVoting.end : Date.now()).format("HH:mm");
+        var hasBackendStartTime = this.actualVoting && this.actualVoting.end;
+        var endTime : string;
+        if (hasBackendStartTime) {
+            endTime = moment.utc(this.actualVoting.end).format(AdminPageController.StandardTimePattern);
+        }
+        else {
+            endTime = moment().format(AdminPageController.StandardTimePattern);
+        }
+
+        return endTime;
     }
 
     public set endTime(value: string) {
-        this.actualVoting.end = moment(`${this.endDate} ${value}`, "YYYY-MM-DD HH:mm").valueOf();
+        var loc = moment(value, AdminPageController.StandardTimePattern);
+        var newEndTime = loc.utc();
+        var backendDateTime = moment.utc(this.actualVoting.end);
+        var newDate = backendDateTime.set({hours: newEndTime.hours(), minutes: newEndTime.minutes()});
+        this.actualVoting.end = newDate.valueOf();
     }
 
     public created() {
@@ -69,25 +124,25 @@ export class AdminPageController extends Vue {
         this.initializeAdminpageAsync();
     }
 
-    public async addToIncludes(ev) {
+    public async addToIncludes(ev: any) {
         ev.preventDefault();
 
         const text = ev.dataTransfer.getData("text");
         await this.addToIncludeAsync(text);
     }
 
-    public async addToExcludes(ev) {
+    public async addToExcludes(ev: any) {
         ev.preventDefault();
 
         const text = ev.dataTransfer.getData("text");
         await this.addToExcludeAsync(text);
     }
 
-    public startDrag(ev) {
+    public startDrag(ev: any) {
         ev.dataTransfer.setData("text", ev.target.innerText.trim())
     }
 
-    public onDragOver(ev) {
+    public onDragOver(ev: any) {
         ev.preventDefault();
     }
 
@@ -264,7 +319,7 @@ export class AdminPageController extends Vue {
                     this.executeMenuAction(command);
                 }
             });
-        
+
             document.getElementById("menueBar-container").classList.remove("hide");
         }
 
