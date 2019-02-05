@@ -54,7 +54,7 @@ export class VotingDataService {
         try {
             const service = await this.getVssServiceAsync();
             return await service.setDocument(this.webContext.collection.name, doc);
-        } catch (err) { 
+        } catch (err) {
             LogExtension.log("votingDataService.updateDocument: Could not update document", err);
             return doc;
         }

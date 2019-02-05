@@ -3,9 +3,10 @@
 export class Voting {
     public description = "";
     public isVotingEnabled = false;
-    public numberOfVotes: number = 3; 
+    public numberOfVotes: number = 3;
+    public voteLimit: number = 1;
+    public isMultipleVotingEnabled: boolean = true;
     public isVotingPaused = false;
-    public isMultipleVotingEnabled = false;
     public group = "Team";
     public team: string;
     public type: string;

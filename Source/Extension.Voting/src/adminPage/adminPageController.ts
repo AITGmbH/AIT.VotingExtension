@@ -85,6 +85,11 @@ export class AdminPageController extends Vue {
         return this.votingType == VotingTypes.ITEM;
     }
 
+    public validateInput() {
+        this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
+        this.actualVoting.numberOfVotes = Math.max(1, this.actualVoting.numberOfVotes);
+    }
+
     public get isQueryBased() {
         return this.votingType == VotingTypes.QUERY;
     }

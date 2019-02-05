@@ -92,12 +92,23 @@
                     <hr/>
 
                     <div class="row">
-                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multible votes per item.">
-                            <label>
-                                <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
-                                Multiple votes per item
-                            </label>
-                            <input type="text" class="form-control" name="numberOfVotes" v-model="actualVoting.numberOfVotes" v-show="actualVoting.isMultipleVotingEnabled">
+                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multiple votes per item.">
+
+                            <div class="form-group">
+                                <label>Votes per user</label>
+                                <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes" @change="validateInput">
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
+                                    Multiple votes per work item
+                                </label>
+                                <div v-if="actualVoting.isMultipleVotingEnabled">
+                                    <label>Limit votes per work item</label>
+                                    <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit" @change="validateInput">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
