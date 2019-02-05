@@ -13,6 +13,7 @@
 <body>
     <div class="hide" id="adminPage">
         <div id="waitContainerAdmin"></div>
+
         <div class="vso-container">
             <div class="row">
                 <h1 class="votingheadline">Voting settings</h1>
@@ -23,8 +24,14 @@
             </div>
 
             <div class="row">
-                <div id="no-permissions" class="error-message col-sm-4" v-bind:class="{ hide: userIsAdmin }">
+                <div id="no-permissions" class="error-message col-sm-4" v-show="!userIsAdmin">
                     <span>You do not have the required permissions to perform any action.</span>
+                </div>
+            </div>
+
+            <div class="row" style="padding-top: 10px;">
+                <div class="col-sm-12" id="errorMessage" v-show="!showContent">
+                    <p id="votingdisabledmessage">There is no voting available. Please create a new voting.</p>
                 </div>
             </div>
 
@@ -32,87 +39,80 @@
                 <div id="menueBar-container" class="toolbar col-sm-12 hide" style="padding-right:30px"></div>
             </div>
 
-            <div id="content" style="padding-top: 10px;" class="row container" v-bind:class="{ hide: !showContent }">
-                <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
+            <div id="admin-form" style="overflow-y: auto; height: 80vh">
+                <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
+                    <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
 
-                <div class="form-group">
-                    <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
-                    <input type="text" class="form-control" v-model="actualVoting.title">
-                </div>
-
-                <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" class="form-control" name="description" v-model="actualVoting.description">
-                </div>
-
-                <div class="form-group">
-                    <label>Voting level</label>
-                    <select class="form-control" name="level" v-model="actualVoting.level">
-                        <option v-for="value in levels">{{ value }}</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                        <label>Votes per user</label>
-                        <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes" @change="validateInput">
-                </div>
-
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
-                        <span>Multiple votes per work item</span>
-                    </label>
-                </div>
-
-                <div class="form-group" v-if="actualVoting.isMultipleVotingEnabled">
-                    <label>Limit votes per work item</label>
-                    <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit" @change="validateInput">
-                </div>
-            </div>
-
-            <div class="row" style="padding-top: 10px;">
-                <div class="col-sm-12" id="errorMessage" v-bind:class="{ hide: showContent }">
-                    <p id="votingdisabledmessage">There is no voting available. Please create a new voting.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="excludeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title" id="myModalLabel">Included work item types</h4>
+                    <div class="form-group" data-toggle="tooltip" title="Enter a title for the voting.">
+                        <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
+                        <input type="text" class="form-control" v-model="actualVoting.title">
                     </div>
-                    <div class="modal-body">
-                        <div id="includeList" class="panel panel-default pull-left" style="width:45%">
-                            <div class="panel-heading">Included work item types</div>
-                            <div class="panel-body" id="includeListbody" v-on:drop="addToIncludes" v-on:dragover="onDragOver">
-                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag" v-for="item in levels"
-                                    v-bind:id="item.replace(/\s+/g, '')">
-                                    <div class="panel-body">
-                                        {{ item }}
-                                    </div>
+
+                    <div class="form-group" data-toggle="tooltip" title="Enter a description for the voting.">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="description" v-model="actualVoting.description" />
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="form-group col-md-3" data-toggle="tooltip" title="Select a voting type. A backlog-based voting allows to vote on items of a specified backlog level. The order of the backlog items from the voting can then be applied to the backlog. A query-based voting allows to vote on work items specified by a shared (flat) query.">
+                            <label>Type</label>
+                            <select class="form-control" name="type" v-model="actualVoting.type" @change="updateVotingType">
+                                <option v-for="type in types">{{ type }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isBacklogBased" data-toggle="tooltip" title="Select the backlog level to vote on.">
+                            <label>Vote on Backlog</label>
+                            <select class="form-control" name="level" v-model="actualVoting.level">
+                                <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip" title="Select the work item type to vote on.">
+                            <label>Vote on WorkItemType</label>
+                            <select class="form-control" name="item" v-model="actualVoting.item">
+                                <option v-for="item in items">{{ item }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip" title="Select the query to vote on.">
+                            <label>Vote on Query</label>
+                            <div class="form-control">
+                                <span id="query-select-button"></span>
+                                <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown" style="margin: -5px -10px -5px -5px" @click="createQueryTree">
+                                    <span class="caret"></span>
+                                </button>
+                                <div id="query-tree-container" class="dropdown-menu pull-right" style="margin: 0px 15px 0px 0px"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multiple votes per item.">
+
+                            <div class="form-group">
+                                <label>Votes per user</label>
+                                <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes" @change="validateInput">
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged">
+                                    Multiple votes per work item
+                                </label>
+                                <div v-if="actualVoting.isMultipleVotingEnabled">
+                                    <label>Limit votes per work item</label>
+                                    <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit" @change="validateInput">
                                 </div>
                             </div>
                         </div>
-
-                        <div id="excludeList" class="panel panel-default pull-right" style="width:45%">
-                            <div class="panel-heading">Excluded work item types</div>
-                            <div class="panel-body" id="excludeListbody" v-on:drop="addToExcludes" v-on:dragover="onDragOver">
-                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag" v-for="item in adminPageService.excludes"
-                                    v-bind:id="item.replace(/\s+/g, '')">
-                                    <div class="panel-body">
-                                        {{ item }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="clearfix"></div>
                     </div>
+
+                    <div class="row" style="height: 15vh"><!--Required whitespace--></div>
                 </div>
             </div>
         </div>
