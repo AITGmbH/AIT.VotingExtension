@@ -697,11 +697,11 @@ export class VotingPageController extends Vue {
     }
 
     private validateSessionTimes() {
-        // if (this.actualVoting.useStartTime) {
-        //     if (!this.actualVoting.start) {
-        //         this.actualVoting.useStartTime = false;
-        //     }
-        // }
+        if (this.actualVoting.useStartTime) {
+            if (!this.actualVoting.start) {
+                this.actualVoting.useStartTime = false;
+            }
+        }
         if (this.actualVoting.useEndTime) {
             if (!this.actualVoting.end) {
                 this.actualVoting.useEndTime = false;

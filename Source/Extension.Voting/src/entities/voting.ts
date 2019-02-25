@@ -16,9 +16,9 @@ export class Voting {
     public created: number;
     public lastModified: number;
     public title = "";
-    public useStartTime: boolean;
+    public useStartTime: boolean = false;
     public start: number;
-    public useEndTime: boolean;
+    public useEndTime: boolean = false;
     public end: number;
 
     public get isBacklogBased() {

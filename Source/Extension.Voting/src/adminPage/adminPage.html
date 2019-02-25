@@ -118,12 +118,11 @@
                     </div>
 
                     <hr />
-
                     <div class="row">
                         <label class="col-sm-12">Voting session</label>
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="useStartTime" v-model="actualVoting.useStartTime" />
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime">
                                 Start
                             </label>
                             <div class="row" v-if="actualVoting.useStartTime">
@@ -138,7 +137,7 @@
 
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="useEndTime" v-model="actualVoting.useEndTime" />
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime">
                                 End
                             </label>
                             <div class="row" v-if="actualVoting.useEndTime">

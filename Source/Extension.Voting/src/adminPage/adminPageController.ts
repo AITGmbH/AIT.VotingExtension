@@ -208,21 +208,6 @@ export class AdminPageController extends Vue {
         }
     }
 
-    private createNewVoting() {
-        this.initVoting();
-        this.showContent = true;
-        this.createMenueBar(true);
-    }
-
-    private showInfo() {
-        dialogs.show(dialogs.ModalDialog, {
-            title: "Help",
-            contentText:
-                "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
-            buttons: []
-        });
-    }
-
     /**
      * Helper function since direct binding runs into race-condition.
      */
@@ -272,6 +257,21 @@ export class AdminPageController extends Vue {
     public get currentQueryName() {
         let current = this.queries.find(i => i.id == this.actualVoting.query);
         return current ? current.name : null;
+    }
+
+    private createNewVoting() {
+        this.initVoting();
+        this.showContent = true;
+        this.createMenueBar(true);
+    }
+
+    private showInfo() {
+        dialogs.show(dialogs.ModalDialog, {
+            title: "Help",
+            contentText:
+                "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
+            buttons: []
+        });
     }
 
     /**
@@ -420,13 +420,6 @@ export class AdminPageController extends Vue {
                         id: "createNewVoting",
                         text: "Create new voting",
                         icon: "icon icon-add",
-                        disabled: !this.userIsAdmin
-                    },
-                    { separator: true },
-                    {
-                        id: "excludeList",
-                        title: "Exclude work item types",
-                        icon: "icon icon-settings",
                         disabled: !this.userIsAdmin
                     }
                 ];
