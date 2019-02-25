@@ -3,28 +3,30 @@ import { AdminPageService } from "./adminPageService";
 import { LogExtension } from "../shared/logExtension";
 import { bsNotify, escapeText } from "../shared/common";
 import * as controls from "VSS/Controls";
-import * as dialogs from "VSS/Controls/Dialogs";
 import * as menus from "VSS/Controls/Menus";
+import { TreeView, TreeNode } from "VSS/Controls/TreeView";
+import * as dialogs from "VSS/Controls/Dialogs";
 import * as navigation from "VSS/Controls/Navigation";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
 import Vue from "vue";
 import Component from "vue-class-component";
 import moment from "moment";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class AdminPageController extends Vue {
     private static readonly StandardDatePattern = "YYYY-MM-DD";
     private static readonly StandardTimePattern = "HH:mm";
     private static readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
+    private waitControl: statusIndicators.WaitControl;
+    private menuBar: menus.MenuBar;
 
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
-    public levels: string[] = [];
+    public types: string[] = [VotingTypes.LEVEL, VotingTypes.QUERY];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
-
-    private waitControl: statusIndicators.WaitControl;
-    private menuBar: menus.MenuBar;
+    public votingType: string = VotingTypes.LEVEL;
 
     public get startDate(): string {
         var hasBackendStartDate = this.actualVoting && this.actualVoting.start;
@@ -158,11 +160,24 @@ export class AdminPageController extends Vue {
         this.actualVoting.end = newDate.valueOf();
     }
 
+    public get levels() {
+        return this.adminPageService.witLevelNames;
+    }
+
+    public get items() {
+        return this.adminPageService.witTypeNames;
+    }
+
+    public get queries() {
+        return this.adminPageService.flatQueryNames;
+    }
+
     public created() {
         document.getElementById("adminPage").classList.remove("hide");
     }
 
     public mounted() {
+        document.getElementById(this.$el.id).classList.remove("hide");
         this.adminPageService = new AdminPageService();
 
         this.waitControl = controls.create(
@@ -176,28 +191,6 @@ export class AdminPageController extends Vue {
         this.initializeAdminpageAsync();
     }
 
-    public async addToIncludes(ev: any) {
-        ev.preventDefault();
-
-        const text = ev.dataTransfer.getData("text");
-        await this.addToIncludeAsync(text);
-    }
-
-    public async addToExcludes(ev: any) {
-        ev.preventDefault();
-
-        const text = ev.dataTransfer.getData("text");
-        await this.addToExcludeAsync(text);
-    }
-
-    public startDrag(ev: any) {
-        ev.dataTransfer.setData("text", ev.target.innerText.trim());
-    }
-
-    public onDragOver(ev: any) {
-        ev.preventDefault();
-    }
-
     public validateInput() {
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
@@ -207,20 +200,16 @@ export class AdminPageController extends Vue {
     }
 
     public isMultipleVotingEnabledChanged() {
-        if (!this.actualVoting.isMultipleVotingEnabled) {
-            this.actualVoting.voteLimit = 1;
+        if (
+            this.actualVoting.isMultipleVotingEnabled &&
+            this.actualVoting.numberOfVotes === 1
+        ) {
+            this.actualVoting.numberOfVotes = 3;
         }
     }
 
-    private async createNewVotingAsync() {
-        this.actualVoting = new Voting();
-
-        if (this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
-
-        this.actualVoting.created = Math.round(new Date().getTime() / 1000);
-
+    private createNewVoting() {
+        this.initVoting();
         this.showContent = true;
         this.createMenueBar(true);
     }
@@ -234,12 +223,90 @@ export class AdminPageController extends Vue {
         });
     }
 
+    /**
+     * Helper function since direct binding runs into race-condition.
+     */
+    public updateVotingType() {
+        this.votingType = this.actualVoting.type;
+
+        switch (this.votingType) {
+            case VotingTypes.LEVEL:
+                this.waitControl.startWait();
+                this.adminPageService
+                    .loadWitLevelNamesAsync()
+                    .then(
+                        () => this.waitControl.endWait(),
+                        () => this.waitControl.endWait()
+                    );
+                break;
+            case VotingTypes.ITEM:
+                this.waitControl.startWait();
+                this.adminPageService
+                    .loadWitTypeNamesAsync()
+                    .then(
+                        () => this.waitControl.endWait(),
+                        () => this.waitControl.endWait()
+                    );
+                break;
+            case VotingTypes.QUERY:
+                this.createQueryTree();
+                break;
+            default:
+                LogExtension.log("warning:", "Unknown VotingType!");
+                break;
+        }
+    }
+
+    public get isBacklogBased() {
+        return this.votingType == VotingTypes.LEVEL;
+    }
+
+    public get isItemBased() {
+        return this.votingType == VotingTypes.ITEM;
+    }
+
+    public get isQueryBased() {
+        return this.votingType == VotingTypes.QUERY;
+    }
+
+    public get currentQueryName() {
+        let current = this.queries.find(i => i.id == this.actualVoting.query);
+        return current ? current.name : null;
+    }
+
+    /**
+     * Initialize and binds a vote setting to this controller.
+     * If origin is null or undefined, a new vote setting will be created.
+     *
+     * @param origin Binds a loaded setting to this contoller.
+     */
+    private initVoting(origin?: Voting) {
+        if (origin === null || origin == undefined) {
+            origin = new Voting();
+            origin.created = Math.round(new Date().getTime() / 1000);
+        }
+
+        <Voting>Object.assign(this.actualVoting, origin); //assign so we keep bindings!!!
+        this.actualVoting.type = this.actualVoting.type || VotingTypes.LEVEL;
+        this.actualVoting.level =
+            this.actualVoting.level ||
+            (this.levels.length
+                ? this.levels[this.levels.length - 1].id
+                : null);
+        this.actualVoting.item =
+            this.actualVoting.item ||
+            (this.items.length ? this.items[0] : null);
+        this.actualVoting.query =
+            this.actualVoting.query ||
+            (this.queries.length ? this.queries[0].id : null);
+    }
+
     private async initializeAdminpageAsync(): Promise<void> {
         this.waitControl.startWait();
 
         try {
-            await this.adminPageService.loadAsync();
-            await this.adminPageService.loadWITFieldNamesAsync();
+            await this.adminPageService.loadProjectAsync();
+            await this.adminPageService.loadTeamsAsync();
 
             this.generateTeamPivot();
 
@@ -253,33 +320,31 @@ export class AdminPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            this.actualVoting = await this.adminPageService.loadVotingAsync();
+            this.initVoting(await this.adminPageService.loadVotingAsync());
+            this.updateVotingType();
             this.buildAdminpage();
         } finally {
             this.waitControl.endWait();
         }
     }
 
-    private generateLevelDropDown() {
-        const fieldNames = this.adminPageService.witFieldNames;
-        if (fieldNames != null) {
-            this.levels = fieldNames;
-        }
-    }
-
     private buildAdminpage() {
-        this.generateLevelDropDown();
+        this.waitControl.startWait();
 
-        if (this.actualVoting.isVotingEnabled) {
-            LogExtension.log("actual voting enabled");
+        try {
+            if (this.actualVoting.isVotingEnabled) {
+                LogExtension.log("actual voting enabled");
 
-            this.showContent = true;
-            this.createMenueBar(true);
-        } else {
-            LogExtension.log("actual voting disabled");
+                this.showContent = true;
+                this.createMenueBar(true);
+            } else {
+                LogExtension.log("actual voting disabled");
 
-            this.showContent = false;
-            this.createMenueBar(false);
+                this.showContent = false;
+                this.createMenueBar(false);
+            }
+        } finally {
+            this.waitControl.endWait();
         }
     }
 
@@ -341,29 +406,10 @@ export class AdminPageController extends Vue {
             voting.isVotingPaused = isPaused;
         }
 
-        LogExtension.log("Level:", voting.level);
+        LogExtension.log("Voting:", voting);
 
         await this.adminPageService.saveVotingAsync(voting);
-
         await this.initAsync();
-    }
-
-    private async addToExcludeAsync(item: string) {
-        await this.adminPageService.addToExcludeAsync(item);
-        this.levels = this.adminPageService.witFieldNames;
-
-        if (this.actualVoting.level === item && this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
-    }
-
-    private async addToIncludeAsync(item: string) {
-        await this.adminPageService.addToIncludeAsync(item);
-        this.levels = this.adminPageService.witFieldNames;
-
-        if (this.actualVoting.level == null && this.levels.length > 0) {
-            this.actualVoting.level = this.levels[0];
-        }
     }
 
     private getMenuItems(isActive: boolean): IContributedMenuItem[] {
@@ -458,10 +504,93 @@ export class AdminPageController extends Vue {
         this.menuBar.updateItems(this.getMenuItems(isActive));
     }
 
+    private createQueryTree() {
+        const that = this;
+        const pathTree: any = {};
+        const options = {
+            nodes: []
+        };
+
+        function createPathTree() {
+            for (let query of that.queries) {
+                let path = query.name.split("/");
+                let node = pathTree;
+                for (let key of path) {
+                    if (!node[key]) {
+                        node[key] = {};
+                    }
+                    node = node[key];
+                }
+                node.id = query.id;
+                node.path = query.name;
+            }
+        }
+
+        function createNodesRecursive(root: TreeNode, pathTree: any) {
+            for (let key in pathTree) {
+                if (key == "id" || key == "path") {
+                    root.application = { id: pathTree.id, path: pathTree.path };
+                    root.icon = "bowtie-view-list query-type-icon bowtie-icon";
+                    break;
+                } else {
+                    let node = new TreeNode(key);
+                    node.expanded = true;
+                    node.icon = "bowtie-icon bowtie-folder";
+                    root.add(node);
+                    createNodesRecursive(node, pathTree[key]);
+                }
+            }
+        }
+
+        function createNodes() {
+            var hasAtLeastOneNode: boolean;
+            for (let key in pathTree) {
+                hasAtLeastOneNode = true;
+                let node = new TreeNode(key);
+                node.expanded = true;
+                node.icon = "bowtie-icon bowtie-folder";
+                options.nodes.push(node);
+                createNodesRecursive(node, pathTree[key]);
+            }
+
+            if (!hasAtLeastOneNode) {
+                let rootNode = new TreeNode("Shared Queries");
+                rootNode.expanded = true;
+                rootNode.icon = "bowtie-icon bowtie-folder";
+                let emptyNode = new TreeNode("No queries defined");
+                emptyNode.icon = "bowtie-icon bowtie-view-list query-type-icon";
+
+                rootNode.add(emptyNode);
+                options.nodes.push(rootNode);
+            }
+        }
+
+        this.waitControl.startWait();
+        this.adminPageService.loadFlatQueryNamesAsync().then(
+            () => {
+                try {
+                    createPathTree();
+                    createNodes();
+
+                    $("#query-tree-container").text("");
+                    controls.create(
+                        TreeView,
+                        $("#query-tree-container"),
+                        options
+                    );
+                    $("#query-select-button").text(this.currentQueryName);
+                } finally {
+                    this.waitControl.endWait();
+                }
+            },
+            () => this.waitControl.endWait()
+        );
+    }
+
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
-                this.createNewVotingAsync();
+                this.createNewVoting();
                 break;
             case "saveSettings":
                 this.saveSettingsAsync(true);

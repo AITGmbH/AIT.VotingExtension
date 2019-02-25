@@ -18,6 +18,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
 import * as moment from "moment";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class VotingPageController extends Vue {
@@ -37,11 +38,8 @@ export class VotingPageController extends Vue {
     public actualVoting: Voting = new Voting();
     public status: VotingStatus = VotingStatus.NoVoting;
 
-    public created() {
-        document.getElementById("votingPage").classList.remove("hide");
-    }
-
     public mounted() {
+        document.getElementById(this.$el.id).classList.remove("hide");
         this.waitControl = controls.create(
             statusIndicators.WaitControl,
             $("#waitContainer"),
@@ -140,17 +138,23 @@ export class VotingPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.loadAsync();
+            await this.votingService.loadProjectAsync();
+            await this.votingService.loadTeamsAsync();
+            <Voting>(
+                Object.assign(
+                    this.actualVoting,
+                    await this.votingService.loadVotingAsync()
+                )
+            ); //assign keeps bindings!!!
 
             this.createVotingMenue();
             this.createVotingTable();
             this.generateTeamPivot();
             this.updateTeam(this.votingService.team);
-
-            await this.refreshAsync();
         } finally {
             this.waitControl.endWait();
         }
+        await this.refreshAsync(true);
     }
 
     public isVisible(): boolean {
@@ -165,14 +169,20 @@ export class VotingPageController extends Vue {
     public isEditable(): boolean {
         return this.status === VotingStatus.ActiveVoting;
     }
-
-    private async refreshAsync() {
+    private async refreshAsync(lazy: boolean = false) {
         this.waitControl.startWait();
 
         try {
-            LogExtension.log("loadVoting");
-            this.actualVoting = await this.votingService.loadVotingAsync();
-
+            if (!lazy) {
+                LogExtension.log("reloadVoting");
+                <Voting>(
+                    Object.assign(
+                        this.actualVoting,
+                        await this.votingService.loadVotingAsync()
+                    )
+                ); //assign keeps bindings!!!
+                this.createVotingMenue();
+            }
             this.setStatus();
             this.validateSessionTimes();
 
@@ -185,10 +195,23 @@ export class VotingPageController extends Vue {
             LogExtension.log("getAreas");
             await this.votingService.getAreasAsync();
 
-            LogExtension.log("loadRequirements");
-            await this.votingService.loadRequirementsAsync(
-                this.actualVoting.level
-            );
+            LogExtension.log("loadWorkItems");
+
+            switch (this.actualVoting.type) {
+                case VotingTypes.LEVEL:
+                    await this.votingService.loadWorkItemsByTypes(
+                        this.actualVoting.level
+                    );
+                    break;
+                case VotingTypes.QUERY:
+                    await this.votingService.loadWorkItemsByQuery(
+                        this.actualVoting.query
+                    );
+                    break;
+                default:
+                    LogExtension.log("error:", "Unknown VotingType!");
+                    return;
+            }
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
             if (hasAcceptedDataProtection) {
@@ -234,7 +257,7 @@ export class VotingPageController extends Vue {
 
         this.actualVotingItems = new Array<VotingItem>();
 
-        for (const reqItem of this.votingService.getRequirements()) {
+        for (const reqItem of this.votingService.requirements) {
             var votingItemTemp: VotingItem = {
                 ...reqItem,
                 myVotes: 0,
@@ -364,6 +387,7 @@ export class VotingPageController extends Vue {
     }
 
     private createVotingMenue() {
+        $("#votingMenue-container").text("");
         controls.create(menus.MenuBar, $("#votingMenue-container"), {
             showIcon: true,
             items: [
@@ -374,11 +398,16 @@ export class VotingPageController extends Vue {
                     disabled: false
                 },
                 {
+                    separator: true,
+                    hidden: !this.isApplyable()
+                },
+                {
                     id: "applyToBacklog",
                     title:
                         "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
                     icon: "icon icon-tfs-query-edit",
-                    disabled: false
+                    disabled: !this.isApplyable(),
+                    hidden: !this.isApplyable()
                 },
                 {
                     separator: true
@@ -423,9 +452,7 @@ export class VotingPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.applyToBacklogAsync(
-                this.actualVoting.level
-            );
+            await this.votingService.applyToBacklogAsync();
         } finally {
             this.waitControl.endWait();
         }
@@ -446,7 +473,7 @@ export class VotingPageController extends Vue {
         const that = this;
 
         this.grid = controls.create(grids.Grid, $("#grid-container"), {
-            height: "400px",
+            height: "70vh",
             allowMultiSelect: false,
             columns: [
                 {
@@ -510,7 +537,7 @@ export class VotingPageController extends Vue {
                     tooltip: "Work Item Title",
                     text: "Title",
                     index: "title",
-                    width: 650
+                    width: 600
                 },
                 {
                     tooltip: "Assigned team member",
@@ -603,6 +630,9 @@ export class VotingPageController extends Vue {
             childList: true,
             subtree: true
         });
+        $("#grid-container").append(
+            "<div style='height: 20vh'><!--Whitespace--></div>"
+        );
     }
 
     private generateTeamPivot() {
@@ -698,5 +728,11 @@ export class VotingPageController extends Vue {
             return "";
         }
         return moment.utc(timestamp).format("YYYY-MM-DD HH:mm");
+    }
+    /**
+     * Determines whether this voting is applyable to backlog.
+     */
+    public isApplyable() {
+        return this.actualVoting.type === VotingTypes.LEVEL;
     }
 }

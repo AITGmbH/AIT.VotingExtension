@@ -1,4 +1,5 @@
-﻿
+import { VotingTypes } from "../entities/votingTypes";
+
 export class Voting {
     public description = "";
     public isVotingEnabled = false;
@@ -8,7 +9,10 @@ export class Voting {
     public isVotingPaused = false;
     public group = "Team";
     public team: string;
+    public type: string;
     public level: string;
+    public item: string;
+    public query: string;
     public created: number;
     public lastModified: number;
     public title = "";
@@ -16,4 +20,16 @@ export class Voting {
     public start: number;
     public useEndTime: boolean;
     public end: number;
+
+    public get isBacklogBased() {
+        return this.type == VotingTypes.LEVEL;
+    }
+
+    public get isItemBased() {
+        return this.type == VotingTypes.ITEM;
+    }
+
+    public get isQueryBased() {
+        return this.type == VotingTypes.QUERY;
+    }
 }

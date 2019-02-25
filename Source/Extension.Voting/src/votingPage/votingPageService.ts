@@ -6,16 +6,13 @@ import { VotingItem } from "../entities/votingItem";
 import { bsNotify } from "../shared/common";
 import { getClient } from "TFS/Work/RestClient";
 import { TeamContext } from "TFS/Core/Contracts";
-import * as service from "VSS/Service";
-import * as wit from "TFS/WorkItemTracking/RestClient";
+import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import * as _ from "lodash";
 import { Voting } from "../entities/voting";
 
 export class VotingPageService extends BaseDataService {
-    private areas: string;
-    private requirements: TinyRequirement[];
-
-    private static assignedToUnassignedText: string = "";
+    private _areas: string;
+    private _requirements: TinyRequirement[];
 
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
@@ -28,8 +25,8 @@ export class VotingPageService extends BaseDataService {
         super();
     }
 
-    public getRequirements(): TinyRequirement[] {
-        return this.requirements;
+    public get requirements(): TinyRequirement[] {
+        return this._requirements;
     }
 
     public async loadVotesAsync() {
@@ -43,9 +40,9 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async getAreasAsync() {
+    public async getAreasAsync(): Promise<void> {
         const client = getClient();
-        let areas = "AND ( ";
+        let areas = "( ";
 
         const teamcontext: TeamContext = {
             project: null,
@@ -71,22 +68,51 @@ export class VotingPageService extends BaseDataService {
         }
 
         LogExtension.log(areas);
-        this.areas = areas;
+        this._areas = areas;
         LogExtension.log("finish area");
     }
 
-    public async loadRequirementsAsync(level: string) {
-        this.requirements = new Array<TinyRequirement>();
-
-        const witClient = service.getCollectionClient(
-            wit.WorkItemTrackingHttpClient
-        );
+    /**
+     * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
+     *
+     * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
+     * @see VotingTypes
+     */
+    public async loadWorkItemsByTypes(types: string): Promise<void> {
         const wiql =
-            "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'" +
-            " AND [System.WorkItemType] = '" +
-            level +
-            "' " +
-            this.areas;
+            "SELECT [System.Id] FROM WorkItems" +
+            " WHERE [System.State] <> 'Closed'" +
+            " AND [System.State] <> 'Done'" +
+            " AND [System.State] <> 'Removed'" +
+            " AND ( [System.WorkItemType] = '" +
+            types.replace(",", "' OR [System.WorkItemType] = '") +
+            "' )" +
+            " AND " +
+            this._areas;
+
+        return this.loadWorkItemsAsync(wiql);
+    }
+
+    /**
+     * Loads WorkItems based on a Query.
+     *
+     * @param queryId Id of a query.
+     * @see VotingTypes
+     */
+    public async loadWorkItemsByQuery(queryId: string): Promise<void> {
+        const query = await this.getQueryById(queryId);
+        return this.loadWorkItemsAsync(query.wiql);
+    }
+
+    /**
+     * Loads WorkItems based on a WIQL string.
+     *
+     * @param wiql Id of a query or comma separated string of required WorkItemTypes.
+     */
+    private async loadWorkItemsAsync(wiql: string): Promise<void> {
+        this._requirements = new Array<TinyRequirement>();
+        const witClient = getWitClient();
+
         const wiqlJson = {
             query: wiql
         };
@@ -278,7 +304,7 @@ export class VotingPageService extends BaseDataService {
     public async updateBacklogAsync(
         wis: VotingItem[],
         firstBacklogItem: VotingItem
-    ) {
+    ): Promise<void> {
         LogExtension.log("begin updating");
 
         const order = this.getTemplate();
@@ -304,7 +330,7 @@ export class VotingPageService extends BaseDataService {
                 }
             ];
 
-            const witClient = wit.getClient();
+            const witClient = getWitClient();
 
             try {
                 await witClient.updateWorkItem(newJson, item.id);
@@ -349,12 +375,20 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async applyToBacklogAsync(level: string) {
+    public async applyToBacklogAsync(): Promise<void> {
         try {
-            await this.loadVotingAsync();
+            const voting = new Voting();
+            <Voting>Object.assign(voting, await this.loadVotingAsync());
             await this.loadVotesAsync();
             await this.getAreasAsync();
-            await this.loadRequirementsAsync(level);
+
+            if (!voting.isBacklogBased) {
+                bsNotify(
+                    "danger",
+                    "This voting is not applyable.\nPlease refresh the page and try again."
+                );
+                return;
+            }
 
             this.calculating();
 
@@ -388,7 +422,7 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async removeAllUserVotesAsync(userId: string) {
+    public async removeAllUserVotesAsync(userId: string): Promise<void> {
         const docs = await this.votingDataService.getAllVotingsAsync();
 
         try {
@@ -409,9 +443,7 @@ export class VotingPageService extends BaseDataService {
     private getNameOfWiResponsiveness(req: any): string {
         const assignedTo = req.fields["System.AssignedTo"];
         const displayName =
-            assignedTo === undefined
-                ? VotingPageService.assignedToUnassignedText
-                : assignedTo.displayName;
+            assignedTo === undefined ? "" : assignedTo.displayName;
         return displayName;
     }
 }

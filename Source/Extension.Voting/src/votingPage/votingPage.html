@@ -46,10 +46,8 @@
                 <div id="informationDiv" class="col-sm-12">
                     <p v-if="actualVoting != null">{{ actualVoting.description }}</p>
                 </div>
-
                 <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
                     <div v-if="actualVoting.start != null">
-                        {{ JSON.stringify(actualVoting.start) }}
                         <p v-if="status === 5">
                             Starts:
                             <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
@@ -66,7 +64,6 @@
                 </div>
 
                 <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
-                    {{ actualVoting.end }}
                     <div v-if="actualVoting.end != null">
                         <p v-if="status === 6">
                             Overdue:
@@ -124,25 +121,27 @@
 
             </div>
 
-            <div class="row">
-                <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: !isVisible() }">
-                </div>
+            <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: !isVisible() }">
+            </div>
 
-                <div id="nothingToVote" class="col-sm-12" v-bind:class="{ hide: status !== 3 }">
-                    <div class="hub-no-content-gutter gutter-banner">
-                        <div class="gutter-banner-container">
-                            <div class="gutter-banner-text">
-                                <h2 class="votingh2">It's lonely in here!</h2>
-                                <p>There is nothing to vote for...</p>
-                            </div>
-
-                            <div class="gutter-banner-icon">
-                                <div class="image image-vso-cloud"></div>
-                            </div>
+            <div id="nothingToVote" class="col-sm-12" v-bind:class="{ hide: status !== 3 }">
+                <div class="hub-no-content-gutter gutter-banner">
+                    <div class="gutter-banner-container">
+                        <div class="gutter-banner-text">
+                            <h2 class="votingh2">It's lonely in here!</h2>
+                            <p>There is nothing to vote for...</p>
+                        </div>
+                        <div class="gutter-banner-icon">
+                            <div class="image image-vso-cloud"></div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: status !== 1 && status !== 2 }"></div>
+            </div>
+
         </div>
     </div>
 

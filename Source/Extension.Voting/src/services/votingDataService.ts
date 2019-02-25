@@ -1,5 +1,6 @@
 ﻿import { VotingDocument } from "../entities/votingDocument";
 import { LogExtension } from "../shared/logExtension";
+import { VotingTypes } from "../entities/votingTypes";
 
 export class VotingDataService {
     private webContext: WebContext;
@@ -47,7 +48,12 @@ export class VotingDataService {
             voting.isVotingEnabled = voting.hasOwnProperty("votingEnabled")
                 ? (<any>voting).votingEnabled === "true"
                 : voting.isVotingEnabled;
-            //voting.isMultipleVotingEnabled = voting.hasOwnProperty('multipleVoting') ? (<any>voting).multipleVoting === "true" : voting.isMultipleVotingEnabled;
+            voting.isMultipleVotingEnabled = voting.hasOwnProperty(
+                "multipleVoting"
+            )
+                ? (<any>voting).multipleVoting === "true"
+                : voting.isMultipleVotingEnabled;
+            voting.type = voting.type || VotingTypes.LEVEL;
 
             return doc;
         } catch (err) {
