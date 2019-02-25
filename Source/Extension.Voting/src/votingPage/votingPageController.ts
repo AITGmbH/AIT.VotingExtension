@@ -1,5 +1,4 @@
-﻿
-import { User } from "../entities/user";
+﻿import { User } from "../entities/user";
 import { Vote } from "../entities/vote";
 import { VotingItem } from "../entities/votingItem";
 import { VotingPageService } from "./votingPageService";
@@ -18,7 +17,7 @@ import * as menus from "VSS/Controls/Menus";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
-import moment from "moment";
+import * as moment from "moment";
 
 @Component
 export class VotingPageController extends Vue {
@@ -43,20 +42,28 @@ export class VotingPageController extends Vue {
     }
 
     public mounted() {
-        this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
-            message: "Loading..."
-        });
+        this.waitControl = controls.create(
+            statusIndicators.WaitControl,
+            $("#waitContainer"),
+            {
+                message: "Loading..."
+            }
+        );
 
         this.extensionContext = VSS.getExtensionContext();
         this.cookieService = new CookieService();
 
         this.votingService = new VotingPageService();
-        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) => this.status = !isThereAnythingToVote ? VotingStatus.NothingToVote : this.status;
+        this.votingService.nothingToVote = (isThereAnythingToVote: boolean) =>
+            (this.status = !isThereAnythingToVote
+                ? VotingStatus.NothingToVote
+                : this.status);
         this.votingService.calculating = () => {
             this.calculating();
             this.calculateMyVotes();
         };
-        this.votingService.getVoteItem = (id: number) => this.actualVotingItem(id);
+        this.votingService.getVoteItem = (id: number) =>
+            this.actualVotingItem(id);
         this.votingService.getActualVotingItems = () => this.actualVotingItems;
         this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.initializeVotingpageAsync();
@@ -70,7 +77,9 @@ export class VotingPageController extends Vue {
         const publisher = this.extensionContext.publisherId;
         const extensionId = this.extensionContext.extensionId;
 
-        const uri = `${host}${project}/_settings/${publisher}.${extensionId}.Voting.Administration?teamId=${team.id}`;
+        const uri = `${host}${project}/_settings/${publisher}.${extensionId}.Voting.Administration?teamId=${
+            team.id
+        }`;
 
         this.adminpageUri = uri;
     }
@@ -82,7 +91,7 @@ export class VotingPageController extends Vue {
             appInsights.trackEvent("Vote up", {
                 Account: this.votingService.context.account.name,
                 ExtensionId: this.extensionContext.extensionId,
-                TeamProject: this.votingService.context.project.id,
+                TeamProject: this.votingService.context.project.id
             });
 
             this.saveVotingAsync(voteId, true);
@@ -96,14 +105,18 @@ export class VotingPageController extends Vue {
             appInsights.trackEvent("Vote down", {
                 Account: this.votingService.context.account.name,
                 ExtensionId: this.extensionContext.extensionId,
-                TeamProject: this.votingService.context.project.id,
+                TeamProject: this.votingService.context.project.id
             });
 
             this.saveVotingAsync(voteId, false);
         }
     }
 
-    private initializeItem(id: number, voteUp: HTMLElement, voteDown: HTMLElement) {
+    private initializeItem(
+        id: number,
+        voteUp: HTMLElement,
+        voteDown: HTMLElement
+    ) {
         const votingItem = this.actualVotingItem(id);
         if (votingItem == null) {
             return;
@@ -141,10 +154,12 @@ export class VotingPageController extends Vue {
     }
 
     public isVisible(): boolean {
-        return this.status === VotingStatus.ActiveVoting
-            || this.status === VotingStatus.PausedVoting
-            || this.status === VotingStatus.ProspectiveVoting
-            || this.status === VotingStatus.OverdueVoting;
+        return (
+            this.status === VotingStatus.ActiveVoting ||
+            this.status === VotingStatus.PausedVoting ||
+            this.status === VotingStatus.ProspectiveVoting ||
+            this.status === VotingStatus.OverdueVoting
+        );
     }
 
     public isEditable(): boolean {
@@ -157,7 +172,9 @@ export class VotingPageController extends Vue {
         try {
             LogExtension.log("loadVoting");
             this.actualVoting = await this.votingService.loadVotingAsync();
+
             this.setStatus();
+            this.validateSessionTimes();
 
             if (this.isVisible()) {
                 var columns = this.grid.getColumns();
@@ -169,7 +186,9 @@ export class VotingPageController extends Vue {
             await this.votingService.getAreasAsync();
 
             LogExtension.log("loadRequirements");
-            await this.votingService.loadRequirementsAsync(this.actualVoting.level);
+            await this.votingService.loadRequirementsAsync(
+                this.actualVoting.level
+            );
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
             if (hasAcceptedDataProtection) {
@@ -225,7 +244,8 @@ export class VotingPageController extends Vue {
             if (this.allVotes != null) {
                 for (const vote of this.allVotes) {
                     if (vote.workItemId === reqItem.id) {
-                        userVotes[vote.userId] = (userVotes[vote.userId] || 0) + 1;
+                        userVotes[vote.userId] =
+                            (userVotes[vote.userId] || 0) + 1;
                         if (userVotes[vote.userId] > numberOfVotes) {
                             // cheating protection
                             continue;
@@ -297,18 +317,19 @@ export class VotingPageController extends Vue {
     }
 
     private showRemoveAllUserVotesDialog() {
-        let htmlContentString: string = "<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>";
+        let htmlContentString: string =
+            "<html><body><div>Please note that deleting all your personal voting related data from storage deletes all your votes. This includes votes from currently running votings as well as from historical votings within the current team project.</div></body></html>";
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Delete all user data",
             content: dialogContent,
             buttons: {
-                "Delete": async () => {
+                Delete: async () => {
                     dialog.close();
 
                     this.removeAllUserVotesAsync();
                 },
-                "Cancel": () => {
+                Cancel: () => {
                     dialog.close();
                 }
             },
@@ -319,19 +340,20 @@ export class VotingPageController extends Vue {
     }
 
     private initializeDataProtectionDialog() {
-        let htmlContentString: string = "<html><body><div>Please note that when using the <a href=\"https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production\" target = \"_blank\" >AIT Voting Extension</a> personal and confidential information is only saved in your Azure DevOps account using the built-in Azure DevOps data storage service. You find more information about that service at <a href=\"https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts\" target=\"_blank\">Microsoft Docs: Azure DevOps Data storage</a>.<br/>We also collect some telemetry data using Application Insights (\"AI\"). As part of AI telemetry collection the standard AI telemetry data (<a href=\"https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy\" target = \"_blank\" >Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (Azure DevOps / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our <a href=\"https://www.aitgmbh.de/datenschutz\" target = \"_blank\" >data protection declaration</a>.<br/>By confirming this notification you accept this terms of use.</div></body></html>";
+        let htmlContentString: string =
+            '<html><body><div>Please note that when using the <a href="https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production" target = "_blank" >AIT Voting Extension</a> personal and confidential information is only saved in your Azure DevOps account using the built-in Azure DevOps data storage service. You find more information about that service at <a href="https://docs.microsoft.com/en-us/vsts/extend/develop/data-storage?view=vsts" target="_blank">Microsoft Docs: Azure DevOps Data storage</a>.<br/>We also collect some telemetry data using Application Insights ("AI"). As part of AI telemetry collection the standard AI telemetry data (<a href="https://docs.microsoft.com/en-us/azure/application-insights/app-insights-data-retention-privacy" target = "_blank" >Microsoft Docs: Data collection, retention and storage in Application Insights</a>) as well as the (Azure DevOps / TFS) account name and Team Project id is tracked.<br/>For general information on data protection, please refer to our <a href="https://www.aitgmbh.de/datenschutz" target = "_blank" >data protection declaration</a>.<br/>By confirming this notification you accept this terms of use.</div></body></html>';
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Terms of Use",
             content: dialogContent,
             buttons: {
-                "Confirm": () => {
+                Confirm: () => {
                     this.cookieService.setCookie();
                     dialog.close();
 
                     this.refreshAsync();
                 },
-                "Decline": () => {
+                Decline: () => {
                     dialog.close();
                 }
             },
@@ -346,36 +368,45 @@ export class VotingPageController extends Vue {
             showIcon: true,
             items: [
                 {
-                    id: "refresh", title: "Refresh",
-                    icon: "icon icon-refresh", disabled: false
+                    id: "refresh",
+                    title: "Refresh",
+                    icon: "icon icon-refresh",
+                    disabled: false
                 },
                 {
-                    id: "applyToBacklog", title: "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
-                    icon: "icon icon-tfs-query-edit", disabled: false
+                    id: "applyToBacklog",
+                    title:
+                        "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
+                    icon: "icon icon-tfs-query-edit",
+                    disabled: false
                 },
                 {
                     separator: true
                 },
                 {
-                    id: "adminpageLink", title: "Visit settings page",
-                    icon: "icon icon-settings", disabled: false
+                    id: "adminpageLink",
+                    title: "Visit settings page",
+                    icon: "icon icon-settings",
+                    disabled: false
                 },
                 {
                     separator: true
                 },
                 {
-                    id: "removeAllUserdata", title: "Delete all your votes",
-                    icon: "icon icon-delete", disabled: false
+                    id: "removeAllUserdata",
+                    title: "Delete all your votes",
+                    icon: "icon icon-delete",
+                    disabled: false
                 }
             ],
-            executeAction: (args) => {
+            executeAction: args => {
                 var command = args.get_commandName();
                 switch (command) {
                     case "applyToBacklog":
                         this.applyToBacklogAsync();
                         break;
                     case "adminpageLink":
-                        window.open(this.adminpageUri, '_blank');
+                        window.open(this.adminpageUri, "_blank");
                         break;
                     case "refresh":
                         this.refreshAsync();
@@ -392,7 +423,9 @@ export class VotingPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.applyToBacklogAsync(this.actualVoting.level);
+            await this.votingService.applyToBacklogAsync(
+                this.actualVoting.level
+            );
         } finally {
             this.waitControl.endWait();
         }
@@ -417,108 +450,176 @@ export class VotingPageController extends Vue {
             allowMultiSelect: false,
             columns: [
                 {
-                    tooltip: "Vote up", fieldId: "voteUp", canSortBy: false, width: 20, getCellContents: function (_, dataIndex) {
+                    tooltip: "Vote up",
+                    fieldId: "voteUp",
+                    canSortBy: false,
+                    width: 20,
+                    getCellContents: function(_, dataIndex) {
                         var voteId = this.getRowData(dataIndex).id;
 
-                        var upVoteControl = '<div class="grid-cell grid-buttonVoteUp-holder" role="gridcell" style="width: 20px;">';
+                        var upVoteControl =
+                            '<div class="grid-cell grid-buttonVoteUp-holder" role="gridcell" style="width: 20px;">';
                         upVoteControl += '<span class="upvote-holder">';
                         upVoteControl += `<span class="icon icon-add voting-plus hide" aria-hidden="true"></span>`;
-                        upVoteControl += '</span></div>';
+                        upVoteControl += "</span></div>";
 
                         var element = $(upVoteControl);
-                        element.find('.voting-plus').click(() => that.voteUpClicked(voteId));
-
-                        return element;
-                    }
-                }, {
-                    tooltip: "Vote down", fieldId: "voteDown", canSortBy: false, width: 20, getCellContents: function (_, dataIndex) {
-                        var voteId = this.getRowData(dataIndex).id;
-
-                        var downVoteControl = '<div class="grid-cell grid-buttonVoteDown-holder" role="gridcell" style="width: 20px;">';
-                        downVoteControl += '<span class="downvote-holder">';
-                        downVoteControl += `<span class="icon icon-delete voting-remove hide" aria-hidden="true"></span>`;
-                        downVoteControl += '</span></div>';
-
-                        var element = $(downVoteControl);
-                        element.find('.voting-remove').click(() => that.voteDownClicked(voteId));
+                        element
+                            .find(".voting-plus")
+                            .click(() => that.voteUpClicked(voteId));
 
                         return element;
                     }
                 },
-                { tooltip: "Work Item ID", text: "ID", index: "id", width: 50, fieldId: "itemId" },
-                { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
-                { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
-                { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
-                { tooltip: "All votes per item", text: "Votes", index: "allVotes", width: 60 },
-                { tooltip: "My Votes per item", text: "My Votes", index: "myVotes", width: 60 },
+                {
+                    tooltip: "Vote down",
+                    fieldId: "voteDown",
+                    canSortBy: false,
+                    width: 20,
+                    getCellContents: function(_, dataIndex) {
+                        var voteId = this.getRowData(dataIndex).id;
+
+                        var downVoteControl =
+                            '<div class="grid-cell grid-buttonVoteDown-holder" role="gridcell" style="width: 20px;">';
+                        downVoteControl += '<span class="downvote-holder">';
+                        downVoteControl += `<span class="icon icon-delete voting-remove hide" aria-hidden="true"></span>`;
+                        downVoteControl += "</span></div>";
+
+                        var element = $(downVoteControl);
+                        element
+                            .find(".voting-remove")
+                            .click(() => that.voteDownClicked(voteId));
+
+                        return element;
+                    }
+                },
+                {
+                    tooltip: "Work Item ID",
+                    text: "ID",
+                    index: "id",
+                    width: 50,
+                    fieldId: "itemId"
+                },
+                {
+                    tooltip: "Work Item Type",
+                    text: "Work Item Type",
+                    index: "workItemType",
+                    width: 100
+                },
+                {
+                    tooltip: "Work Item Title",
+                    text: "Title",
+                    index: "title",
+                    width: 650
+                },
+                {
+                    tooltip: "Assigned team member",
+                    text: "Assigned To",
+                    index: "assignedTo",
+                    width: 125
+                },
+                {
+                    tooltip: "Work Item State",
+                    text: "State",
+                    index: "state",
+                    width: 100
+                },
+                {
+                    tooltip: "All votes per item",
+                    text: "Votes",
+                    index: "allVotes",
+                    width: 60
+                },
+                {
+                    tooltip: "My Votes per item",
+                    text: "My Votes",
+                    index: "myVotes",
+                    width: 60
+                },
                 { text: "Order", index: "order", width: 50, hidden: true }
             ],
-            openRowDetail: async (index) => {
+            openRowDetail: async index => {
                 var item = this.grid.getRowData(index);
                 const service = await wi.WorkItemFormNavigationService.getService();
                 service.openWorkItem(item.id);
             },
-            sortOrder: [{
-                index: "allVotes",
-                order: "desc"
-            },
-            {
-                index: "order",
-                order: "asc"
-            }],
+            sortOrder: [
+                {
+                    index: "allVotes",
+                    order: "desc"
+                },
+                {
+                    index: "order",
+                    order: "asc"
+                }
+            ],
             autoSort: true
         });
 
         this.lockButtons = false;
 
-        var observer = new MutationObserver((_) => {
+        var observer = new MutationObserver(_ => {
             observer.disconnect();
 
-            $('.grid-row').each((_, element) => {
-                var cellAddButton = $(element).find('div:nth-child(1)');
-                var cellRemoveButton = $(element).find('div:nth-child(2)');
-                var cellId = $(element).find('div:nth-child(3)');
-                var cellWorkItemType = $(element).find('div:nth-child(4)');
-                var cellTitle = $(element).find('div:nth-child(5)');
-                var cellAssignedTo = $(element).find('div:nth-child(6)');
+            $(".grid-row").each((_, element) => {
+                var cellAddButton = $(element).find("div:nth-child(1)");
+                var cellRemoveButton = $(element).find("div:nth-child(2)");
+                var cellId = $(element).find("div:nth-child(3)");
+                var cellWorkItemType = $(element).find("div:nth-child(4)");
+                var cellTitle = $(element).find("div:nth-child(5)");
+                var cellAssignedTo = $(element).find("div:nth-child(6)");
 
                 var title = $(cellTitle).text();
-                var cssClass = $(cellWorkItemType).text().toLowerCase().replace(/\s+/g, '');
+                var cssClass = $(cellWorkItemType)
+                    .text()
+                    .toLowerCase()
+                    .replace(/\s+/g, "");
                 var assignedTo = parseEmail($(cellAssignedTo).text());
 
-                $(cellTitle).text('');
-                $(cellTitle).append(`<div class="work-item-color ${cssClass}-color"></div>`);
+                $(cellTitle).text("");
+                $(cellTitle).append(
+                    `<div class="work-item-color ${cssClass}-color"></div>`
+                );
                 $(cellTitle).append(`<span> ${title}</span>`);
                 $(cellAssignedTo).text(assignedTo);
 
-                var voteUpButton = $(cellAddButton).find('span > span.icon');
-                var voteDownButton = $(cellRemoveButton).find('span > span.icon');
+                var voteUpButton = $(cellAddButton).find("span > span.icon");
+                var voteDownButton = $(cellRemoveButton).find(
+                    "span > span.icon"
+                );
 
                 const voteId = parseInt($(cellId).text(), 10);
 
                 this.initializeItem(voteId, voteUpButton[0], voteDownButton[0]);
             });
 
-            observer.observe(document.getElementById('grid-container'), { childList: true, subtree: true });
+            observer.observe(document.getElementById("grid-container"), {
+                childList: true,
+                subtree: true
+            });
         });
 
-        observer.observe(document.getElementById('grid-container'), { childList: true, subtree: true });
+        observer.observe(document.getElementById("grid-container"), {
+            childList: true,
+            subtree: true
+        });
     }
 
     private generateTeamPivot() {
         controls.create(navigation.PivotFilter, $(".filter-container"), {
             behavior: "dropdown",
             text: "Team",
-            items: this.votingService.teams.map(team => {
-                return {
-                    id: team.id,
-                    text: team.name,
-                    value: team.id,
-                    selected: this.votingService.team.id === team.id
-                };
-            }).sort((a, b) => a.text.localeCompare(b.text)),
-            change: (item) => {
+            items: this.votingService.teams
+                .map(team => {
+                    return {
+                        id: team.id,
+                        text: team.name,
+                        value: team.id,
+                        selected: this.votingService.team.id === team.id
+                    };
+                })
+                .sort((a, b) => a.text.localeCompare(b.text)),
+            change: item => {
                 this.updateTeam(item);
                 this.refreshAsync();
             }
@@ -528,7 +629,10 @@ export class VotingPageController extends Vue {
     private updateTeam(team) {
         this.votingService.team = team;
         this.createAdminpageUri();
-        this.setAttributes(this.votingService.context.user, this.votingService.team);
+        this.setAttributes(
+            this.votingService.context.user,
+            this.votingService.team
+        );
     }
 
     private setAttributes(userContext: UserContext, teamContext: TeamContext) {
@@ -547,24 +651,52 @@ export class VotingPageController extends Vue {
             this.status = VotingStatus.NoVoting;
         } else if (this.actualVoting.isVotingPaused) {
             this.status = VotingStatus.PausedVoting;
-        } else if (this.actualVoting.useStartTime && nowValue < this.actualVoting.start) {
+        } else if (
+            this.actualVoting.useStartTime &&
+            nowValue < this.actualVoting.start
+        ) {
             this.status = VotingStatus.ProspectiveVoting;
-        } else if (this.actualVoting.useEndTime && nowValue > this.actualVoting.end) {
+        } else if (
+            this.actualVoting.useEndTime &&
+            nowValue > this.actualVoting.end
+        ) {
             this.status = VotingStatus.OverdueVoting;
         } else {
             this.status = VotingStatus.ActiveVoting;
         }
     }
 
+    private validateSessionTimes() {
+        // if (this.actualVoting.useStartTime) {
+        //     if (!this.actualVoting.start) {
+        //         this.actualVoting.useStartTime = false;
+        //     }
+        // }
+        if (this.actualVoting.useEndTime) {
+            if (!this.actualVoting.end) {
+                this.actualVoting.useEndTime = false;
+            }
+        }
+    }
+
     public getLocaleTimeString(timestamp: number): string {
+        if (!timestamp) {
+            return "";
+        }
         return moment.utc(timestamp).toLocaleString();
     }
 
     public getRelativeTimeString(timestamp: number): string {
+        if (!timestamp) {
+            return "";
+        }
         return moment.utc(timestamp).fromNow();
     }
 
     public getDatetimeString(timestamp: number): string {
+        if (!timestamp) {
+            return "";
+        }
         return moment.utc(timestamp).format("YYYY-MM-DD HH:mm");
     }
 }

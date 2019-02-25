@@ -28,12 +28,15 @@ export class AdminPageController extends Vue {
 
     public get startDate(): string {
         var hasBackendStartDate = this.actualVoting && this.actualVoting.start;
-        var startDate : string;
+        var startDate: string;
         if (hasBackendStartDate) {
-            startDate = moment.utc(this.actualVoting.start).format(AdminPageController.StandardDatePattern);
-        }
-        else {
-            startDate = moment().format(AdminPageController.StandardDatePattern);
+            startDate = moment
+                .utc(this.actualVoting.start)
+                .format(AdminPageController.StandardDatePattern);
+        } else {
+            startDate = moment().format(
+                AdminPageController.StandardDatePattern
+            );
         }
 
         return startDate;
@@ -41,20 +44,39 @@ export class AdminPageController extends Vue {
 
     public set startDate(value: string) {
         // converting newStartDate to UTC can give the incorrect date, due to "date overflow"
-        var newStartDate = moment(value, AdminPageController.StandardDatePattern);
-        var backendDateTime = moment.utc(this.actualVoting.start);
-        var newDate = backendDateTime.year(newStartDate.year()).month(newStartDate.month()).date(newStartDate.date());
-        this.actualVoting.start = newDate.valueOf();
+        var newStartDate = moment(
+            value,
+            AdminPageController.StandardDatePattern
+        );
+        var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
+        if (hasBackendStartTime) {
+            var backendDateTime = moment.utc(this.actualVoting.start);
+            newStartDate = backendDateTime
+                .year(newStartDate.year())
+                .month(newStartDate.month())
+                .date(newStartDate.date());
+        } else {
+            newStartDate = moment()
+                .utc()
+                .year(newStartDate.year())
+                .month(newStartDate.month())
+                .date(newStartDate.date());
+        }
+
+        this.actualVoting.start = newStartDate.valueOf();
     }
 
     public get startTime(): string {
         var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
-        var startTime : string;
+        var startTime: string;
         if (hasBackendStartTime) {
-            startTime = moment.utc(this.actualVoting.start).format(AdminPageController.StandardTimePattern);
-        }
-        else {
-            startTime = moment().format(AdminPageController.StandardTimePattern);
+            startTime = moment
+                .utc(this.actualVoting.start)
+                .format(AdminPageController.StandardTimePattern);
+        } else {
+            startTime = moment().format(
+                AdminPageController.StandardTimePattern
+            );
         }
 
         return startTime;
@@ -63,18 +85,25 @@ export class AdminPageController extends Vue {
     public set startTime(value: string) {
         var loc = moment(value, AdminPageController.StandardTimePattern);
         var newStartTime = loc.utc();
-        var backendDateTime = moment.utc(this.actualVoting.start);
-        var newDate = backendDateTime.set({hours: newStartTime.hours(), minutes: newStartTime.minutes()});
+        var backendDateTime = moment().utc();
+        if (this.actualVoting.start) {
+            backendDateTime = moment.utc(this.actualVoting.start);
+        }
+        var newDate = backendDateTime.set({
+            hours: newStartTime.hours(),
+            minutes: newStartTime.minutes()
+        });
         this.actualVoting.start = newDate.valueOf();
     }
 
     public get endDate(): string {
         var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
-        var endDate : string;
+        var endDate: string;
         if (hasBackendEndDate) {
-            endDate = moment.utc(this.actualVoting.end).format(AdminPageController.StandardDatePattern);
-        }
-        else {
+            endDate = moment
+                .utc(this.actualVoting.end)
+                .format(AdminPageController.StandardDatePattern);
+        } else {
             endDate = moment().format(AdminPageController.StandardDatePattern);
         }
 
@@ -84,18 +113,31 @@ export class AdminPageController extends Vue {
     public set endDate(value: string) {
         // converting newEndDate to UTC can give the incorrect date, due to "date overflow"
         var newEndDate = moment(value, AdminPageController.StandardDatePattern);
-        var backendDateTime = moment.utc(this.actualVoting.end);
-        var newDate = backendDateTime.year(newEndDate.year()).month(newEndDate.month()).date(newEndDate.date());
-        this.actualVoting.end = newDate.valueOf();
+        var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
+        if (hasBackendEndDate) {
+            var backendDateTime = moment.utc(this.actualVoting.end);
+            var newEndDate = backendDateTime
+                .year(newEndDate.year())
+                .month(newEndDate.month())
+                .date(newEndDate.date());
+        } else {
+            var newEndDate = moment()
+                .utc()
+                .year(newEndDate.year())
+                .month(newEndDate.month())
+                .date(newEndDate.date());
+        }
+        this.actualVoting.end = newEndDate.valueOf();
     }
 
     public get endTime(): string {
         var hasBackendStartTime = this.actualVoting && this.actualVoting.end;
-        var endTime : string;
+        var endTime: string;
         if (hasBackendStartTime) {
-            endTime = moment.utc(this.actualVoting.end).format(AdminPageController.StandardTimePattern);
-        }
-        else {
+            endTime = moment
+                .utc(this.actualVoting.end)
+                .format(AdminPageController.StandardTimePattern);
+        } else {
             endTime = moment().format(AdminPageController.StandardTimePattern);
         }
 
@@ -105,8 +147,14 @@ export class AdminPageController extends Vue {
     public set endTime(value: string) {
         var loc = moment(value, AdminPageController.StandardTimePattern);
         var newEndTime = loc.utc();
-        var backendDateTime = moment.utc(this.actualVoting.end);
-        var newDate = backendDateTime.set({hours: newEndTime.hours(), minutes: newEndTime.minutes()});
+        var backendDateTime = moment().utc();
+        if (this.actualVoting.end) {
+            backendDateTime = moment.utc(this.actualVoting.end);
+        }
+        var newDate = backendDateTime.set({
+            hours: newEndTime.hours(),
+            minutes: newEndTime.minutes()
+        });
         this.actualVoting.end = newDate.valueOf();
     }
 
@@ -117,9 +165,13 @@ export class AdminPageController extends Vue {
     public mounted() {
         this.adminPageService = new AdminPageService();
 
-        this.waitControl = controls.create(statusIndicators.WaitControl, $('#waitContainer'), {
-            message: "Loading..."
-        });
+        this.waitControl = controls.create(
+            statusIndicators.WaitControl,
+            $("#waitContainer"),
+            {
+                message: "Loading..."
+            }
+        );
 
         this.initializeAdminpageAsync();
     }
@@ -139,7 +191,7 @@ export class AdminPageController extends Vue {
     }
 
     public startDrag(ev: any) {
-        ev.dataTransfer.setData("text", ev.target.innerText.trim())
+        ev.dataTransfer.setData("text", ev.target.innerText.trim());
     }
 
     public onDragOver(ev: any) {
@@ -148,7 +200,10 @@ export class AdminPageController extends Vue {
 
     public validateInput() {
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
-        this.actualVoting.numberOfVotes = Math.max(1, this.actualVoting.numberOfVotes);
+        this.actualVoting.numberOfVotes = Math.max(
+            1,
+            this.actualVoting.numberOfVotes
+        );
     }
 
     public isMultipleVotingEnabledChanged() {
@@ -164,7 +219,7 @@ export class AdminPageController extends Vue {
             this.actualVoting.level = this.levels[0];
         }
 
-        this.actualVoting.created = Math.round((new Date()).getTime() / 1000);
+        this.actualVoting.created = Math.round(new Date().getTime() / 1000);
 
         this.showContent = true;
         this.createMenueBar(true);
@@ -173,7 +228,8 @@ export class AdminPageController extends Vue {
     private showInfo() {
         dialogs.show(dialogs.ModalDialog, {
             title: "Help",
-            contentText: "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
+            contentText:
+                "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
             buttons: []
         });
     }
@@ -227,7 +283,10 @@ export class AdminPageController extends Vue {
         }
     }
 
-    private async saveSettingsAsync(isEnabled: boolean, isPaused: boolean | null = null) {
+    private async saveSettingsAsync(
+        isEnabled: boolean,
+        isPaused: boolean | null = null
+    ) {
         const voting = this.actualVoting;
 
         voting.title = escapeText(voting.title);
@@ -236,17 +295,43 @@ export class AdminPageController extends Vue {
             return;
         }
 
-        if (!voting.useStartTime && !voting.useEndTime) {
-            //ignore!
-        } else if (voting.useEndTime && voting.end < Date.now()) {
-            bsNotify("danger", "Invalid time period. Please make sure that End is in the future!");
-            return;
-        } else if (voting.start >= voting.end) {
-            bsNotify("danger", "Invalid time period. Please make sure that End is later than Start!");
+        if (voting.useStartTime) {
+            if (!voting.start) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that start date and time is filled!"
+                );
+                return;
+            }
+        }
+
+        if (voting.useEndTime) {
+            if (!voting.end) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that end date and time is filled!"
+                );
+                return;
+            }
+        }
+
+        if (voting.useEndTime && voting.end < Date.now()) {
+            bsNotify(
+                "danger",
+                "Invalid time period. Please make sure that End is in the future!"
+            );
             return;
         }
 
-        voting.lastModified = Math.round((new Date()).getTime() / 1000);
+        if (voting.start >= voting.end) {
+            bsNotify(
+                "danger",
+                "Invalid time period. Please make sure that End is later than Start!"
+            );
+            return;
+        }
+
+        voting.lastModified = Math.round(new Date().getTime() / 1000);
         voting.description = escapeText(voting.description);
         voting.team = this.adminPageService.team.id;
 
@@ -285,42 +370,89 @@ export class AdminPageController extends Vue {
         if (this.actualVoting == null || !this.actualVoting.isVotingEnabled) {
             if (!isActive) {
                 return [
-                    { id: "createNewVoting", text: "Create new voting", icon: "icon icon-add", disabled: !this.userIsAdmin },
+                    {
+                        id: "createNewVoting",
+                        text: "Create new voting",
+                        icon: "icon icon-add",
+                        disabled: !this.userIsAdmin
+                    },
                     { separator: true },
-                    { id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin }
+                    {
+                        id: "excludeList",
+                        title: "Exclude work item types",
+                        icon: "icon icon-settings",
+                        disabled: !this.userIsAdmin
+                    }
                 ];
             }
         }
 
         const items = [
-            <any>{ id: "saveSettings", text: "Save", title: "Save voting", icon: "icon icon-save", disabled: !this.userIsAdmin }
+            <any>{
+                id: "saveSettings",
+                text: "Save",
+                title: "Save voting",
+                icon: "icon icon-save",
+                disabled: !this.userIsAdmin
+            }
         ];
 
         if (this.actualVoting.isVotingPaused) {
-            items.push({ id: "resumeVoting", title: "Resume voting", icon: "icon icon-play", disabled: !this.userIsAdmin });
+            items.push({
+                id: "resumeVoting",
+                title: "Resume voting",
+                icon: "icon icon-play",
+                disabled: !this.userIsAdmin
+            });
         } else {
-            items.push({ id: "pauseVoting", title: "Pause voting", icon: "icon icon-pause", disabled: !this.userIsAdmin });
+            items.push({
+                id: "pauseVoting",
+                title: "Pause voting",
+                icon: "icon icon-pause",
+                disabled: !this.userIsAdmin
+            });
         }
 
-        items.push({ id: "terminateVoting", title: "Stop voting", icon: "icon icon-delete", disabled: !this.userIsAdmin });
+        items.push({
+            id: "terminateVoting",
+            title: "Stop voting",
+            icon: "icon icon-delete",
+            disabled: !this.userIsAdmin
+        });
         items.push({ separator: true });
-        items.push({ id: "infoButton", title: "Help", icon: "icon icon-info", disabled: false });
-        items.push({ id: "excludeList", title: "Exclude work item types", icon: "icon icon-settings", disabled: !this.userIsAdmin });
+        items.push({
+            id: "infoButton",
+            title: "Help",
+            icon: "icon icon-info",
+            disabled: false
+        });
+        items.push({
+            id: "excludeList",
+            title: "Exclude work item types",
+            icon: "icon icon-settings",
+            disabled: !this.userIsAdmin
+        });
 
         return items;
     }
 
     private createMenueBar(isActive: boolean) {
         if (this.menuBar == null) {
-            this.menuBar = controls.create(menus.MenuBar, $("#menueBar-container"), {
-                showIcon: true,
-                executeAction: (args) => {
-                    var command = args.get_commandName();
-                    this.executeMenuAction(command);
+            this.menuBar = controls.create(
+                menus.MenuBar,
+                $("#menueBar-container"),
+                {
+                    showIcon: true,
+                    executeAction: args => {
+                        var command = args.get_commandName();
+                        this.executeMenuAction(command);
+                    }
                 }
-            });
+            );
 
-            document.getElementById("menueBar-container").classList.remove("hide");
+            document
+                .getElementById("menueBar-container")
+                .classList.remove("hide");
         }
 
         this.menuBar.updateItems(this.getMenuItems(isActive));
@@ -347,7 +479,7 @@ export class AdminPageController extends Vue {
                 this.saveSettingsAsync(false);
                 break;
             case "excludeList":
-                $('#excludeModal').modal();
+                $("#excludeModal").modal();
                 break;
         }
     }
@@ -356,15 +488,17 @@ export class AdminPageController extends Vue {
         controls.create(navigation.PivotFilter, $(".filter-container"), {
             behavior: "dropdown",
             text: "Team",
-            items: this.adminPageService.teams.map(team => {
-                return {
-                    id: team.id,
-                    text: team.name,
-                    value: team.id,
-                    selected: this.adminPageService.team.id === team.id
-                };
-            }).sort((a, b) => a.text.localeCompare(b.text)),
-            change: (item) => {
+            items: this.adminPageService.teams
+                .map(team => {
+                    return {
+                        id: team.id,
+                        text: team.name,
+                        value: team.id,
+                        selected: this.adminPageService.team.id === team.id
+                    };
+                })
+                .sort((a, b) => a.text.localeCompare(b.text)),
+            change: item => {
                 this.adminPageService.team = item;
                 this.initAsync();
             }

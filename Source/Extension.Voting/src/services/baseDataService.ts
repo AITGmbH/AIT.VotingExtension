@@ -22,8 +22,12 @@ export class BaseDataService {
     }
 
     constructor() {
-        const teamId = getUrlParameterByName("teamId", document.referrer)
-            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + VSS.getWebContext().project.id);
+        const teamId =
+            getUrlParameterByName("teamId", document.referrer) ||
+            window.localStorage.getItem(
+                "VotingExtension.SelectedTeamId-" +
+                    VSS.getWebContext().project.id
+            );
         if (teamId != null) {
             this.team = { id: teamId, name: "" };
         }
@@ -63,11 +67,16 @@ export class BaseDataService {
     public set team(team: TeamContext) {
         this.configuration.team = team;
 
-        VSS.getService(VSS.ServiceIds.Navigation).then((navigationService: HostNavigationService) => {
-            navigationService.updateHistoryEntry(null, { teamId: team.id });
-        });
+        VSS.getService(VSS.ServiceIds.Navigation).then(
+            (navigationService: HostNavigationService) => {
+                navigationService.updateHistoryEntry(null, { teamId: team.id });
+            }
+        );
 
-        window.localStorage.setItem("VotingExtension.SelectedTeamId-" + this.context.project.id, team.id);
+        window.localStorage.setItem(
+            "VotingExtension.SelectedTeamId-" + this.context.project.id,
+            team.id
+        );
     }
 
     public getTemplate(): string {
@@ -96,7 +105,10 @@ export class BaseDataService {
         var coreClient = getCoreClient();
 
         try {
-            this.teams = await coreClient.getTeams(this.context.project.id, false);
+            this.teams = await coreClient.getTeams(
+                this.context.project.id,
+                false
+            );
 
             LogExtension.log(this.teams);
         } catch (error) {
@@ -108,7 +120,10 @@ export class BaseDataService {
         var coreClient = getCoreClient();
 
         try {
-            const project = await coreClient.getProject(this.context.project.id, true);
+            const project = await coreClient.getProject(
+                this.context.project.id,
+                true
+            );
             this.process = project.capabilities.processTemplate.templateName;
 
             LogExtension.log(project);
@@ -121,7 +136,9 @@ export class BaseDataService {
         var witclient = getWitClient();
 
         try {
-            const witcat = await witclient.getWorkItemTypes(this.context.project.id);
+            const witcat = await witclient.getWorkItemTypes(
+                this.context.project.id
+            );
             this._witFieldNames = witcat.map(w => w.name);
 
             LogExtension.log(this.witFieldNames);
@@ -131,7 +148,9 @@ export class BaseDataService {
     }
 
     public async loadVotingAsync(): Promise<Voting> {
-        var doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        var doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
         LogExtension.log(doc);
 
         this.excludes = doc.excludes || [];

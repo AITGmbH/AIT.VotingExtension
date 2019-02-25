@@ -48,33 +48,39 @@
                 </div>
 
                 <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
-                    <p v-if="status === 5">
-                        Starts:
-                        <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
-                            {{ getRelativeTimeString(actualVoting.start) }}
-                        </timeago>
-                    </p>
-                    <p v-else-if="actualVoting.useStartTime">
-                        Has started:
-                        <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
-                            {{ getRelativeTimeString(actualVoting.start) }}
-                        </timeago>
-                    </p>
+                    <div v-if="actualVoting.start != null">
+                        {{ JSON.stringify(actualVoting.start) }}
+                        <p v-if="status === 5">
+                            Starts:
+                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
+                                {{ getRelativeTimeString(actualVoting.start) }}
+                            </timeago>
+                        </p>
+                        <p v-else-if="actualVoting.useStartTime">
+                            Has started:
+                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
+                                {{ getRelativeTimeString(actualVoting.start) }}
+                            </timeago>
+                        </p>
+                    </div>
                 </div>
 
                 <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
-                    <p v-if="status === 6">
-                        Overdue:
-                        <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
-                            {{ getRelativeTimeString(actualVoting.end) }}
-                        </timeago>
-                    </p>
-                    <p v-else-if="actualVoting.useEndTime">
-                        Ends:
-                        <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
-                            {{ getRelativeTimeString(actualVoting.end) }}
-                        </timeago>
-                    </p>
+                    {{ actualVoting.end }}
+                    <div v-if="actualVoting.end != null">
+                        <p v-if="status === 6">
+                            Overdue:
+                            <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
+                                {{ getRelativeTimeString(actualVoting.end) }}
+                            </timeago>
+                        </p>
+                        <p v-else-if="actualVoting.useEndTime">
+                            Ends:
+                            <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
+                                {{ getRelativeTimeString(actualVoting.end) }}
+                            </timeago>
+                        </p>
+                    </div>
                 </div>
 
                 <div class="col-sm-12" id="errorMessage" v-if="status === 0">
@@ -95,7 +101,8 @@
                 <div class="col-sm-12" id="errorMessage" v-if="status === 4">
                     <p id="userInformationNotConfirmedMessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
-                        The voting session is disabled since the terms of use are not confirmed. To be able to vote refresh the
+                        The voting session is disabled since the terms of use are not confirmed. To be able to vote
+                        refresh the
                         page and confirm the terms of use in
                         the upcoming dialog.
                     </p>

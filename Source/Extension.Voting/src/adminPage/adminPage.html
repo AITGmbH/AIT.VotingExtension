@@ -38,12 +38,12 @@
 
                 <div class="form-group">
                     <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
-                    <input type="text" class="form-control" v-model="actualVoting.title"/>
+                    <input type="text" class="form-control" v-model="actualVoting.title" />
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    <input type="text" class="form-control" name="description" v-model="actualVoting.description"/>
+                    <input type="text" class="form-control" name="description" v-model="actualVoting.description" />
                 </div>
 
                 <div class="form-group">
@@ -58,12 +58,15 @@
                 <div class="row">
                     <div class="form-group col-sm-12">
                         <label>Votes per user</label>
-                        <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes" @change="validateInput">
+                        <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes"
+                            @change="validateInput">
                     </div>
 
                     <div class="form-group col-sm-12">
-                        <label><input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled" @change="isMultipleVotingEnabledChanged"> Limit votes per work item</label>
-                        <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit" @change="validateInput" v-if="actualVoting.isMultipleVotingEnabled">
+                        <label><input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled"
+                                @change="isMultipleVotingEnabledChanged"> Limit votes per work item</label>
+                        <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit"
+                            @change="validateInput" v-if="actualVoting.isMultipleVotingEnabled">
                     </div>
                 </div>
 
@@ -73,30 +76,30 @@
                     <label class="col-sm-12">Voting session</label>
                     <div class="form-group col-sm-6">
                         <label>
-                            <input type="checkbox" name="useStartTime" v-model="actualVoting.useStartTime"/>
+                            <input type="checkbox" name="useStartTime" v-model="actualVoting.useStartTime" />
                             Start
                         </label>
                         <div class="row" v-if="actualVoting.useStartTime">
                             <div class="col-xs-6">
-                                <input type="date" class="form-control" name="startDate" v-model="startDate"/>
+                                <input type="date" class="form-control" name="startDate" v-model="startDate" />
                             </div>
                             <div class="col-xs-4">
-                                <input type="time" class="form-control" name="startTime" v-model="startTime"/>
+                                <input type="time" class="form-control" name="startTime" v-model="startTime" />
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group col-sm-6">
                         <label>
-                            <input type="checkbox" name="useEndTime" v-model="actualVoting.useEndTime"/>
+                            <input type="checkbox" name="useEndTime" v-model="actualVoting.useEndTime" />
                             End
                         </label>
                         <div class="row" v-if="actualVoting.useEndTime">
                             <div class="col-xs-6">
-                                <input type="date" class="form-control" name="endDate" v-model="endDate"/>
+                                <input type="date" class="form-control" name="endDate" v-model="endDate" />
                             </div>
                             <div class="col-xs-4">
-                                <input type="time" class="form-control" name="endTime" v-model="endTime"/>
+                                <input type="time" class="form-control" name="endTime" v-model="endTime" />
                             </div>
                         </div>
                     </div>
@@ -123,8 +126,8 @@
                         <div id="includeList" class="panel panel-default pull-left" style="width:45%">
                             <div class="panel-heading">Included work item types</div>
                             <div class="panel-body" id="includeListbody" v-on:drop="addToIncludes" v-on:dragover="onDragOver">
-                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag" v-for="item in levels"
-                                    v-bind:id="item.replace(/\s+/g, '')">
+                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag"
+                                    v-for="item in levels" v-bind:id="item.replace(/\s+/g, '')">
                                     <div class="panel-body">
                                         {{ item }}
                                     </div>
@@ -135,8 +138,8 @@
                         <div id="excludeList" class="panel panel-default pull-right" style="width:45%">
                             <div class="panel-heading">Excluded work item types</div>
                             <div class="panel-body" id="excludeListbody" v-on:drop="addToExcludes" v-on:dragover="onDragOver">
-                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag" v-for="item in adminPageService.excludes"
-                                    v-bind:id="item.replace(/\s+/g, '')">
+                                <div name="itemPanel" class="panel panel-default" draggable="true" v-on:dragstart="startDrag"
+                                    v-for="item in adminPageService.excludes" v-bind:id="item.replace(/\s+/g, '')">
                                     <div class="panel-body">
                                         {{ item }}
                                     </div>

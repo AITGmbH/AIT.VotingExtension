@@ -16,7 +16,9 @@ export class AdminPageService extends BaseDataService {
             this.witFieldNames.splice(this.witFieldNames.indexOf(item), 1);
         }
 
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
         doc.excludes = this.excludes;
 
         await this.votingDataService.updateDocumentAsync(doc);
@@ -29,7 +31,9 @@ export class AdminPageService extends BaseDataService {
             this.excludes.splice(this.excludes.indexOf(item), 1);
         }
 
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
         doc.excludes = this.excludes;
 
         await this.votingDataService.updateDocumentAsync(doc);
@@ -37,7 +41,9 @@ export class AdminPageService extends BaseDataService {
     }
 
     public async saveVotingAsync(voting: Voting) {
-        let doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        let doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
 
         doc.id = this.documentId;
         doc.vote = doc.vote || [];
@@ -46,8 +52,10 @@ export class AdminPageService extends BaseDataService {
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
         doc.voting = <Voting>Object.assign({}, voting);
 
-        if (doc.voting.level !== voting.level
-            || doc.voting.numberOfVotes !== voting.numberOfVotes) {
+        if (
+            doc.voting.level !== voting.level ||
+            doc.voting.numberOfVotes !== voting.numberOfVotes
+        ) {
             doc.vote = [];
         }
 
@@ -64,7 +72,10 @@ export class AdminPageService extends BaseDataService {
             }
         } catch (error) {
             LogExtension.log("Save settings, loading document", error);
-            bsNotify("danger", "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again");
+            bsNotify(
+                "danger",
+                "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again"
+            );
         }
     }
 }
