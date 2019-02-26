@@ -154,7 +154,6 @@ export class VotingPageController extends Vue {
         } finally {
             this.waitControl.endWait();
         }
-        console.log(this.actualVoting.start);
         await this.refreshAsync(true);
     }
 

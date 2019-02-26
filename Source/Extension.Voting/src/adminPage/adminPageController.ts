@@ -401,8 +401,6 @@ export class AdminPageController extends Vue {
 
         LogExtension.log("Voting:", voting);
 
-        console.log(voting.start);
-        console.log(moment(voting.start));
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
     }
@@ -623,8 +621,6 @@ export class AdminPageController extends Vue {
     }
 
     private checkDateValidity(value: moment.Moment): boolean {
-        console.log(value.isValid());
-
         if (!value.isValid()) {
             bsNotify(
                 "danger",
