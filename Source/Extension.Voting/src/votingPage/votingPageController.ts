@@ -17,7 +17,7 @@ import * as menus from "VSS/Controls/Menus";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Voting } from "../entities/voting";
-import * as moment from "moment";
+import moment from "moment";
 import { VotingTypes } from "../entities/votingTypes";
 
 @Component
@@ -75,9 +75,9 @@ export class VotingPageController extends Vue {
         const publisher = this.extensionContext.publisherId;
         const extensionId = this.extensionContext.extensionId;
 
-        const uri = `${host}${project}/_settings/${publisher}.${extensionId}.Voting.Administration?teamId=${
+        const uri = `${ host }${ project }/_settings/${ publisher }.${ extensionId }.Voting.Administration?teamId=${
             team.id
-        }`;
+            }`;
 
         this.adminpageUri = uri;
     }
@@ -154,6 +154,7 @@ export class VotingPageController extends Vue {
         } finally {
             this.waitControl.endWait();
         }
+        console.log(this.actualVoting.start);
         await this.refreshAsync(true);
     }
 
@@ -481,7 +482,7 @@ export class VotingPageController extends Vue {
                     fieldId: "voteUp",
                     canSortBy: false,
                     width: 20,
-                    getCellContents: function(_, dataIndex) {
+                    getCellContents: function (_, dataIndex) {
                         var voteId = this.getRowData(dataIndex).id;
 
                         var upVoteControl =
@@ -503,7 +504,7 @@ export class VotingPageController extends Vue {
                     fieldId: "voteDown",
                     canSortBy: false,
                     width: 20,
-                    getCellContents: function(_, dataIndex) {
+                    getCellContents: function (_, dataIndex) {
                         var voteId = this.getRowData(dataIndex).id;
 
                         var downVoteControl =
@@ -605,9 +606,9 @@ export class VotingPageController extends Vue {
 
                 $(cellTitle).text("");
                 $(cellTitle).append(
-                    `<div class="work-item-color ${cssClass}-color"></div>`
+                    `<div class="work-item-color ${ cssClass }-color"></div>`
                 );
-                $(cellTitle).append(`<span> ${title}</span>`);
+                $(cellTitle).append(`<span> ${ title }</span>`);
                 $(cellAssignedTo).text(assignedTo);
 
                 var voteUpButton = $(cellAddButton).find("span > span.icon");
@@ -676,7 +677,7 @@ export class VotingPageController extends Vue {
     }
 
     private setStatus() {
-        var nowValue = moment.utc().valueOf();
+        var nowValue = moment().valueOf();
         if (!this.actualVoting.isVotingEnabled) {
             this.status = VotingStatus.NoVoting;
         } else if (this.actualVoting.isVotingPaused) {
@@ -713,21 +714,21 @@ export class VotingPageController extends Vue {
         if (!timestamp) {
             return "";
         }
-        return moment.utc(timestamp).toLocaleString();
+        return moment(timestamp).toLocaleString();
     }
 
     public getRelativeTimeString(timestamp: number): string {
         if (!timestamp) {
             return "";
         }
-        return moment.utc(timestamp).fromNow();
+        return moment(timestamp).fromNow();
     }
 
     public getDatetimeString(timestamp: number): string {
         if (!timestamp) {
             return "";
         }
-        return moment.utc(timestamp).format("YYYY-MM-DD HH:mm");
+        return moment(timestamp).format("YYYY-MM-DD HH:mm");
     }
     /**
      * Determines whether this voting is applyable to backlog.

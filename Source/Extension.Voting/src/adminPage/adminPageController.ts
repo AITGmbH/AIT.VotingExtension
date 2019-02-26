@@ -17,7 +17,7 @@ import { VotingTypes } from "../entities/votingTypes";
 export class AdminPageController extends Vue {
     private static readonly StandardDatePattern = "YYYY-MM-DD";
     private static readonly StandardTimePattern = "HH:mm";
-    private static readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
+    private readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
 
@@ -32,8 +32,7 @@ export class AdminPageController extends Vue {
         var hasBackendStartDate = this.actualVoting && this.actualVoting.start;
         var startDate: string;
         if (hasBackendStartDate) {
-            startDate = moment
-                .utc(this.actualVoting.start)
+            startDate = moment(this.actualVoting.start)
                 .format(AdminPageController.StandardDatePattern);
         } else {
             startDate = moment().format(
@@ -45,35 +44,33 @@ export class AdminPageController extends Vue {
     }
 
     public set startDate(value: string) {
-        // converting newStartDate to UTC can give the incorrect date, due to "date overflow"
         var newStartDate = moment(
             value,
             AdminPageController.StandardDatePattern
         );
         var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
         if (hasBackendStartTime) {
-            var backendDateTime = moment.utc(this.actualVoting.start);
+            var backendDateTime = moment(this.actualVoting.start);
             newStartDate = backendDateTime
                 .year(newStartDate.year())
                 .month(newStartDate.month())
                 .date(newStartDate.date());
         } else {
-            newStartDate = moment()
-                .utc()
+            newStartDate = moment(newStartDate)
                 .year(newStartDate.year())
                 .month(newStartDate.month())
                 .date(newStartDate.date());
         }
-
-        this.actualVoting.start = newStartDate.valueOf();
+        if (this.checkDateValidity(newStartDate)) {
+            this.actualVoting.start = newStartDate.valueOf();
+        }
     }
 
     public get startTime(): string {
         var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
         var startTime: string;
         if (hasBackendStartTime) {
-            startTime = moment
-                .utc(this.actualVoting.start)
+            startTime = moment(this.actualVoting.start)
                 .format(AdminPageController.StandardTimePattern);
         } else {
             startTime = moment().format(
@@ -85,11 +82,10 @@ export class AdminPageController extends Vue {
     }
 
     public set startTime(value: string) {
-        var loc = moment(value, AdminPageController.StandardTimePattern);
-        var newStartTime = loc.utc();
-        var backendDateTime = moment().utc();
+        var newStartTime = moment(value, AdminPageController.StandardTimePattern);
+        var backendDateTime = moment();
         if (this.actualVoting.start) {
-            backendDateTime = moment.utc(this.actualVoting.start);
+            backendDateTime = moment(this.actualVoting.start);
         }
         var newDate = backendDateTime.set({
             hours: newStartTime.hours(),
@@ -102,8 +98,7 @@ export class AdminPageController extends Vue {
         var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
         var endDate: string;
         if (hasBackendEndDate) {
-            endDate = moment
-                .utc(this.actualVoting.end)
+            endDate = moment(this.actualVoting.end)
                 .format(AdminPageController.StandardDatePattern);
         } else {
             endDate = moment().format(AdminPageController.StandardDatePattern);
@@ -113,31 +108,30 @@ export class AdminPageController extends Vue {
     }
 
     public set endDate(value: string) {
-        // converting newEndDate to UTC can give the incorrect date, due to "date overflow"
         var newEndDate = moment(value, AdminPageController.StandardDatePattern);
         var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
         if (hasBackendEndDate) {
-            var backendDateTime = moment.utc(this.actualVoting.end);
+            var backendDateTime = moment(this.actualVoting.end);
             var newEndDate = backendDateTime
                 .year(newEndDate.year())
                 .month(newEndDate.month())
                 .date(newEndDate.date());
         } else {
-            var newEndDate = moment()
-                .utc()
+            var newEndDate = moment(newEndDate)
                 .year(newEndDate.year())
                 .month(newEndDate.month())
                 .date(newEndDate.date());
         }
-        this.actualVoting.end = newEndDate.valueOf();
+        if (this.checkDateValidity(newEndDate)) {
+            this.actualVoting.end = newEndDate.valueOf();
+        }
     }
 
     public get endTime(): string {
         var hasBackendStartTime = this.actualVoting && this.actualVoting.end;
         var endTime: string;
         if (hasBackendStartTime) {
-            endTime = moment
-                .utc(this.actualVoting.end)
+            endTime = moment(this.actualVoting.end)
                 .format(AdminPageController.StandardTimePattern);
         } else {
             endTime = moment().format(AdminPageController.StandardTimePattern);
@@ -147,11 +141,10 @@ export class AdminPageController extends Vue {
     }
 
     public set endTime(value: string) {
-        var loc = moment(value, AdminPageController.StandardTimePattern);
-        var newEndTime = loc.utc();
-        var backendDateTime = moment().utc();
+        var newEndTime = moment(value, AdminPageController.StandardTimePattern);
+        var backendDateTime = moment();
         if (this.actualVoting.end) {
-            backendDateTime = moment.utc(this.actualVoting.end);
+            backendDateTime = moment(this.actualVoting.end);
         }
         var newDate = backendDateTime.set({
             hours: newEndTime.hours(),
@@ -408,6 +401,8 @@ export class AdminPageController extends Vue {
 
         LogExtension.log("Voting:", voting);
 
+        console.log(voting.start);
+        console.log(moment(voting.start));
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
     }
@@ -625,5 +620,17 @@ export class AdminPageController extends Vue {
                 this.initAsync();
             }
         });
+    }
+
+    private checkDateValidity(value: moment.Moment): boolean {
+        console.log(value.isValid());
+
+        if (!value.isValid()) {
+            bsNotify(
+                "danger",
+                "Invalid date inserted. The date you have selected is invalid. Please change the date!"
+            );
+        }
+        return value.isValid();
     }
 }

@@ -49,13 +49,13 @@
                 <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
                     <div v-if="actualVoting.start != null">
                         <p v-if="status === 5">
-                            Starts:
+                            Starts
                             <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.start) }}
                             </timeago>
                         </p>
                         <p v-else-if="actualVoting.useStartTime">
-                            Has started:
+                            Has started
                             <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.start) }}
                             </timeago>
@@ -66,13 +66,13 @@
                 <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
                     <div v-if="actualVoting.end != null">
                         <p v-if="status === 6">
-                            Overdue:
+                            Overdue
                             <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.end) }}
                             </timeago>
                         </p>
                         <p v-else-if="actualVoting.useEndTime">
-                            Ends:
+                            Ends
                             <timeago :datetime="getDatetimeString(actualVoting.end)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.end) }}
                             </timeago>
