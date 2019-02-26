@@ -15,8 +15,8 @@ import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class AdminPageController extends Vue {
-    private static readonly StandardDatePattern = "YYYY-MM-DD";
-    private static readonly StandardTimePattern = "HH:mm";
+    private readonly StandardDatePattern = "YYYY-MM-DD";
+    private readonly StandardTimePattern = "HH:mm";
     private readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
@@ -33,10 +33,10 @@ export class AdminPageController extends Vue {
         var startDate: string;
         if (hasBackendStartDate) {
             startDate = moment(this.actualVoting.start)
-                .format(AdminPageController.StandardDatePattern);
+                .format(this.StandardDatePattern);
         } else {
             startDate = moment().format(
-                AdminPageController.StandardDatePattern
+                this.StandardDatePattern
             );
         }
 
@@ -46,7 +46,7 @@ export class AdminPageController extends Vue {
     public set startDate(value: string) {
         var newStartDate = moment(
             value,
-            AdminPageController.StandardDatePattern
+            this.StandardDatePattern
         );
         var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
         if (hasBackendStartTime) {
@@ -71,10 +71,10 @@ export class AdminPageController extends Vue {
         var startTime: string;
         if (hasBackendStartTime) {
             startTime = moment(this.actualVoting.start)
-                .format(AdminPageController.StandardTimePattern);
+                .format(this.StandardTimePattern);
         } else {
             startTime = moment().format(
-                AdminPageController.StandardTimePattern
+                this.StandardTimePattern
             );
         }
 
@@ -82,7 +82,7 @@ export class AdminPageController extends Vue {
     }
 
     public set startTime(value: string) {
-        var newStartTime = moment(value, AdminPageController.StandardTimePattern);
+        var newStartTime = moment(value, this.StandardTimePattern);
         var backendDateTime = moment();
         if (this.actualVoting.start) {
             backendDateTime = moment(this.actualVoting.start);
@@ -99,16 +99,16 @@ export class AdminPageController extends Vue {
         var endDate: string;
         if (hasBackendEndDate) {
             endDate = moment(this.actualVoting.end)
-                .format(AdminPageController.StandardDatePattern);
+                .format(this.StandardDatePattern);
         } else {
-            endDate = moment().format(AdminPageController.StandardDatePattern);
+            endDate = moment().format(this.StandardDatePattern);
         }
 
         return endDate;
     }
 
     public set endDate(value: string) {
-        var newEndDate = moment(value, AdminPageController.StandardDatePattern);
+        var newEndDate = moment(value, this.StandardDatePattern);
         var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
         if (hasBackendEndDate) {
             var backendDateTime = moment(this.actualVoting.end);
@@ -132,16 +132,16 @@ export class AdminPageController extends Vue {
         var endTime: string;
         if (hasBackendStartTime) {
             endTime = moment(this.actualVoting.end)
-                .format(AdminPageController.StandardTimePattern);
+                .format(this.StandardTimePattern);
         } else {
-            endTime = moment().format(AdminPageController.StandardTimePattern);
+            endTime = moment().format(this.StandardTimePattern);
         }
 
         return endTime;
     }
 
     public set endTime(value: string) {
-        var newEndTime = moment(value, AdminPageController.StandardTimePattern);
+        var newEndTime = moment(value, this.StandardTimePattern);
         var backendDateTime = moment();
         if (this.actualVoting.end) {
             backendDateTime = moment(this.actualVoting.end);
