@@ -248,7 +248,13 @@ export class AdminPageController extends Vue {
     }
 
     public get currentQueryName() {
-        let current = this.queries.find(i => i.id == this.actualVoting.query);
+        let current = null;
+        for (const currentQuery of this.queries) {
+            if (currentQuery.id === this.actualVoting.query) {
+                current = currentQuery;
+                break;
+            }
+        }
         return current ? current.name : null;
     }
 
