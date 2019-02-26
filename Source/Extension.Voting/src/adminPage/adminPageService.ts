@@ -9,44 +9,18 @@ export class AdminPageService extends BaseDataService {
         super();
     }
 
-    public async addToExcludeAsync(item: string) {
-        if (this.excludes.indexOf(item) === -1) {
-            this.excludes.push(item);
-            this.witFieldNames.splice(this.witFieldNames.indexOf(item), 1);
-        }
-
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        doc.excludes = this.excludes;
-
-        await this.votingDataService.updateDocumentAsync(doc);
-        LogExtension.log("saveVoting: document updated");
-    }
-
-    public async addToIncludeAsync(item: string) {
-        if (this.witFieldNames.indexOf(item) === -1) {
-            this.witFieldNames.push(item);
-            this.excludes.splice(this.excludes.indexOf(item), 1);
-        }
-
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        doc.excludes = this.excludes;
-
-        await this.votingDataService.updateDocumentAsync(doc);
-        LogExtension.log("saveVoting: document updated");
-    }
-
     public async saveVotingAsync(voting: Voting) {
         let doc = await this.votingDataService.getDocumentAsync(this.documentId);
 
         doc.id = this.documentId;
         doc.vote = doc.vote || [];
-        doc.excludes = this.excludes;
 
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
-        doc.voting = <Voting>Object.assign({}, voting);         
+        <Voting>Object.assign(doc.voting, voting);
 
         if (doc.voting.isMultipleVotingEnabled !== voting.isMultipleVotingEnabled
             || doc.voting.level !== voting.level
+            || doc.voting.query !== voting.query
             || doc.voting.numberOfVotes !== voting.numberOfVotes) {
             doc.vote = [];
         }

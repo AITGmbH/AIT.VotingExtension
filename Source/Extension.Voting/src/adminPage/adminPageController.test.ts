@@ -1,6 +1,5 @@
 
 jest.mock("TFS/WorkItemTracking/RestClient", () => {});
-import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 
 import { AdminPageService } from "./adminPageService";
 import { AdminPageController } from "./adminPageController";
@@ -41,6 +40,6 @@ describe('mounted', () => {
         const controller = new AdminPageController();
         controller.mounted();
 
-        adminPageServiceMock.verify(s => s.loadAsync(), typemoq.Times.atLeastOnce());
+        adminPageServiceMock.verify(s => s.loadGreedyAsync(), typemoq.Times.atLeastOnce());
     });
 });
