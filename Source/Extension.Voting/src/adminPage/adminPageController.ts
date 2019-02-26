@@ -377,9 +377,9 @@ export class AdminPageController extends Vue {
         });
     }
 
-    public initWaitControl(ele: any): WaitControl {
+    public initWaitControl(ele: any): statusIndicators.WaitControl {
         if (!this.waitControl) {
-            this.waitControl = controls.create(WaitControl, $(ele), {
+            this.waitControl = controls.create(statusIndicators.WaitControl, $(ele), {
                 message: "Loading..."
             });
         }
