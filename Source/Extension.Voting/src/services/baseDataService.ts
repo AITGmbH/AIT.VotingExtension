@@ -6,7 +6,11 @@ import { getClient as getWorkClient } from "TFS/Work/RestClient";
 import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
-import { QueryExpand, QueryType, QueryHierarchyItem } from "TFS/WorkItemTracking/Contracts";
+import {
+    QueryExpand,
+    QueryType,
+    QueryHierarchyItem
+} from "TFS/WorkItemTracking/Contracts";
 
 export class BaseDataService {
     private _witTypeNames: string[] = [];
@@ -19,8 +23,12 @@ export class BaseDataService {
     protected process: string;
 
     constructor() {
-        const teamId = getUrlParameterByName("teamId", document.referrer)
-            || window.localStorage.getItem("VotingExtension.SelectedTeamId-" + this.context.project.id);
+        const teamId =
+            getUrlParameterByName("teamId", document.referrer) ||
+            window.localStorage.getItem(
+                "VotingExtension.SelectedTeamId-" +
+                    VSS.getWebContext().project.id
+            );
         if (teamId != null) {
             this.team = {
                 id: teamId,
@@ -79,11 +87,16 @@ export class BaseDataService {
     public set team(team: TeamContext) {
         this.configuration.team = team;
 
-        VSS.getService(VSS.ServiceIds.Navigation).then((navigationService: HostNavigationService) => {
-            navigationService.updateHistoryEntry(null, { teamId: team.id });
-        });
+        VSS.getService(VSS.ServiceIds.Navigation).then(
+            (navigationService: HostNavigationService) => {
+                navigationService.updateHistoryEntry(null, { teamId: team.id });
+            }
+        );
 
-        window.localStorage.setItem("VotingExtension.SelectedTeamId-" + this.context.project.id, team.id);
+        window.localStorage.setItem(
+            "VotingExtension.SelectedTeamId-" + this.context.project.id,
+            team.id
+        );
     }
 
     public getTemplate(): string {
@@ -107,7 +120,10 @@ export class BaseDataService {
         const coreClient = getCoreClient();
 
         try {
-            this._teams = await coreClient.getTeams(this.context.project.id, false);
+            this._teams = await coreClient.getTeams(
+                this.context.project.id,
+                false
+            );
 
             LogExtension.log(this.teams);
         } catch (error) {
@@ -119,7 +135,10 @@ export class BaseDataService {
         const coreClient = getCoreClient();
 
         try {
-            const project = await coreClient.getProject(this.context.project.id, true);
+            const project = await coreClient.getProject(
+                this.context.project.id,
+                true
+            );
             this.process = project.capabilities.processTemplate.templateName;
 
             LogExtension.log(project);
@@ -136,7 +155,9 @@ export class BaseDataService {
         const witclient = getWitClient();
 
         try {
-            const wittyp = await witclient.getWorkItemTypes(this.context.project.id);
+            const wittyp = await witclient.getWorkItemTypes(
+                this.context.project.id
+            );
             this._witTypeNames = wittyp.map(w => w.name);
 
             LogExtension.log(this.witTypeNames);
@@ -151,7 +172,7 @@ export class BaseDataService {
      */
     public async loadWitLevelNamesAsync(): Promise<void> {
         try {
-            const context = this.context
+            const context = this.context;
             const backlogConf = await getWorkClient().getBacklogConfigurations({
                 project: context.project.name,
                 projectId: context.project.id,
@@ -163,15 +184,17 @@ export class BaseDataService {
                 .sort((a, b) => b.rank - a.rank)
                 .filter(p => !p.isHidden)
                 .map(p => ({
-                    id: p.workItemTypes.map(i => i.name).join(','),
+                    id: p.workItemTypes.map(i => i.name).join(","),
                     name: p.name
                 }));
 
             if (!backlogConf.requirementBacklog.isHidden) {
                 let req = {
-                    id: backlogConf.requirementBacklog.workItemTypes.map(i => i.name).join(','),
+                    id: backlogConf.requirementBacklog.workItemTypes
+                        .map(i => i.name)
+                        .join(","),
                     name: backlogConf.requirementBacklog.name
-                }
+                };
                 this._witLevelNames.push(req);
             }
 
@@ -190,29 +213,34 @@ export class BaseDataService {
         const projectId = this.context.project.id;
         const that = this;
 
-        async function recursiveSearch (item: QueryHierarchyItem) {
-            if (item.hasOwnProperty('children')) {
+        async function recursiveSearch(item: QueryHierarchyItem) {
+            if (item.hasOwnProperty("children")) {
                 for (let child of item.children) {
                     await recursiveSearch(child);
                 }
-            }
-            else if (item.hasChildren) {
-                let child = await witClient.getQuery(projectId, item.id, QueryExpand.None, 1);
+            } else if (item.hasChildren) {
+                let child = await witClient.getQuery(
+                    projectId,
+                    item.id,
+                    QueryExpand.None,
+                    1
+                );
                 await recursiveSearch(child);
-            }
-            else if (item.isFolder) {
+            } else if (item.isFolder) {
                 //ignore folder without children...
-            }
-            else if (!item.isPublic) {
+            } else if (!item.isPublic) {
                 //ignore non-public queries...
-            }
-            else if (item.queryType == QueryType.Flat){
+            } else if (item.queryType == QueryType.Flat) {
                 that._flatQueryNames.push({ id: item.id, name: item.path });
             }
         }
 
         try {
-            const queries = await witClient.getQuery(projectId, "Shared Queries", QueryExpand.None);
+            const queries = await witClient.getQuery(
+                projectId,
+                "Shared Queries",
+                QueryExpand.None
+            );
             this._flatQueryNames = [];
             await recursiveSearch(queries);
 
@@ -222,13 +250,23 @@ export class BaseDataService {
         }
     }
 
-    public async getQueryById(id: string, depth: number = 0): Promise<QueryHierarchyItem> {
+    public async getQueryById(
+        id: string,
+        depth: number = 0
+    ): Promise<QueryHierarchyItem> {
         const witClient = getWitClient();
-        return witClient.getQuery(this.context.project.id, id, QueryExpand.Wiql, depth);
+        return witClient.getQuery(
+            this.context.project.id,
+            id,
+            QueryExpand.Wiql,
+            depth
+        );
     }
 
     public async loadVotingAsync(): Promise<Voting> {
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
         LogExtension.log(doc);
 
         if (doc.voting == null) {
@@ -246,7 +284,7 @@ export class BaseDataService {
         await this.loadProjectAsync();
         await this.loadTeamsAsync();
         await this.loadWitTypeNamesAsync();
-        await this.loadWitLevelNamesAsync()
+        await this.loadWitLevelNamesAsync();
         await this.loadFlatQueryNamesAsync();
         await this.loadVotingAsync();
     }

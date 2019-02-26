@@ -29,8 +29,10 @@ export class VotingPageService extends BaseDataService {
         return this._requirements;
     }
 
-    public async loadVotesAsync(): Promise<void> {
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
+    public async loadVotesAsync() {
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
         this.votes = [];
 
         if (doc.vote != null && doc.vote.length > 0) {
@@ -46,7 +48,7 @@ export class VotingPageService extends BaseDataService {
             project: null,
             projectId: this.context.project.id,
             team: null,
-            teamId: this.team.id,
+            teamId: this.team.id
         };
 
         const teamfieldvalues = await client.getTeamFieldValues(teamcontext);
@@ -54,9 +56,11 @@ export class VotingPageService extends BaseDataService {
 
         for (let i = 0; i < teamfieldvalues.values.length; i++) {
             const value = teamfieldvalues.values[i];
-            areas += `[System.AreaPath] ${value.includeChildren ? "UNDER" : "="} '${value.value}'`;
+            areas += `[System.AreaPath] ${
+                value.includeChildren ? "UNDER" : "="
+            } '${value.value}'`;
 
-            if (i < (teamfieldvalues.values.length - 1)) {
+            if (i < teamfieldvalues.values.length - 1) {
                 areas += " OR ";
             } else {
                 areas += " )";
@@ -75,12 +79,16 @@ export class VotingPageService extends BaseDataService {
      * @see VotingTypes
      */
     public async loadWorkItemsByTypes(types: string): Promise<void> {
-        const wiql = "SELECT [System.Id] FROM WorkItems"
-        + " WHERE [System.State] <> 'Closed'"
-        + " AND [System.State] <> 'Done'"
-        + " AND [System.State] <> 'Removed'"
-        + " AND ( [System.WorkItemType] = '" + types.replace(',', "' OR [System.WorkItemType] = '") + "' )"
-        + " AND " + this._areas;
+        const wiql =
+            "SELECT [System.Id] FROM WorkItems" +
+            " WHERE [System.State] <> 'Closed'" +
+            " AND [System.State] <> 'Done'" +
+            " AND [System.State] <> 'Removed'" +
+            " AND ( [System.WorkItemType] = '" +
+            types.replace(",", "' OR [System.WorkItemType] = '") +
+            "' )" +
+            " AND " +
+            this._areas;
 
         return this.loadWorkItemsAsync(wiql);
     }
@@ -106,12 +114,15 @@ export class VotingPageService extends BaseDataService {
         const witClient = getWitClient();
 
         const wiqlJson = {
-            query: wiql,
+            query: wiql
         };
 
         LogExtension.log("WIQL-Abfrage: " + wiql);
 
-        const idJson = await witClient.queryByWiql(wiqlJson, this.context.project.id);
+        const idJson = await witClient.queryByWiql(
+            wiqlJson,
+            this.context.project.id
+        );
         LogExtension.log(idJson);
         const headArray = new Array();
         let tempArray = new Array();
@@ -142,21 +153,36 @@ export class VotingPageService extends BaseDataService {
 
                     const tempRequirement = new TinyRequirement();
                     tempRequirement.id = req.id;
-                    if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
-                    } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
-                        tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
+                    if (
+                        req.fields["Microsoft.VSTS.Common.StackRank"] !==
+                        undefined
+                    ) {
+                        tempRequirement.order =
+                            req.fields["Microsoft.VSTS.Common.StackRank"];
+                    } else if (
+                        req.fields["Microsoft.VSTS.Common.BacklogPriority"] !==
+                        undefined
+                    ) {
+                        tempRequirement.order =
+                            req.fields["Microsoft.VSTS.Common.BacklogPriority"];
                     } else {
                         tempRequirement.order = "0";
                     }
                     tempRequirement.title = req.fields["System.Title"];
-                    tempRequirement.workItemType = req.fields["System.WorkItemType"];
+                    tempRequirement.workItemType =
+                        req.fields["System.WorkItemType"];
                     tempRequirement.state = req.fields["System.State"];
-                    tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
-                    tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
-                    tempRequirement.iterationPath = req.fields["System.IterationPath"];
-                    tempRequirement.assignedTo = req.fields["System.AssignedTo"] || "";
-                    tempRequirement.description = req.fields["System.Description"];
+                    tempRequirement.size =
+                        req.fields["Microsoft.VSTS.Scheduling.Size"];
+                    tempRequirement.valueArea =
+                        req.fields["Microsoft.VSTS.Common.BusinessValue"];
+                    tempRequirement.iterationPath =
+                        req.fields["System.IterationPath"];
+                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(
+                        req
+                    );
+                    tempRequirement.description =
+                        req.fields["System.Description"];
 
                     this.requirements.push(tempRequirement);
                 }
@@ -168,42 +194,92 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async saveVoteAsync(vote: Vote, numberOfVotes: number): Promise<void> {
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-
-        const voteItem = this.getVoteItem(vote.workItemId)
-        const voting = doc.voting;
+    private validateVote(voting: Voting, id: number, upVote: boolean): boolean {
+        const now = Date.now();
+        const voteItem = this.getVoteItem(id);
         const isEnabled = voting.isVotingEnabled;
         const isPaused = voting.isVotingPaused;
+        const isProspective = voting.useStartTime && now < voting.start;
+        const isOverdue = voting.useEndTime && now > voting.end;
 
-        if (isEnabled && !isPaused) {
-            if ((numberOfVotes - this.numberOfMyVotes()) < 1) {
-                bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
-            } else if (voteItem.myVotes >= voting.voteLimit) {
-                bsNotify("warning", `This work item is on the vote limit of ${voting.voteLimit}. \nPlease refresh your browser window to get the actual content.`);
-            } else {
-                doc.vote.push(vote);
-                const uDoc = await this.votingDataService.updateDocumentAsync(doc);
-                LogExtension.log("saveVote: document updated", uDoc.id);
-
-                bsNotify("success", "Your vote has been saved.");
-            }
+        if (voting == null) {
+            bsNotify(
+                "warning",
+                "This voting has been stopped. \nPlease refresh your browser window to get the actual content."
+            );
+            return;
         } else if (!isEnabled) {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
+            bsNotify(
+                "danger",
+                "This voting session has been stopped. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
         } else if (isPaused) {
-            bsNotify("warning", "This voting has been paused. \nPlease refresh your browser window to get the actual content.");
+            bsNotify(
+                "danger",
+                "This voting session has been paused. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
+        } else if (isProspective) {
+            bsNotify(
+                "danger",
+                "This voting session has not yet started. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
+        } else if (isOverdue) {
+            bsNotify(
+                "danger",
+                "This voting session has expired. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
+        } else if (
+            upVote &&
+            voting.numberOfVotes - this.numberOfMyVotes() < 1
+        ) {
+            bsNotify(
+                "danger",
+                "You have no vote remaining. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
+        } else if (!upVote && voteItem.myVotes <= 0) {
+            bsNotify(
+                "danger",
+                "There are no more votes of yours on this item. \nPlease refresh your browser window to get the actual content."
+            );
+            return false;
+        } else if (upVote && voteItem.myVotes >= voting.voteLimit) {
+            bsNotify(
+                "danger",
+                `This work item is on the vote limit of ${
+                    voting.voteLimit
+                }. \nPlease refresh your browser window to get the actual content.`
+            );
+            return false;
+        } else {
+            return true;
         }
     }
 
-    public async deleteVoteAsync(id: number, userId: string): Promise<void> {
-        const doc = await this.votingDataService.getDocumentAsync(this.documentId);
-        if (doc.voting == null) {
-            bsNotify("warning", "This voting has been stopped. \nPlease refresh your browser window to get the actual content.");
-            return;
-        }
+    public async saveVoteAsync(vote: Vote) {
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
 
-        let isEnabled = doc.voting.isVotingEnabled;
-        if (isEnabled) {
+        if (this.validateVote(doc.voting, vote.workItemId, true)) {
+            doc.vote.push(vote);
+            const uDoc = await this.votingDataService.updateDocumentAsync(doc);
+            LogExtension.log("saveVote: document updated", uDoc.id);
+
+            bsNotify("success", "Your vote has been saved.");
+        }
+    }
+
+    public async deleteVoteAsync(id: number, userId: string) {
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
+
+        if (this.validateVote(doc.voting, id, false)) {
             LogExtension.log("Item Id", id);
 
             for (let i = 0; i < doc.vote.length; i++) {
@@ -225,7 +301,10 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async updateBacklogAsync(wis: VotingItem[], firstBacklogItem: VotingItem): Promise<void> {
+    public async updateBacklogAsync(
+        wis: VotingItem[],
+        firstBacklogItem: VotingItem
+    ): Promise<void> {
         LogExtension.log("begin updating");
 
         const order = this.getTemplate();
@@ -234,7 +313,7 @@ export class VotingPageService extends BaseDataService {
         for (let i = 0; i < wis.length; i++) {
             const item = wis[i];
 
-            const newOrder = (parseInt(firstBacklogItem.order) - (i + 1));
+            const newOrder = parseInt(firstBacklogItem.order) - (i + 1);
             const comment = "Updated by AIT Voting Extension";
             const pathOrder = "/fields/" + order;
             const pathComment = "/fields/System.History";
@@ -242,13 +321,13 @@ export class VotingPageService extends BaseDataService {
                 {
                     op: "replace",
                     path: pathOrder,
-                    value: newOrder,
+                    value: newOrder
                 },
                 {
                     op: "add",
                     path: pathComment,
-                    value: comment,
-                },
+                    value: comment
+                }
             ];
 
             const witClient = getWitClient();
@@ -257,25 +336,30 @@ export class VotingPageService extends BaseDataService {
                 await witClient.updateWorkItem(newJson, item.id);
                 LogExtension.log("replace success: " + item.id);
             } catch (err) {
-                LogExtension.log("replace failed: " + item.id + ", trying to add...");
+                LogExtension.log(
+                    "replace failed: " + item.id + ", trying to add..."
+                );
                 const addJson = [
                     {
                         op: "add",
                         path: pathOrder,
-                        value: newOrder,
+                        value: newOrder
                     },
                     {
                         op: "add",
                         path: pathComment,
-                        value: comment,
-                    },
+                        value: comment
+                    }
                 ];
 
-                witClient.updateWorkItem(addJson, item.id).then((result) => {
-                    LogExtension.log("add success: " + item.id);
-                }, (error) => {
-                    LogExtension.log(error);
-                });
+                witClient.updateWorkItem(addJson, item.id).then(
+                    result => {
+                        LogExtension.log("add success: " + item.id);
+                    },
+                    error => {
+                        LogExtension.log(error);
+                    }
+                );
 
                 success = false;
             }
@@ -284,7 +368,10 @@ export class VotingPageService extends BaseDataService {
         if (success) {
             bsNotify("success", "Your backlog has been successfully updated.");
         } else {
-            bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
+            bsNotify(
+                "danger",
+                "An error occured.\nPlease refresh the page and try again"
+            );
         }
     }
 
@@ -296,7 +383,10 @@ export class VotingPageService extends BaseDataService {
             await this.getAreasAsync();
 
             if (!voting.isBacklogBased) {
-                bsNotify("danger", "This voting is not applyable.\nPlease refresh the page and try again.");
+                bsNotify(
+                    "danger",
+                    "This voting is not applyable.\nPlease refresh the page and try again."
+                );
                 return;
             }
 
@@ -324,7 +414,10 @@ export class VotingPageService extends BaseDataService {
 
             await this.updateBacklogAsync(votingItems, tempItem);
         } catch (err) {
-            bsNotify("danger", "An error occured.\nPlease refresh the page and try again");
+            bsNotify(
+                "danger",
+                "An error occured.\nPlease refresh the page and try again"
+            );
             LogExtension.log(err);
         }
     }
@@ -335,7 +428,7 @@ export class VotingPageService extends BaseDataService {
         try {
             const promises = [];
             for (const doc of docs) {
-                doc.vote = doc.vote.filter((vote) => vote.userId !== userId);
+                doc.vote = doc.vote.filter(vote => vote.userId !== userId);
                 promises.push(this.votingDataService.updateDocumentAsync(doc));
             }
 
@@ -345,5 +438,12 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
+    }
+
+    private getNameOfWiResponsiveness(req: any): string {
+        const assignedTo = req.fields["System.AssignedTo"];
+        const displayName =
+            assignedTo === undefined ? "" : assignedTo.displayName;
+        return displayName;
     }
 }

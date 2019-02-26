@@ -1,4 +1,4 @@
-﻿import { VotingTypes } from "../entities/votingTypes";
+import { VotingTypes } from "../entities/votingTypes";
 
 export class Voting {
     public description = "";
@@ -16,6 +16,10 @@ export class Voting {
     public created: number;
     public lastModified: number;
     public title = "";
+    public useStartTime: boolean = false;
+    public start: number;
+    public useEndTime: boolean = false;
+    public end: number;
 
     public get isBacklogBased() {
         return this.type == VotingTypes.LEVEL;
