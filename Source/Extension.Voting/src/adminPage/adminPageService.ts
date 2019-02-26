@@ -10,7 +10,9 @@ export class AdminPageService extends BaseDataService {
     }
 
     public async saveVotingAsync(voting: Voting) {
-        let doc = await this.votingDataService.getDocumentAsync(this.documentId);
+        let doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
 
         doc.id = this.documentId;
         doc.vote = doc.vote || [];
@@ -18,10 +20,13 @@ export class AdminPageService extends BaseDataService {
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
         <Voting>Object.assign(doc.voting, voting);
 
-        if (doc.voting.isMultipleVotingEnabled !== voting.isMultipleVotingEnabled
-            || doc.voting.level !== voting.level
-            || doc.voting.query !== voting.query
-            || doc.voting.numberOfVotes !== voting.numberOfVotes) {
+        if (
+            doc.voting.isMultipleVotingEnabled !==
+                voting.isMultipleVotingEnabled ||
+            doc.voting.level !== voting.level ||
+            doc.voting.query !== voting.query ||
+            doc.voting.numberOfVotes !== voting.numberOfVotes
+        ) {
             doc.vote = [];
         }
 
@@ -38,7 +43,10 @@ export class AdminPageService extends BaseDataService {
             }
         } catch (error) {
             LogExtension.log("Save settings, loading document", error);
-            bsNotify("danger", "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again");
+            bsNotify(
+                "danger",
+                "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again"
+            );
         }
     }
 }

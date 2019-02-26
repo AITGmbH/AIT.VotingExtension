@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Voting</title>
     <script src="vss.js"></script>
+
     <% htmlWebpackPlugin.files.css.forEach(function (src) { %>
     <link rel="stylesheet" href="<%= src.replace('dist/', '') %>">
     <% }) %>
@@ -111,6 +112,40 @@
                                     <label>Limit votes per work item</label>
                                     <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit"
                                         @change="validateInput">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <div class="row">
+                        <label class="col-sm-12">Voting session</label>
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime">
+                                Start
+                            </label>
+                            <div class="row" v-if="actualVoting.useStartTime">
+                                <div class="col-xs-6">
+                                    <input type="date" class="form-control" name="startDate" v-model="startDate" />
+                                </div>
+                                <div class="col-xs-4">
+                                    <input type="time" class="form-control" name="startTime" v-model="startTime" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime">
+                                End
+                            </label>
+                            <div class="row" v-if="actualVoting.useEndTime">
+                                <div class="col-xs-6">
+                                    <input type="date" class="form-control" name="endDate" v-model="endDate" />
+                                </div>
+                                <div class="col-xs-4">
+                                    <input type="time" class="form-control" name="endTime" v-model="endTime" />
                                 </div>
                             </div>
                         </div>
