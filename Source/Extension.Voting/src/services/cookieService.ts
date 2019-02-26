@@ -7,7 +7,6 @@ export class CookieService {
             expiringDate.getTime() + 365 * 24 * 60 * 60 * 1000
         );
         document.cookie = this.cookie + ";" + "expires=" + expiringDate.toUTCString();
-
     }
 
     public isCookieSet() {
