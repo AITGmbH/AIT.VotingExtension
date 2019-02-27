@@ -1,6 +1,7 @@
 ﻿import { LogExtension } from "../shared/logExtension";
 import { AdminPageController } from "./adminPageController";
 import { ReportPageController } from "../reportPage/reportPageController";
+import { ReportDisplayService } from "../reportPage/reportDisplayService";
 
 (function () {
     LogExtension.debugEnabled = false;
@@ -8,11 +9,11 @@ import { ReportPageController } from "../reportPage/reportPageController";
     try {
         VSS.ready(() => {
             LogExtension.log("VSS ready");
-            const apc = new AdminPageController();
-            const rpc = new ReportPageController();
+            const reportDisplayService = new ReportDisplayService();
+            const apc = new AdminPageController({ data: { reportDisplayService } });
+            const rpc = new ReportPageController({ data: { reportDisplayService } });
             const wc = apc.initWaitControl('#waitContainer');
 
-            rpc.height = "30vh";
             rpc.report_grid_container = "report-grid-container";
             rpc.report_menu_container = "report-menu-container";
             rpc.waitControl = wc;

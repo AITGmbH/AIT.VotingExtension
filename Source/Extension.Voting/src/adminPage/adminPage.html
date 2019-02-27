@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <div class="hide" id="adminPage">
+    <div id="adminPage" class="hide">
         <div id="waitContainerAdmin"></div>
 
         <div class="vso-container">
@@ -40,8 +40,8 @@
                 <div id="menueBar-container" class="toolbar col-sm-12 hide" style="padding-right:30px"></div>
             </div>
 
-            <div id="admin-form" style="overflow-y: auto; height: 80vh">
-                <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
+            <div id="admin-form" style="overflow-y: auto; height: 80vh" v-show="showContent">
+                <div id="content" style="padding-top: 10px;" class="row container">
                     <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
 
                     <div class="form-group" data-toggle="tooltip" title="Enter a title for the voting.">
@@ -160,7 +160,7 @@
     </div>
 
     <div id="reportPage" class="hide">
-        <div class="vso-container" v-show="report">
+        <div class="vso-container" v-show="report && reportDisplayService.reportVisible">
             <div class="row">
                 <h1 class="votingheadline">Report</h1>
             </div>

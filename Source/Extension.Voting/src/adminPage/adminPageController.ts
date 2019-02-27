@@ -12,6 +12,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import moment from "moment";
 import { VotingTypes } from "../entities/votingTypes";
+import { ReportDisplayService } from "../reportPage/reportDisplayService";
 
 @Component
 export class AdminPageController extends Vue {
@@ -20,9 +21,11 @@ export class AdminPageController extends Vue {
     private readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
+    private reportDisplayService: ReportDisplayService;
 
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
+    public actualVotingHasVotes: boolean = false;
     public types: string[] = [VotingTypes.LEVEL, VotingTypes.QUERY];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
@@ -251,6 +254,28 @@ export class AdminPageController extends Vue {
         this.createMenueBar(true);
     }
 
+    private showVotingIsExistingDialog() {
+        let htmlContentString: string =
+            "<html><body><div>When you create a new voting, the results of the last voting are discarded. If you need them, please copy them first.</div></body></html>"
+        let dialogContent = $.parseHTML(htmlContentString);
+        let dialogOptions = {
+            title: "Create new voting",
+            content: dialogContent,
+            buttons: {
+                Confirm: () => {
+                    dialog.close();
+                    this.reportDisplayService.setReportVisibility(false);
+                    this.createNewVoting();
+                },
+                Cancel: () => {
+                    dialog.close();
+                }
+            },
+            hideCloseButton: true
+        };
+        let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
+    }
+
     private showInfo() {
         dialogs.show(dialogs.ModalDialog, {
             title: "Help",
@@ -307,8 +332,10 @@ export class AdminPageController extends Vue {
 
         try {
             this.initVoting(await this.adminPageService.loadVotingAsync());
+            this.actualVotingHasVotes = await this.adminPageService.votingHasVotes();
             this.updateVotingType();
             this.buildAdminpage();
+            this.validateReportVisibility();
         } finally {
             this.waitControl.endWait();
         }
@@ -451,12 +478,6 @@ export class AdminPageController extends Vue {
             icon: "icon icon-info",
             disabled: false
         });
-        items.push({
-            id: "excludeList",
-            title: "Exclude work item types",
-            icon: "icon icon-settings",
-            disabled: !this.userIsAdmin
-        });
 
         return items;
     }
@@ -569,7 +590,11 @@ export class AdminPageController extends Vue {
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
-                this.createNewVoting();
+                if (this.actualVotingHasVotes) {
+                    this.showVotingIsExistingDialog();
+                } else {
+                    this.createNewVoting();
+                }
                 break;
             case "saveSettings":
                 this.saveSettingsAsync(true);
@@ -585,9 +610,6 @@ export class AdminPageController extends Vue {
                 break;
             case "terminateVoting":
                 this.saveSettingsAsync(false);
-                break;
-            case "excludeList":
-                $("#excludeModal").modal();
                 break;
         }
     }
@@ -630,5 +652,13 @@ export class AdminPageController extends Vue {
             );
         }
         return value.isValid();
+    }
+
+    private validateReportVisibility() {
+        let isReportVisible = false;
+        if (!this.actualVoting.isVotingEnabled && this.actualVotingHasVotes) {
+            isReportVisible = true;
+        }
+        this.reportDisplayService.setReportVisibility(isReportVisible);
     }
 }

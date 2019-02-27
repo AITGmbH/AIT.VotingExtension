@@ -1,4 +1,4 @@
-jest.mock("TFS/WorkItemTracking/RestClient", () => {});
+jest.mock("TFS/WorkItemTracking/RestClient", () => { });
 
 import { AdminPageService } from "./adminPageService";
 import { AdminPageController } from "./adminPageController";
@@ -7,8 +7,8 @@ import moment from "moment-timezone";
 
 class VSS {
     ServiceIds: any;
-    getWebContext(): any {}
-    async getService<T>(contributionId: string): Promise<any> {}
+    getWebContext(): any { }
+    async getService<T>(contributionId: string): Promise<any> { }
 }
 
 const vssMock = typemoq.Mock.ofType<VSS>();
@@ -37,7 +37,7 @@ AdminPageService.prototype = adminPageServiceMock.object;
 (<any>document.getElementById) = () => {
     return {
         classList: {
-            remove: () => {}
+            remove: () => { }
         }
     };
 };
@@ -73,8 +73,7 @@ describe("Set StartTime", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.start = moment
-            .utc()
+        controller.actualVoting.start = moment()
             .year(2017)
             .month(11)
             .date(13)
@@ -217,8 +216,7 @@ describe("Set EndTime", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.end = moment
-            .utc()
+        controller.actualVoting.end = moment()
             .year(2017)
             .month(11)
             .date(13)

@@ -7,15 +7,20 @@ import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
 import { ReportPageService } from "./reportPageService";
 import { Report } from "../entities/report";
-import { parseEmail } from "../shared/common";
+import { parseEmail, bsNotify } from "../shared/common";
+import { CopyToClipboardService } from "../services/copyToClipboardService";
+import { ReportDisplayService } from "./reportDisplayService";
 
 @Component
 export class ReportPageController extends Vue {
 
     private reportPageService: ReportPageService;
+    private copyToClipboardService: CopyToClipboardService;
     private grid: grids.Grid;
-    
+
+    public reportDisplayService: ReportDisplayService;
     public report: Report = null;
+    public showContent = true;
     public waitControl: WaitControl;
     public height: string = "30vh";
 
@@ -24,7 +29,8 @@ export class ReportPageController extends Vue {
 
     public mounted() {
         this.reportPageService = new ReportPageService();
-        
+        this.copyToClipboardService = new CopyToClipboardService();
+
         this.initWaitControl('#waitContainer');
         this.initializeAsync().then(() => this.refreshAsync());
         this.$el.classList.remove("hide");
@@ -39,7 +45,7 @@ export class ReportPageController extends Vue {
             this.waitControl.endWait();
         }
     }
-    
+
     public async refreshAsync(lazy: boolean = false): Promise<void> {
         this.waitControl.startWait();
         try {
@@ -55,17 +61,24 @@ export class ReportPageController extends Vue {
     public async copyToClipboard(): Promise<void> {
         this.waitControl.startWait();
         try {
-            $(`#${this.report_grid_container}`).select();
-            this.grid.focus(0);
-            this.grid.selectAll();
-            document.execCommand("copy");
+            if (this.copyToClipboardService.copyGridContentToClipboard(this.grid)) {
+                bsNotify(
+                    "success",
+                    "The table content was copied to your clipboard!"
+                );
+            } else {
+                bsNotify(
+                    "danger",
+                    "There was an error moving the content to your clipboard! Please try again or refresh the page!"
+                );
+            }
         } finally {
             this.waitControl.endWait();
         }
     }
 
     protected createMenuBar() {
-        controls.create(MenuBar, $(`#${this.report_menu_container}`), {
+        controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
             showIcon: true,
             items: [
                 {
@@ -99,28 +112,28 @@ export class ReportPageController extends Vue {
     }
 
     protected createReportTable() {
-        const container = $(`#${this.report_grid_container}`);        
+        const container = $(`#${ this.report_grid_container }`);
         this.grid = controls.create(grids.Grid, container,
-        {
-            height: this.height,
-            allowMultiSelect: true,
-            columns: [
-                { tooltip: "Work Item ID", text: "ID", index: "id", width: 50 },
-                { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
-                { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
-                { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
-                { tooltip: "All votes per item", text: "Votes", index: "totalVotes", width: 60 },
-                { text: "Order", index: "order", width: 50, hidden: true }
-            ],
-            sortOrder: [
-                {
-                    index: "order",
-                    order: "asc"
-                }
-            ],
-            autoSort: true
-        });
+            {
+                height: this.height,
+                allowMultiSelect: true,
+                columns: [
+                    { tooltip: "Work Item ID", text: "ID", index: "id", width: 50 },
+                    { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
+                    { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
+                    { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
+                    { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
+                    { tooltip: "All votes per item", text: "Votes", index: "totalVotes", width: 60 },
+                    { text: "Order", index: "order", width: 50, hidden: true }
+                ],
+                sortOrder: [
+                    {
+                        index: "order",
+                        order: "asc"
+                    }
+                ],
+                autoSort: true
+            });
 
         const observer = new MutationObserver((_) => {
             observer.disconnect();
@@ -135,8 +148,8 @@ export class ReportPageController extends Vue {
                 const assignedTo = parseEmail($(cellAssignedTo).text());
 
                 $(cellTitle).text('');
-                $(cellTitle).append(`<div class="work-item-color ${cssClass}-color"></div>`);
-                $(cellTitle).append(`<span>${title}</span>`);
+                $(cellTitle).append(`<div class="work-item-color ${ cssClass }-color"></div>`);
+                $(cellTitle).append(`<span>${ title }</span>`);
                 $(cellAssignedTo).text(assignedTo);
             });
 
@@ -147,7 +160,7 @@ export class ReportPageController extends Vue {
     }
 
     protected async loadReportAsync(): Promise<void> {
-        this.report =  await this.reportPageService.loadReportData(true);
+        this.report = await this.reportPageService.loadReportData(true);
         LogExtension.log(this.report);
     }
 
@@ -156,7 +169,7 @@ export class ReportPageController extends Vue {
             this.waitControl = controls.create(WaitControl, $(ele), {
                 message: "Loading..."
             });
-        } 
+        }
         return this.waitControl;
     }
 
