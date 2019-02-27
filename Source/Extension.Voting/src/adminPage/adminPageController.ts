@@ -464,12 +464,6 @@ export class AdminPageController extends Vue {
             icon: "icon icon-info",
             disabled: false
         });
-        items.push({
-            id: "excludeList",
-            title: "Exclude work item types",
-            icon: "icon icon-settings",
-            disabled: !this.userIsAdmin
-        });
 
         return items;
     }
@@ -598,9 +592,6 @@ export class AdminPageController extends Vue {
                 break;
             case "terminateVoting":
                 this.saveSettingsAsync(false);
-                break;
-            case "excludeList":
-                $("#excludeModal").modal();
                 break;
         }
     }
