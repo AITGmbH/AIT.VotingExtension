@@ -29,6 +29,10 @@
     {
       "path": "dist",
       "addressable": true
+    },
+    {
+      "path": "images/AIT-Voting-Extension-Hub-Icon.png",
+      "addressable": true
     }
   ],
   "icons": {
@@ -59,7 +63,13 @@
       "properties": {
         "name": "Voting",
         "order": 99,
-        "uri": "dist/votingPage.html"
+        "uri": "dist/votingPage.html",
+        "iconAsset": "aitgmbh.asap-voting-aitgmb-de-preview/images/AIT-Voting-Extension-Hub-Icon.png",
+        "_sharedData": {
+          "assets": [
+            "aitgmbh.asap-voting-aitgmb-de-preview/images/AIT-Voting-Extension-Hub-Icon.png"
+          ]
+        }
       }
     },
     {
