@@ -33,7 +33,7 @@ export class CopyToClipboardService {
     }
 
     private generateHeaderHtml(grid: grids.Grid): string {
-        var columns = grid.getColumns();
+        const columns = this.getVisibleColumns(grid);
         let headersHtml = `<thead style="box-sizing: border-box; background-color: rgb(16, 110, 190); color: white">
             <tr style="box-sizing: border-box">`;
 
@@ -50,7 +50,7 @@ export class CopyToClipboardService {
     private generateBodyHtml(grid: grids.Grid): string {
         let bodyHtml = `<tbody style="box-sizing: border-box">`;
 
-        const columns = grid.getColumns();
+        const columns = this.getVisibleColumns(grid);
 
         const rowDataCount = grid.getLastRowDataIndex();
         for (let index = 0; index < rowDataCount; index++) {
@@ -58,6 +58,7 @@ export class CopyToClipboardService {
             bodyHtml += `<tr style="box-sizing: border-box">`;
 
             for (const column of columns) {
+
                 if (column.index == "id") {
                     bodyHtml += `<td style="box-sizing: border-box; border: 1px solid white; vertical-align: top; padding: 1.45pt 0.05in"><a
                     href="${element["link"] }" target="_blank"
@@ -72,5 +73,15 @@ export class CopyToClipboardService {
         }
         bodyHtml += `</tbody>`
         return bodyHtml;
+    }
+
+    private getVisibleColumns(grid: grids.Grid): grids.IGridColumn[] {
+        let columns = [];
+        for (const column of grid.getColumns()) {
+            if (!column.hidden) {
+                columns.push(column);
+            }
+        }
+        return columns;
     }
 }

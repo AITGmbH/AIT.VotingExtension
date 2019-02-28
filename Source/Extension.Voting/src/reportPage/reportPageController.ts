@@ -52,7 +52,12 @@ export class ReportPageController extends Vue {
             if (!lazy) {
                 await this.loadReportAsync();
             }
-            this.grid.setDataSource(this.report.workItems);
+            let dataSource = [];
+            if (this.report) {
+                dataSource = this.report.workItems
+            }
+            this.grid.setDataSource(dataSource);
+
         } finally {
             this.waitControl.endWait();
         }

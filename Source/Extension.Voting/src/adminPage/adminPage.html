@@ -119,10 +119,12 @@
 
                     <hr />
                     <div class="row">
-                        <label class="col-sm-12">Voting session</label>
+                        <label class="col-sm-12">Voting session <span class="required" v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
+                                start date of
+                                your voting needs to be before the end date!</span></label>
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime" @change="useStartTimeChanged">
                                 Start
                             </label>
                             <div class="row" v-if="actualVoting.useStartTime">
@@ -137,7 +139,7 @@
 
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime" @change="useEndTimeChanged">
                                 End
                             </label>
                             <div class="row" v-if="actualVoting.useEndTime">
@@ -162,7 +164,7 @@
     <div id="reportPage" class="hide">
         <div class="vso-container" v-show="report && reportDisplayService.reportVisible">
             <div class="row">
-                <h1 class="votingheadline">Report</h1>
+                <h1 class="votingheadline">Last voting results</h1>
             </div>
 
             <div class="row">

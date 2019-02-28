@@ -41,10 +41,6 @@ export class BaseDataService {
         this.votingDataService = new VotingDataService();
     }
 
-    // public get witFieldNames() {
-    //     return this._witFieldNames.filter(w => this.excludes.indexOf(w) < 0);
-    // }
-
     public get witTypeNames() {
         return this._witTypeNames;
     }
@@ -289,8 +285,10 @@ export class BaseDataService {
         LogExtension.log(doc);
 
         if (doc != null) {
-            if (doc.vote.length > 0) {
-                return true
+            if (doc.vote) {
+                if (doc.vote.length > 0) {
+                    return true
+                }
             }
         }
         return false;

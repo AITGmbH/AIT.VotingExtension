@@ -19,6 +19,9 @@ export class ReportPageService extends BaseDataService {
     public async loadReportData(sort: boolean = false, filter?: (req: ReportItem) => boolean): Promise<Report> {
         const votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
         await this.getAreasAsync();
+        if (!votingDoc.voting) {
+            return;
+        }
         const workItems = await this.loadRequirementsAsync(votingDoc.voting.level, this._areas);
         const report = new Report();
         let repItems = workItems.map(wit => <ReportItem>Object.assign(wit));

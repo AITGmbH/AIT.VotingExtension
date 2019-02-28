@@ -4,7 +4,7 @@ import { Voting } from "../entities/voting";
 import { bsNotify } from "../shared/common";
 
 export class AdminPageService extends BaseDataService {
-    
+
     constructor() {
         super();
     }
@@ -16,13 +16,14 @@ export class AdminPageService extends BaseDataService {
 
         doc.id = this.documentId;
         doc.vote = doc.vote || [];
+        doc.voting = doc.voting || {} as Voting;
 
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
         <Voting>Object.assign(doc.voting, voting);
 
         if (
             doc.voting.isMultipleVotingEnabled !==
-                voting.isMultipleVotingEnabled ||
+            voting.isMultipleVotingEnabled ||
             doc.voting.level !== voting.level ||
             doc.voting.query !== voting.query ||
             doc.voting.numberOfVotes !== voting.numberOfVotes
@@ -48,5 +49,15 @@ export class AdminPageService extends BaseDataService {
                 "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again"
             );
         }
+    }
+
+    public async deleteDocumentAsync() {
+        try {
+            await this.votingDataService.deleteDocumentAsync(this.documentId);
+            LogExtension.log("saveVoting: document updated");
+        } catch (error) {
+            LogExtension.log("Save settings, loading document", error);
+        }
+
     }
 }

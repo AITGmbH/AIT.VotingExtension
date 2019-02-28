@@ -84,6 +84,21 @@ export class VotingDataService {
         }
     }
 
+    public async deleteDocumentAsync(documentId: string): Promise<void> {
+        try {
+            const service = await this.getVssServiceAsync();
+            return await service.deleteDocument(
+                this.webContext.collection.name,
+                documentId
+            );
+        } catch (err) {
+            LogExtension.log(
+                "votingDataService.deleteDocumentAsync: Could not delete document",
+                err
+            );
+        }
+    }
+
     private async getVssServiceAsync(): Promise<IExtensionDataService> {
         return await VSS.getService<IExtensionDataService>(
             VSS.ServiceIds.ExtensionData
