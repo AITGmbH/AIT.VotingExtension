@@ -207,6 +207,7 @@ export class AdminPageController extends Vue {
         this.adminPageService.deleteDocumentAsync();
         this.initVoting();
         this.showContent = true;
+        this.actualVotingHasVotes = false; // New votings have no votes.
         this.createMenueBar(true);
     }
 

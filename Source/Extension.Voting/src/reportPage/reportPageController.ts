@@ -34,6 +34,12 @@ export class ReportPageController extends Vue {
         this.initWaitControl('#waitContainer');
         this.initializeAsync().then(() => this.refreshAsync());
         this.$el.classList.remove("hide");
+
+        this.reportDisplayService.subscribeToShowReport(
+            () => {
+                this.refreshAsync();
+            }
+        );
     }
 
 

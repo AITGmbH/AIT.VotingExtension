@@ -9,6 +9,13 @@ export class ReportDisplayService {
 
     public setReportVisibility(value: boolean) {
         this.reportVisible = value;
+        if (value) {
+            this.eventBus.$emit("showReport");
+        }
+    }
+    
+    public subscribeToShowReport(callback: Function) {
+        this.eventBus.$on("showReport", callback);
     }
 
     public createNewVoting() {
