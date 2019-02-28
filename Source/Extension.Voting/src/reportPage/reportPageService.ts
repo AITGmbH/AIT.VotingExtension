@@ -47,6 +47,15 @@ export class ReportPageService extends BaseDataService {
         return report;
     }
 
+    public async isVotingActive(): Promise<boolean> {
+        try {
+            const votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
+            return votingDoc == null || votingDoc.voting.isVotingEnabled;
+        } catch (error) {
+            return false;
+        }
+    }
+
     private countVotes(workItems: ReportItem[], itemId: number) {
         const item = workItems.find(x => x.id == itemId);
         if (!item) {

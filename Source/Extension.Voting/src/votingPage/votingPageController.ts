@@ -162,7 +162,8 @@ export class VotingPageController extends Vue {
             this.status === VotingStatus.ActiveVoting ||
             this.status === VotingStatus.PausedVoting ||
             this.status === VotingStatus.ProspectiveVoting ||
-            this.status === VotingStatus.OverdueVoting
+            this.status === VotingStatus.OverdueVoting ||
+            this.status === VotingStatus.NoVoting
         );
     }
 

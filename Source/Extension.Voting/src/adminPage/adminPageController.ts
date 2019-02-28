@@ -30,6 +30,7 @@ export class AdminPageController extends Vue {
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
+    public isPageVisible: boolean = true;
 
     public startDate: string = "";
     public startTime: string = "";
@@ -48,6 +49,10 @@ export class AdminPageController extends Vue {
         return this.adminPageService.flatQueryNames;
     }
 
+    public get isAdminPageVisible() {
+        return !this.actualVotingHasVotes && !this.actualVoting.isVotingEnabled || this.actualVoting.isVotingEnabled;
+    }
+
     public created() {
         document.getElementById("adminPage").classList.remove("hide");
     }
@@ -58,6 +63,7 @@ export class AdminPageController extends Vue {
         this.initWaitControl('#waitContainer');
         this.initializeAdminpageAsync();
         this.$el.classList.remove("hide");
+        this.reportDisplayService.subscribeToCreateNewVoting(this.showVotingIsExistingDialog);
     }
 
     public validateInput() {
@@ -608,11 +614,12 @@ export class AdminPageController extends Vue {
         return this.waitControl;
     }
 
-    private validateReportVisibility() {
+    public validateReportVisibility() {
         let isReportVisible = false;
         if (!this.actualVoting.isVotingEnabled && this.actualVotingHasVotes) {
             isReportVisible = true;
         }
         this.reportDisplayService.setReportVisibility(isReportVisible);
     }
+
 }

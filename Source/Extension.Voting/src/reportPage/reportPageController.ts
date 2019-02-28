@@ -2,7 +2,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
-import { MenuBar } from "VSS/Controls/Menus";
+import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
 import { ReportPageService } from "./reportPageService";
@@ -36,15 +36,7 @@ export class ReportPageController extends Vue {
         this.$el.classList.remove("hide");
     }
 
-    private async initializeAsync(): Promise<void> {
-        this.waitControl.startWait();
-        try {
-            this.createMenuBar();
-            this.createReportTable();
-        } finally {
-            this.waitControl.endWait();
-        }
-    }
+
 
     public async refreshAsync(lazy: boolean = false): Promise<void> {
         this.waitControl.startWait();
@@ -82,26 +74,51 @@ export class ReportPageController extends Vue {
         }
     }
 
-    protected createMenuBar() {
+    public createNewVoting() {
+        this.reportDisplayService.createNewVoting();
+    }
+
+    public initWaitControl(ele: any): WaitControl {
+        if (!this.waitControl) {
+            this.waitControl = controls.create(WaitControl, $(ele), {
+                message: "Loading..."
+            });
+        }
+        return this.waitControl;
+    }
+
+    protected async createMenuBar() {
+        let menuItems = [] as IMenuItemSpec[];
+        if (!await this.reportPageService.isVotingActive()) {
+            menuItems.push({
+                id: "createNewVoting",
+                text: "Create new voting",
+                icon: "icon icon-add",
+                disabled: false
+            });
+        }
+
+        menuItems.push(...[
+            {
+                id: "refresh",
+                title: "Refresh",
+                icon: "bowtie-icon bowtie-navigate-refresh",
+                disabled: false
+            },
+            {
+                separator: true
+            },
+            {
+                id: "copy",
+                title: "Copy to clipboard",
+                icon: "bowtie-icon bowtie-clone",
+                disabled: false
+            }
+        ]);
+
         controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
             showIcon: true,
-            items: [
-                {
-                    id: "refresh",
-                    title: "Refresh",
-                    icon: "bowtie-icon bowtie-navigate-refresh",
-                    disabled: false
-                },
-                {
-                    separator: true
-                },
-                {
-                    id: "copy",
-                    title: "Copy to clipboard",
-                    icon: "bowtie-icon bowtie-clone",
-                    disabled: false
-                }
-            ],
+            items: menuItems,
             executeAction: (args) => {
                 var command = args.get_commandName();
                 switch (command) {
@@ -110,6 +127,9 @@ export class ReportPageController extends Vue {
                         break;
                     case "copy":
                         this.copyToClipboard();
+                        break;
+                    case "createNewVoting":
+                        this.createNewVoting();
                         break;
                 }
             }
@@ -169,13 +189,16 @@ export class ReportPageController extends Vue {
         LogExtension.log(this.report);
     }
 
-    public initWaitControl(ele: any): WaitControl {
-        if (!this.waitControl) {
-            this.waitControl = controls.create(WaitControl, $(ele), {
-                message: "Loading..."
-            });
+    private async initializeAsync(): Promise<void> {
+        this.waitControl.startWait();
+        try {
+            this.createMenuBar();
+            this.createReportTable();
+        } finally {
+            this.waitControl.endWait();
         }
-        return this.waitControl;
     }
+
+
 
 }
