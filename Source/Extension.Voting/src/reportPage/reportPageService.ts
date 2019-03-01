@@ -174,13 +174,6 @@ export class ReportPageService extends BaseDataService {
         return tempRequirement;
     }
 
-    private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        const displayName =
-            assignedTo === undefined ? "" : assignedTo.displayName;
-        return displayName;
-    }
-
     private getWebLinkToWi(req: any): string {
         if (req._links) {
             return req._links.html.href ? req._links.html.href : req.url;

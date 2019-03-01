@@ -13,7 +13,7 @@ export class ReportDisplayService {
             this.eventBus.$emit("showReport");
         }
     }
-    
+
     public subscribeToShowReport(callback: Function) {
         this.eventBus.$on("showReport", callback);
     }

@@ -209,19 +209,6 @@ export class VotingPageService extends BaseDataService {
             );
             return;
         }
-        // else if (isEnabled && !isPaused) {
-        //     if ((voting.numberOfVotes - this.numberOfMyVotes()) < 1) {
-        //         bsNotify("warning", "You have no vote remaining. \nPlease refresh your browser window to get the actual content.");
-        //     } else if (voteItem.myVotes >= voting.voteLimit) {
-        //         bsNotify("warning", `This work item is on the vote limit of ${ voting.voteLimit }. \nPlease refresh your browser window to get the actual content.`);
-        //     } else {
-        //         // doc.vote.push(vote);
-        //         // const uDoc = await this.votingDataService.updateDocumentAsync(doc);
-        //         // LogExtension.log("saveVote: document updated", uDoc.id);
-
-        //         bsNotify("success", "Your vote has been saved.");
-        //     }
-        // }
         else if (!isEnabled) {
             bsNotify(
                 "danger",
@@ -452,12 +439,5 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
-    }
-
-    private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        const displayName =
-            assignedTo === undefined ? "" : assignedTo.displayName;
-        return displayName;
     }
 }

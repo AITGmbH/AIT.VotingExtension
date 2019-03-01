@@ -73,18 +73,23 @@ describe("Set StartTime", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.start = moment()
+        const currentMoment = moment()
+            .utc()
             .year(2017)
             .month(11)
             .date(13)
-            .valueOf();
+            .hour(12)
+            .minute(55);
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
+
         controller.startTime = "15:00";
 
-        var actualDateTime = moment.utc(controller.actualVoting.start);
+        var actualDateTime = controller.getStartDate();
         expect(actualDateTime.year()).toBe(2017);
         expect(actualDateTime.month()).toBe(11);
         expect(actualDateTime.date()).toBe(13);
-        expect(actualDateTime.hours()).toBe(4);
+        expect(actualDateTime.hours()).toBe(15);
         expect(actualDateTime.minutes()).toBe(0);
     });
 
@@ -94,19 +99,23 @@ describe("Set StartTime", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.start = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(13)
-            .valueOf();
-        controller.startTime = "10:00";
+            .hour(12)
+            .minute(55);
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
 
-        var actualDateTime = moment.utc(controller.actualVoting.start);
+        controller.startTime = "15:00";
+
+        var actualDateTime = controller.getStartDate();
         expect(actualDateTime.year()).toBe(2017);
         expect(actualDateTime.month()).toBe(11);
         expect(actualDateTime.date()).toBe(13);
-        expect(actualDateTime.hours()).toBe(16);
+        expect(actualDateTime.hours()).toBe(15);
         expect(actualDateTime.minutes()).toBe(0);
     });
 });
@@ -116,18 +125,19 @@ describe("Set StartDate", () => {
         moment.tz.setDefault("Etc/UTC");
 
         const controller = new AdminPageController();
-
-        controller.actualVoting.start = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(1)
             .hour(12)
-            .minute(55)
-            .valueOf();
+            .minute(55);
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
+
         controller.startDate = "2010-01-14";
 
-        var actualDateTime = moment.utc(controller.actualVoting.start);
+        var actualDateTime = controller.getStartDate();
         expect(actualDateTime.year()).toBe(2010);
         expect(actualDateTime.month()).toBe(0);
         expect(actualDateTime.date()).toBe(14);
@@ -141,17 +151,19 @@ describe("Set StartDate", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.start = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(1)
             .hour(12)
-            .minute(55)
-            .valueOf();
+            .minute(55);
+
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
         controller.startDate = "2010-01-14";
 
-        var actualDateTime = moment.utc(controller.actualVoting.start);
+        var actualDateTime = controller.getStartDate();
         expect(actualDateTime.year()).toBe(2010);
         expect(actualDateTime.month()).toBe(0);
         expect(actualDateTime.date()).toBe(14);
@@ -166,17 +178,19 @@ describe("Set EndDate", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.end = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(1)
             .hour(12)
-            .minute(55)
-            .valueOf();
+            .minute(55);
+        controller.endDate = currentMoment.format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
+
         controller.endDate = "2010-01-14";
 
-        var actualDateTime = moment.utc(controller.actualVoting.end);
+        var actualDateTime = controller.getEndDate();
         expect(actualDateTime.year()).toBe(2010);
         expect(actualDateTime.month()).toBe(0);
         expect(actualDateTime.date()).toBe(14);
@@ -190,17 +204,19 @@ describe("Set EndDate", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.end = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(1)
             .hour(12)
-            .minute(55)
-            .valueOf();
+            .minute(55);
+        controller.endDate = currentMoment.format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
+
         controller.endDate = "2010-01-14";
 
-        var actualDateTime = moment.utc(controller.actualVoting.end);
+        var actualDateTime = controller.getEndDate();
         expect(actualDateTime.year()).toBe(2010);
         expect(actualDateTime.month()).toBe(0);
         expect(actualDateTime.date()).toBe(14);
@@ -211,23 +227,27 @@ describe("Set EndDate", () => {
 
 describe("Set EndTime", () => {
     it("should only modify the time part", () => {
-        // UTC+11; => https://timezonedb.com/time-zones/Asia/Srednekolymsk
-        moment.tz.setDefault("Asia/Srednekolymsk");
+        moment.tz.setDefault("Etc/UTC");
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.end = moment()
+        const currentMoment = moment()
+            .utc()
             .year(2017)
             .month(11)
-            .date(13)
-            .valueOf();
+            .date(1)
+            .hour(12)
+            .minute(55);
+        controller.endDate = currentMoment.format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
+
         controller.endTime = "15:00";
 
-        var actualDateTime = moment.utc(controller.actualVoting.end);
+        var actualDateTime = controller.getEndDate();
         expect(actualDateTime.year()).toBe(2017);
         expect(actualDateTime.month()).toBe(11);
-        expect(actualDateTime.date()).toBe(13);
-        expect(actualDateTime.hours()).toBe(4);
+        expect(actualDateTime.date()).toBe(1);
+        expect(actualDateTime.hours()).toBe(15);
         expect(actualDateTime.minutes()).toBe(0);
     });
 
@@ -237,19 +257,63 @@ describe("Set EndTime", () => {
 
         const controller = new AdminPageController();
 
-        controller.actualVoting.end = moment
+        const currentMoment = moment
             .utc()
             .year(2017)
             .month(11)
             .date(13)
-            .valueOf();
-        controller.endTime = "10:00";
+            .hour(12)
+            .minute(55);
+        controller.endDate = currentMoment.format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
 
-        var actualDateTime = moment.utc(controller.actualVoting.end);
+        controller.endTime = "15:00";
+
+        var actualDateTime = controller.getEndDate();
         expect(actualDateTime.year()).toBe(2017);
         expect(actualDateTime.month()).toBe(11);
         expect(actualDateTime.date()).toBe(13);
-        expect(actualDateTime.hours()).toBe(16);
+        expect(actualDateTime.hours()).toBe(15);
         expect(actualDateTime.minutes()).toBe(0);
+    });
+});
+
+describe("Check valid date range", () => {
+    it("should be valid date range", () => {
+        const controller = new AdminPageController();
+        const currentMoment = moment
+            .utc()
+            .year(2017)
+            .month(11)
+            .date(13)
+            .hour(12)
+            .minute(55);
+
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
+        controller.endDate = currentMoment.add(1, "d").format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
+
+        const isDateRangeValid = controller.isDateRangeValid();
+        expect(isDateRangeValid).toBe(true);
+    });
+
+    it("should not be valid date range", () => {
+        const controller = new AdminPageController();
+        const currentMoment = moment
+            .utc()
+            .year(2017)
+            .month(11)
+            .date(13)
+            .hour(12)
+            .minute(55);
+
+        controller.startDate = currentMoment.format("YYYY-MM-DD");
+        controller.startTime = currentMoment.format("HH:mm");
+        controller.endDate = currentMoment.add(-1, "d").format("YYYY-MM-DD");
+        controller.endTime = currentMoment.format("HH:mm");
+
+        const isDateRangeValid = controller.isDateRangeValid();
+        expect(isDateRangeValid).toBe(false);
     });
 });

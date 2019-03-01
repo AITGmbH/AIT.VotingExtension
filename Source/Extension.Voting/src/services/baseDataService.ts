@@ -294,6 +294,13 @@ export class BaseDataService {
         return false;
     }
 
+    public getNameOfWiResponsiveness(req: any): string {
+        const assignedTo = req.fields["System.AssignedTo"];
+        const displayName =
+            assignedTo === undefined ? "" : assignedTo.displayName;
+        return displayName;
+    }
+
     /**
      * Call all resources async.
      * We are greedy, arn't we?
