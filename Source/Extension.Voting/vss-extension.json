@@ -14,8 +14,7 @@
       "path": "Markdown/VotingExtension_License.md"
     }
   },
-  "screenshots": [
-    {
+  "screenshots": [{
       "path": "images/screenshots/VotingSettingsStarted.png"
     },
     {
@@ -25,13 +24,12 @@
       "path": "images/screenshots/VotingtableVoted.png"
     }
   ],
-  "files": [
-    {
+  "files": [{
       "path": "dist",
       "addressable": true
     },
     {
-      "path": "images/AIT-Voting-Extension-Hub-Icon.png",
+      "path": "images/logo/AIT-Voting-Extension-Hub-Icon.png",
       "addressable": true
     }
   ],
@@ -47,13 +45,10 @@
   "scopes": [
     "vso.work_write"
   ],
-  "targets": [
-    {
-      "id": "Microsoft.VisualStudio.Services"
-    }
-  ],
-  "contributions": [
-    {
+  "targets": [{
+    "id": "Microsoft.VisualStudio.Services"
+  }],
+  "contributions": [{
       "id": "Voting.Home",
       "type": "ms.vss-web.hub",
       "description": "Adds a 'voting' hub to the Work hub group.",
@@ -64,10 +59,10 @@
         "name": "Voting",
         "order": 99,
         "uri": "dist/votingPage.html",
-        "iconAsset": "aitgmbh.asap-voting-aitgmb-de-preview/images/AIT-Voting-Extension-Hub-Icon.png",
+        "iconAsset": "aitgmbh.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
         "_sharedData": {
           "assets": [
-            "aitgmbh.asap-voting-aitgmb-de-preview/images/AIT-Voting-Extension-Hub-Icon.png"
+            "aitgmbh.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
           ]
         }
       }
