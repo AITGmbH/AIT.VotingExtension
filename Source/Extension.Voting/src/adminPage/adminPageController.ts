@@ -396,6 +396,13 @@ export class AdminPageController extends Vue {
         await this.initAsync();
     }
 
+    private async terminateVotingAsync() {
+        const voting = this.actualVoting;
+        voting.isVotingEnabled = false;
+        await this.adminPageService.saveVotingAsync(voting);
+        await this.initAsync();
+    }
+
     private getMenuItems(isActive: boolean): IContributedMenuItem[] {
         if (this.actualVoting == null || !this.actualVoting.isVotingEnabled) {
             if (!isActive) {
@@ -580,7 +587,7 @@ export class AdminPageController extends Vue {
                 this.showInfo();
                 break;
             case "terminateVoting":
-                this.saveSettingsAsync(false);
+                this.terminateVotingAsync();
                 break;
         }
     }
