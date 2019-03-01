@@ -3,7 +3,6 @@ import { Vote } from "../entities/vote";
 import { VotingItem } from "../entities/votingItem";
 import { VotingPageService } from "./votingPageService";
 import { LogExtension } from "../shared/logExtension";
-import { bsNotify } from "../shared/common";
 import { CookieService } from "../services/cookieService";
 import { VotingStatus } from "../entities/votingStatus";
 import { parseEmail } from "../shared/common";

@@ -397,7 +397,7 @@ export class AdminPageController extends Vue {
     }
 
     private async terminateVotingAsync() {
-        const voting = this.actualVoting;
+        let voting = await this.adminPageService.loadVotingAsync();
         voting.isVotingEnabled = false;
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
@@ -446,7 +446,7 @@ export class AdminPageController extends Vue {
         items.push({
             id: "terminateVoting",
             title: "Stop voting",
-            icon: "icon icon-delete",
+            icon: "icon icon-tfs-build-status-canceled",
             disabled: !this.userIsAdmin
         });
         items.push({ separator: true });
