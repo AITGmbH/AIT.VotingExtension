@@ -15,20 +15,20 @@ export class AdminPageService extends BaseDataService {
 
         doc.id = this.documentId;
         doc.vote = doc.vote || [];
+        doc.voting = doc.voting || {} as Voting;
 
         // this is necessary because Vue overwrites the property prototypes and JSON.stringify causes an error because of circular dependencies
         <Voting>Object.assign(doc.voting, voting);
 
         if (
             doc.voting.isMultipleVotingEnabled !==
-                voting.isMultipleVotingEnabled ||
+            voting.isMultipleVotingEnabled ||
             doc.voting.level !== voting.level ||
             doc.voting.query !== voting.query ||
             doc.voting.numberOfVotes !== voting.numberOfVotes
         ) {
             doc.vote = [];
         }
-
         try {
             await this.votingDataService.updateDocumentAsync(doc);
             LogExtension.log("saveVoting: document updated");
