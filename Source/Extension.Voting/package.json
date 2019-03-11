@@ -7,6 +7,7 @@
   "scripts": {
     "package": "tfx extension create --rev-version",
     "package-debug": "cross-var tfx extension create --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",
+    "build-package-debug": "npm run build && npm run package-debug",
     "gallery-publish": "tfx extension publish --rev-version",
     "clean": "rimraf ./dist && rimraf ./*.vsix",
     "gallery-publish-debug": "cross-var tfx extension publish --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",

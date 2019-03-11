@@ -248,7 +248,13 @@ export class AdminPageController extends Vue {
     }
 
     public get currentQueryName() {
-        let current = this.queries.find(i => i.id == this.actualVoting.query);
+        let current = null;
+        for (const currentQuery of this.queries) {
+            if (currentQuery.id === this.actualVoting.query) {
+                current = currentQuery;
+                break;
+            }
+        }
         return current ? current.name : null;
     }
 
@@ -458,12 +464,6 @@ export class AdminPageController extends Vue {
             icon: "icon icon-info",
             disabled: false
         });
-        items.push({
-            id: "excludeList",
-            title: "Exclude work item types",
-            icon: "icon icon-settings",
-            disabled: !this.userIsAdmin
-        });
 
         return items;
     }
@@ -592,9 +592,6 @@ export class AdminPageController extends Vue {
                 break;
             case "terminateVoting":
                 this.saveSettingsAsync(false);
-                break;
-            case "excludeList":
-                $("#excludeModal").modal();
                 break;
         }
     }

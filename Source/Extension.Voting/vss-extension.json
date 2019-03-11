@@ -14,8 +14,7 @@
       "path": "Markdown/VotingExtension_License.md"
     }
   },
-  "screenshots": [
-    {
+  "screenshots": [{
       "path": "images/screenshots/VotingSettingsStarted.png"
     },
     {
@@ -25,12 +24,10 @@
       "path": "images/screenshots/VotingtableVoted.png"
     }
   ],
-  "files": [
-    {
-      "path": "dist",
-      "addressable": true
-    }
-  ],
+  "files": [{
+    "path": "dist",
+    "addressable": true
+  }],
   "icons": {
     "default": "images/logo/AIT-Voting-Extension.png"
   },
@@ -43,13 +40,10 @@
   "scopes": [
     "vso.work_write"
   ],
-  "targets": [
-    {
-      "id": "Microsoft.VisualStudio.Services"
-    }
-  ],
-  "contributions": [
-    {
+  "targets": [{
+    "id": "Microsoft.VisualStudio.Services"
+  }],
+  "contributions": [{
       "id": "Voting.Home",
       "type": "ms.vss-web.hub",
       "description": "Adds a 'voting' hub to the Work hub group.",
