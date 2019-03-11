@@ -336,7 +336,14 @@ export class VotingPageController extends Vue {
     }
 
     private actualVotingItem(id: number): VotingItem {
-        return this.actualVotingItems.find(i => i.id == id);
+        var possibleVotingItem = null;
+        for (const votingItem of this.actualVotingItems) {
+            if (votingItem.id === id) {
+                possibleVotingItem = votingItem;
+                break;
+            }
+        }
+        return possibleVotingItem;
     }
 
     private showRemoveAllUserVotesDialog() {

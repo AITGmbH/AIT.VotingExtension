@@ -30,7 +30,6 @@ export class AdminPageService extends BaseDataService {
         ) {
             doc.vote = [];
         }
-
         try {
             await this.votingDataService.updateDocumentAsync(doc);
             LogExtension.log("saveVoting: document updated");
