@@ -1,3 +1,7 @@
+// Used within package.json to update the paths for icon assets to be able to display the icon within azure devops ui
+// The $tfx_publisher env variable is provided within package.json calls
+// Please make sure that you provide your publisher id to use the extension for your purposes
+// If the $tfx_publisher is not present, we use the original publisher within vss-extension.json
 var fs = require('fs');
 
 var vssExtensions = JSON.parse(fs.readFileSync('./vss-extension.json', 'utf-8'));
@@ -7,8 +11,8 @@ if (!publisherName) {
     publisherName = vssExtensions.publisher;
 }
 
-const searchTerm = `.${vssExtensions.id}`;
-const replacement = `${publisherName}`;
+const searchTerm = "." + vssExtensions.id;
+const replacement = publisherName;
 
 for (let contribution of vssExtensions.contributions) {
     if (contribution.properties) {
