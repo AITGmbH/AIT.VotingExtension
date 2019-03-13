@@ -3,7 +3,6 @@ import { Vote } from "../entities/vote";
 import { VotingItem } from "../entities/votingItem";
 import { VotingPageService } from "./votingPageService";
 import { LogExtension } from "../shared/logExtension";
-import { bsNotify } from "../shared/common";
 import { CookieService } from "../services/cookieService";
 import { VotingStatus } from "../entities/votingStatus";
 import { parseEmail } from "../shared/common";
@@ -162,7 +161,8 @@ export class VotingPageController extends Vue {
             this.status === VotingStatus.ActiveVoting ||
             this.status === VotingStatus.PausedVoting ||
             this.status === VotingStatus.ProspectiveVoting ||
-            this.status === VotingStatus.OverdueVoting
+            this.status === VotingStatus.OverdueVoting ||
+            this.status === VotingStatus.NoVoting
         );
     }
 

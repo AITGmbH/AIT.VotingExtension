@@ -2,6 +2,10 @@ import { LogExtension } from "./logExtension";
 
 export function bsNotify(type, message) {
     LogExtension.log("in notify function");
+    let delay = 10;
+    if (type === "danger") {
+        delay = 15;
+    }
 
     $.notify({
         icon: "glyphicon glyphicon-warning-sign",
@@ -23,7 +27,7 @@ export function bsNotify(type, message) {
                 '<span data-notify="message">{2}</span>' +
                 '</div>',
             allow_dismiss: true,
-            delay: 5 * 1000,
+            delay: delay * 1000,
             newest_on_top: true
         });
     return;

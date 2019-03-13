@@ -10,4 +10,5 @@
     public iterationPath: string;
     public assignedTo: string;
     public description: string;
+    public link: string;
 }

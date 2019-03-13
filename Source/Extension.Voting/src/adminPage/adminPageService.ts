@@ -4,6 +4,7 @@ import { Voting } from "../entities/voting";
 import { bsNotify } from "../shared/common";
 
 export class AdminPageService extends BaseDataService {
+
     constructor() {
         super();
     }
@@ -47,5 +48,15 @@ export class AdminPageService extends BaseDataService {
                 "Internal connection problems occured, so your settings couldn't be saved.\nPlease refresh the page and try it again"
             );
         }
+    }
+
+    public async deleteDocumentAsync() {
+        try {
+            await this.votingDataService.deleteDocumentAsync(this.documentId);
+            LogExtension.log("saveVoting: document updated");
+        } catch (error) {
+            LogExtension.log("Save settings, loading document", error);
+        }
+
     }
 }

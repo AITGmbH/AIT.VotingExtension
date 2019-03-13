@@ -4,6 +4,7 @@ import { VotingTypes } from "../entities/votingTypes";
 
 export class VotingDataService {
     private webContext: WebContext;
+    public assignedToUnassignedText: string = "";
 
     public constructor() {
         this.webContext = VSS.getWebContext();
@@ -38,7 +39,7 @@ export class VotingDataService {
             let voting = doc.voting;
             if (doc.voting != null && doc.voting instanceof Array) {
                 voting = doc.voting[0];
-                for (var i = 1; i < doc.voting.length; i++) {
+                for (let i = 1; i < doc.voting.length; i++) {
                     if (voting.lastModified < doc.voting[i].lastModified) {
                         voting = doc.voting[i];
                     }
@@ -80,6 +81,21 @@ export class VotingDataService {
                 err
             );
             return doc;
+        }
+    }
+
+    public async deleteDocumentAsync(documentId: string): Promise<void> {
+        try {
+            const service = await this.getVssServiceAsync();
+            return await service.deleteDocument(
+                this.webContext.collection.name,
+                documentId
+            );
+        } catch (err) {
+            LogExtension.log(
+                "votingDataService.deleteDocumentAsync: Could not delete document",
+                err
+            );
         }
     }
 

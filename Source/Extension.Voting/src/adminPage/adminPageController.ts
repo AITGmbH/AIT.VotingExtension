@@ -12,6 +12,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import moment from "moment";
 import { VotingTypes } from "../entities/votingTypes";
+import { ReportDisplayService } from "../reportPage/reportDisplayService";
 
 @Component
 export class AdminPageController extends Vue {
@@ -20,138 +21,21 @@ export class AdminPageController extends Vue {
     private readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
+    private reportDisplayService: ReportDisplayService;
 
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
+    public actualVotingHasVotes: boolean = false;
     public types: string[] = [VotingTypes.LEVEL, VotingTypes.QUERY];
     public userIsAdmin: boolean = true;
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
+    public isPageVisible: boolean = true;
 
-    public get startDate(): string {
-        var hasBackendStartDate = this.actualVoting && this.actualVoting.start;
-        var startDate: string;
-        if (hasBackendStartDate) {
-            startDate = moment(this.actualVoting.start)
-                .format(this.StandardDatePattern);
-        } else {
-            startDate = moment().format(
-                this.StandardDatePattern
-            );
-        }
-
-        return startDate;
-    }
-
-    public set startDate(value: string) {
-        var newStartDate = moment(
-            value,
-            this.StandardDatePattern
-        );
-        var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
-        if (hasBackendStartTime) {
-            var backendDateTime = moment(this.actualVoting.start);
-            newStartDate = backendDateTime
-                .year(newStartDate.year())
-                .month(newStartDate.month())
-                .date(newStartDate.date());
-        } else {
-            newStartDate = moment(newStartDate)
-                .year(newStartDate.year())
-                .month(newStartDate.month())
-                .date(newStartDate.date());
-        }
-        if (this.checkDateValidity(newStartDate)) {
-            this.actualVoting.start = newStartDate.valueOf();
-        }
-    }
-
-    public get startTime(): string {
-        var hasBackendStartTime = this.actualVoting && this.actualVoting.start;
-        var startTime: string;
-        if (hasBackendStartTime) {
-            startTime = moment(this.actualVoting.start)
-                .format(this.StandardTimePattern);
-        } else {
-            startTime = moment().format(
-                this.StandardTimePattern
-            );
-        }
-
-        return startTime;
-    }
-
-    public set startTime(value: string) {
-        var newStartTime = moment(value, this.StandardTimePattern);
-        var backendDateTime = moment();
-        if (this.actualVoting.start) {
-            backendDateTime = moment(this.actualVoting.start);
-        }
-        var newDate = backendDateTime.set({
-            hours: newStartTime.hours(),
-            minutes: newStartTime.minutes()
-        });
-        this.actualVoting.start = newDate.valueOf();
-    }
-
-    public get endDate(): string {
-        var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
-        var endDate: string;
-        if (hasBackendEndDate) {
-            endDate = moment(this.actualVoting.end)
-                .format(this.StandardDatePattern);
-        } else {
-            endDate = moment().format(this.StandardDatePattern);
-        }
-
-        return endDate;
-    }
-
-    public set endDate(value: string) {
-        var newEndDate = moment(value, this.StandardDatePattern);
-        var hasBackendEndDate = this.actualVoting && this.actualVoting.end;
-        if (hasBackendEndDate) {
-            var backendDateTime = moment(this.actualVoting.end);
-            var newEndDate = backendDateTime
-                .year(newEndDate.year())
-                .month(newEndDate.month())
-                .date(newEndDate.date());
-        } else {
-            var newEndDate = moment(newEndDate)
-                .year(newEndDate.year())
-                .month(newEndDate.month())
-                .date(newEndDate.date());
-        }
-        if (this.checkDateValidity(newEndDate)) {
-            this.actualVoting.end = newEndDate.valueOf();
-        }
-    }
-
-    public get endTime(): string {
-        var hasBackendStartTime = this.actualVoting && this.actualVoting.end;
-        var endTime: string;
-        if (hasBackendStartTime) {
-            endTime = moment(this.actualVoting.end)
-                .format(this.StandardTimePattern);
-        } else {
-            endTime = moment().format(this.StandardTimePattern);
-        }
-
-        return endTime;
-    }
-
-    public set endTime(value: string) {
-        var newEndTime = moment(value, this.StandardTimePattern);
-        var backendDateTime = moment();
-        if (this.actualVoting.end) {
-            backendDateTime = moment(this.actualVoting.end);
-        }
-        var newDate = backendDateTime.set({
-            hours: newEndTime.hours(),
-            minutes: newEndTime.minutes()
-        });
-        this.actualVoting.end = newDate.valueOf();
-    }
+    public startDate: string = "";
+    public startTime: string = "";
+    public endDate: string = "";
+    public endTime: string = "";
 
     public get levels() {
         return this.adminPageService.witLevelNames;
@@ -165,6 +49,10 @@ export class AdminPageController extends Vue {
         return this.adminPageService.flatQueryNames;
     }
 
+    public get isAdminPageVisible() {
+        return !this.actualVotingHasVotes && !this.actualVoting.isVotingEnabled || this.actualVoting.isVotingEnabled;
+    }
+
     public created() {
         document.getElementById("adminPage").classList.remove("hide");
     }
@@ -172,16 +60,10 @@ export class AdminPageController extends Vue {
     public mounted() {
         document.getElementById(this.$el.id).classList.remove("hide");
         this.adminPageService = new AdminPageService();
-
-        this.waitControl = controls.create(
-            statusIndicators.WaitControl,
-            $("#waitContainer"),
-            {
-                message: "Loading..."
-            }
-        );
-
+        this.initWaitControl('#waitContainer');
         this.initializeAdminpageAsync();
+        this.$el.classList.remove("hide");
+        this.reportDisplayService.subscribeToCreateNewVoting(this.showVotingIsExistingDialog);
     }
 
     public validateInput() {
@@ -258,10 +140,103 @@ export class AdminPageController extends Vue {
         return current ? current.name : null;
     }
 
+    public useEndTimeChanged($event) {
+        if ($event.target.checked && !this.getEndDate().isValid()) {
+            let possibleEndDate = moment();
+            if (this.getStartDate().isValid()) {
+                possibleEndDate = this.getStartDate().add(1, "d");
+            }
+            this.endDate = possibleEndDate.format(this.StandardDatePattern);
+            this.endTime = possibleEndDate.format(this.StandardTimePattern);
+        }
+    }
+
+    public useStartTimeChanged($event) {
+        if ($event.target.checked && !this.getStartDate().isValid()) {
+            let startDate = moment();
+            if (this.getEndDate().isValid()) {
+                var endDate = this.getEndDate();
+                if (!endDate.isAfter(startDate)) {
+                    endDate.add(1, "d");
+                    this.endDate = endDate.format(this.StandardDatePattern);
+                    this.endTime = endDate.format(this.StandardTimePattern);
+                }
+            }
+
+            this.startDate = startDate.format(this.StandardDatePattern);
+            this.startTime = startDate.format(this.StandardTimePattern);
+        }
+    }
+
+    public getStartDate(): moment.Moment {
+        var currentDate = moment(this.startDate);
+        if (currentDate.isValid()) {
+            var startTime = moment(this.startTime, this.StandardTimePattern);
+            currentDate.set({
+                hours: startTime.hours(),
+                minutes: startTime.minutes()
+            });
+        }
+        return currentDate;
+    }
+
+    public getEndDate(): moment.Moment {
+        var currentDate = moment(this.endDate);
+        if (currentDate.isValid()) {
+            var endTime = moment(this.endTime, this.StandardTimePattern);
+            currentDate.set({
+                hours: endTime.hours(),
+                minutes: endTime.minutes()
+            });
+        }
+        return currentDate;
+    }
+
+    public setEndDate(value: number) {
+        var currentDateTime = moment(value);
+        this.endDate = currentDateTime.format(this.StandardDatePattern);
+        this.endTime = currentDateTime.format(this.StandardTimePattern);
+    }
+
+    public setStartDate(value: number) {
+        var currentDateTime = moment(value);
+        this.startDate = currentDateTime.format(this.StandardDatePattern);
+        this.startTime = currentDateTime.format(this.StandardTimePattern);
+    }
+
+    public isDateRangeValid(): boolean {
+        return this.getStartDate().isBefore(this.getEndDate());
+    }
+
+
     private createNewVoting() {
+        this.adminPageService.deleteDocumentAsync();
         this.initVoting();
         this.showContent = true;
+        this.actualVotingHasVotes = false; // New votings have no votes.
         this.createMenueBar(true);
+    }
+
+    private showVotingIsExistingDialog() {
+        let htmlContentString: string =
+            "<html><body><div>When you create a new voting, the results of the last voting are discarded. If you need them, please copy them first.</div></body></html>"
+        let dialogContent = $.parseHTML(htmlContentString);
+        let dialogOptions = {
+            title: "Create new voting",
+            content: dialogContent,
+            buttons: {
+                Confirm: () => {
+                    dialog.close();
+                    this.reportDisplayService.setReportVisibility(false);
+                    this.createNewVoting();
+                },
+                Cancel: () => {
+                    dialog.close();
+                }
+            },
+            hideCloseButton: true
+        };
+        let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
     }
 
     private showInfo() {
@@ -298,6 +273,13 @@ export class AdminPageController extends Vue {
         this.actualVoting.query =
             this.actualVoting.query ||
             (this.queries.length ? this.queries[0].id : null);
+
+        if (this.actualVoting.useStartTime) {
+            this.setStartDate(this.actualVoting.start);
+        }
+        if (this.actualVoting.useEndTime) {
+            this.setEndDate(this.actualVoting.end);
+        }
     }
 
     private async initializeAdminpageAsync(): Promise<void> {
@@ -320,8 +302,10 @@ export class AdminPageController extends Vue {
 
         try {
             this.initVoting(await this.adminPageService.loadVotingAsync());
+            this.actualVotingHasVotes = await this.adminPageService.votingHasVotes();
             this.updateVotingType();
             this.buildAdminpage();
+            this.validateReportVisibility();
         } finally {
             this.waitControl.endWait();
         }
@@ -352,6 +336,13 @@ export class AdminPageController extends Vue {
         isPaused: boolean | null = null
     ) {
         const voting = this.actualVoting;
+        if (voting.useStartTime) {
+            voting.start = this.getStartDate().valueOf();
+        }
+
+        if (voting.useEndTime) {
+            voting.end = this.getEndDate().valueOf();
+        }
 
         voting.title = escapeText(voting.title);
         if ((voting.title == null || voting.title === "") && isEnabled) {
@@ -411,6 +402,13 @@ export class AdminPageController extends Vue {
         await this.initAsync();
     }
 
+    private async terminateVotingAsync() {
+        let voting = await this.adminPageService.loadVotingAsync();
+        voting.isVotingEnabled = false;
+        await this.adminPageService.saveVotingAsync(voting);
+        await this.initAsync();
+    }
+
     private getMenuItems(isActive: boolean): IContributedMenuItem[] {
         if (this.actualVoting == null || !this.actualVoting.isVotingEnabled) {
             if (!isActive) {
@@ -454,7 +452,7 @@ export class AdminPageController extends Vue {
         items.push({
             id: "terminateVoting",
             title: "Stop voting",
-            icon: "icon icon-delete",
+            icon: "icon icon-tfs-build-status-canceled",
             disabled: !this.userIsAdmin
         });
         items.push({ separator: true });
@@ -576,7 +574,11 @@ export class AdminPageController extends Vue {
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
-                this.createNewVoting();
+                if (this.actualVotingHasVotes) {
+                    this.showVotingIsExistingDialog();
+                } else {
+                    this.createNewVoting();
+                }
                 break;
             case "saveSettings":
                 this.saveSettingsAsync(true);
@@ -591,7 +593,7 @@ export class AdminPageController extends Vue {
                 this.showInfo();
                 break;
             case "terminateVoting":
-                this.saveSettingsAsync(false);
+                this.terminateVotingAsync();
                 break;
         }
     }
@@ -617,13 +619,21 @@ export class AdminPageController extends Vue {
         });
     }
 
-    private checkDateValidity(value: moment.Moment): boolean {
-        if (!value.isValid()) {
-            bsNotify(
-                "danger",
-                "Invalid date inserted. The date you have selected is invalid. Please change the date!"
-            );
+    public initWaitControl(ele: any): statusIndicators.WaitControl {
+        if (!this.waitControl) {
+            this.waitControl = controls.create(statusIndicators.WaitControl, $(ele), {
+                message: "Loading..."
+            });
         }
-        return value.isValid();
+        return this.waitControl;
     }
+
+    public validateReportVisibility() {
+        let isReportVisible = false;
+        if (!this.actualVoting.isVotingEnabled && this.actualVotingHasVotes) {
+            isReportVisible = true;
+        }
+        this.reportDisplayService.setReportVisibility(isReportVisible);
+    }
+
 }

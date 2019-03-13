@@ -58,7 +58,7 @@ export class VotingPageService extends BaseDataService {
             const value = teamfieldvalues.values[i];
             areas += `[System.AreaPath] ${
                 value.includeChildren ? "UNDER" : "="
-            } '${value.value}'`;
+                } '${ value.value }'`;
 
             if (i < teamfieldvalues.values.length - 1) {
                 areas += " OR ";
@@ -208,7 +208,8 @@ export class VotingPageService extends BaseDataService {
                 "This voting has been stopped. \nPlease refresh your browser window to get the actual content."
             );
             return;
-        } else if (!isEnabled) {
+        }
+        else if (!isEnabled) {
             bsNotify(
                 "danger",
                 "This voting session has been stopped. \nPlease refresh your browser window to get the actual content."
@@ -251,7 +252,7 @@ export class VotingPageService extends BaseDataService {
             bsNotify(
                 "danger",
                 `This work item is on the vote limit of ${
-                    voting.voteLimit
+                voting.voteLimit
                 }. \nPlease refresh your browser window to get the actual content.`
             );
             return false;
@@ -438,12 +439,5 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
-    }
-
-    private getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
-        const displayName =
-            assignedTo === undefined ? "" : assignedTo.displayName;
-        return displayName;
     }
 }

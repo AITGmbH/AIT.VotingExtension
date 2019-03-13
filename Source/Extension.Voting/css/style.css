@@ -179,9 +179,12 @@ span.required {
 /* END: bootstrap notify */
 
 .voting-info-bar {
-    background-color: rgba(var(--mainMenuBackgroundColor, #e6e6e6));
-    margin: 0 -5px 0 -5px;
+    background-color: rgba(var(--background-color, #e6e6e6), 1);
+    margin-left: -5px;
+    padding-left: 0px;
+    padding-right: 10px;
     padding-top: 5px;
+    border-bottom: 1px solid rgba(var(--palette-neutral-20, 200, 200, 200), 1);
 }
 
 .voting-info-bar > div.titleBar > p {

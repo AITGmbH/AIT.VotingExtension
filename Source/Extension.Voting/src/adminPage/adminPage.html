@@ -12,10 +12,9 @@
 </head>
 
 <body>
-    <div class="hide" id="adminPage">
+    <div id="adminPage" class="hide">
         <div id="waitContainerAdmin"></div>
-
-        <div class="vso-container">
+        <div class="vso-container" v-show="isAdminPageVisible">
             <div class="row">
                 <h1 class="votingheadline">Voting settings</h1>
                 <div class="hub-pivot">
@@ -40,8 +39,8 @@
                 <div id="menueBar-container" class="toolbar col-sm-12 hide" style="padding-right:30px"></div>
             </div>
 
-            <div id="admin-form" style="overflow-y: auto; height: 80vh">
-                <div id="content" style="padding-top: 10px;" class="row container" v-show="showContent">
+            <div id="admin-form" style="overflow-y: auto; height: 80vh" v-show="showContent">
+                <div id="content" style="padding-top: 10px;" class="row container">
                     <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
 
                     <div class="form-group" data-toggle="tooltip" title="Enter a title for the voting.">
@@ -119,10 +118,12 @@
 
                     <hr />
                     <div class="row">
-                        <label class="col-sm-12">Voting session</label>
+                        <label class="col-sm-12">Voting session <span class="required" v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
+                                start date of
+                                your voting needs to be before the end date!</span></label>
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime" @change="useStartTimeChanged">
                                 Start
                             </label>
                             <div class="row" v-if="actualVoting.useStartTime">
@@ -137,7 +138,7 @@
 
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime" @change="useEndTimeChanged">
                                 End
                             </label>
                             <div class="row" v-if="actualVoting.useEndTime">
@@ -157,9 +158,37 @@
                 </div>
             </div>
         </div>
-
-        <span id="appVersion" style="color:#FFF;float:right;"></span>
     </div>
+
+    <div id="reportPage" class="hide">
+        <div class="vso-container" v-show="report && reportDisplayService.reportVisible">
+            <div class="row">
+                <h1 class="votingheadline">Last voting results</h1>
+            </div>
+
+            <div class="row">
+                <div id="report-menu-container" class="toolbar col-sm-12" style="padding-right:30px"></div>
+            </div>
+
+            <div id="report-header" class="row voting-info-bar">
+                <div id="report-title" class="col-sm-6 titleBar">
+                    <p>{{ report ? report.title : "" }}</p>
+                </div>
+                <div id="report-type" class="col-sm-6" style="text-align: right">
+                    <p>Voting Type: <span style="font-weight: bold">{{ report ? report.workItemTypeName : "" }}</span></p>
+                </div>
+                <div id="report-description" class="col-sm-12">
+                    <p>{{ report ? report.description : "" }}</p>
+                </div>
+            </div>
+
+            <div class="row container" style="padding-top: 10px;">
+                <div id="report-grid-container" class="form-group"></div>
+            </div>
+        </div>
+    </div>
+
+    <span id="appVersion" style="color:#FFF;float:right;"></span>
 
     <script type="text/javascript">
         VSS.init({

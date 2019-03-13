@@ -13,6 +13,7 @@ import {
 } from "TFS/WorkItemTracking/Contracts";
 
 export class BaseDataService {
+
     private _witTypeNames: string[] = [];
     private _witLevelNames: IdToName[] = [];
     private _flatQueryNames: IdToName[] = [];
@@ -22,12 +23,14 @@ export class BaseDataService {
     protected template: string;
     protected process: string;
 
+    public assignedToUnassignedText: string = "";
+
     constructor() {
         const teamId =
             getUrlParameterByName("teamId", document.referrer) ||
             window.localStorage.getItem(
                 "VotingExtension.SelectedTeamId-" +
-                    VSS.getWebContext().project.id
+                VSS.getWebContext().project.id
             );
         if (teamId != null) {
             this.team = {
@@ -35,7 +38,6 @@ export class BaseDataService {
                 name: ""
             };
         }
-
         this.votingDataService = new VotingDataService();
     }
 
@@ -214,7 +216,7 @@ export class BaseDataService {
         const that = this;
 
         async function recursiveSearch(item: QueryHierarchyItem) {
-            if (item.hasOwnProperty("children")) {
+            if (item.hasOwnProperty('children')) {
                 for (let child of item.children) {
                     await recursiveSearch(child);
                 }
@@ -274,6 +276,29 @@ export class BaseDataService {
         } else {
             return doc.voting;
         }
+    }
+
+    public async votingHasVotes(): Promise<boolean> {
+        const doc = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
+        LogExtension.log(doc);
+
+        if (doc != null) {
+            if (doc.vote) {
+                if (doc.vote.length > 0) {
+                    return true
+                }
+            }
+        }
+        return false;
+    }
+
+    public getNameOfWiResponsiveness(req: any): string {
+        const assignedTo = req.fields["System.AssignedTo"];
+        const displayName =
+            assignedTo === undefined ? "" : assignedTo.displayName;
+        return displayName;
     }
 
     /**
