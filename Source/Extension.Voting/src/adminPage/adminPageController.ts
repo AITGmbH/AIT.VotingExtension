@@ -76,20 +76,14 @@ export class AdminPageController extends Vue {
     }
 
     public validateInput() {
+        if (this.actualVoting.voteLimit > this.actualVoting.numberOfVotes) {
+            this.actualVoting.voteLimit = this.actualVoting.numberOfVotes;
+        }
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
             1,
             this.actualVoting.numberOfVotes
         );
-    }
-
-    public isMultipleVotingEnabledChanged() {
-        if (
-            this.actualVoting.isMultipleVotingEnabled &&
-            this.actualVoting.numberOfVotes === 1
-        ) {
-            this.actualVoting.numberOfVotes = 3;
-        }
     }
 
     /**
@@ -220,8 +214,6 @@ export class AdminPageController extends Vue {
     }
 
     public actualVotingTitleChanged($event) {
-        console.log($event);
-        console.log(this.actualVoting.title);
         this.createMenueBar(true);
     }
 

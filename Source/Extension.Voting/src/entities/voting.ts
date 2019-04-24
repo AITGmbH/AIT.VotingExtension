@@ -5,7 +5,6 @@ export class Voting {
     public isVotingEnabled = false;
     public numberOfVotes: number = 3;
     public voteLimit: number = 1;
-    public isMultipleVotingEnabled: boolean = true;
     public isVotingPaused = true;
     public group = "Team";
     public team: string;

@@ -22,8 +22,6 @@ export class AdminPageService extends BaseDataService {
         <Voting>Object.assign(doc.voting, voting);
 
         if (
-            doc.voting.isMultipleVotingEnabled !==
-            voting.isMultipleVotingEnabled ||
             doc.voting.level !== voting.level ||
             doc.voting.query !== voting.query ||
             doc.voting.numberOfVotes !== voting.numberOfVotes

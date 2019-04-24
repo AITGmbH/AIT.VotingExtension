@@ -80,7 +80,7 @@
 
                         <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip"
                             title="Select the work item type to vote on.">
-                            <label>Vote on WorkItemType</label>
+                            <label>Vote on Work item type</label>
                             <select class="form-control" name="item" v-model="actualVoting.item">
                                 <option v-for="item in items">{{ item }}</option>
                             </select>
@@ -106,26 +106,20 @@
                     <hr />
 
                     <div class="row">
-                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multiple votes per item.">
+                        <div class="form-group col-sm-12">
 
-                            <div class="form-group">
+                            <div class="form-group" data-toggle="tooltip"
+                                title="Sets the maximum number of votes for a single user.">
                                 <label>Votes per user</label>
                                 <input type="number" class="form-control" name="numberOfVotes" min="1"
                                     v-model="actualVoting.numberOfVotes" @change="validateInput">
                             </div>
 
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" name="multipleVotes"
-                                        v-model="actualVoting.isMultipleVotingEnabled"
-                                        @change="isMultipleVotingEnabledChanged">
-                                    Multiple votes per work item
-                                </label>
-                                <div v-if="actualVoting.isMultipleVotingEnabled">
-                                    <label>Limit votes per work item</label>
-                                    <input type="number" class="form-control" name="voteLimit" min="1"
-                                        v-model="actualVoting.voteLimit" @change="validateInput">
-                                </div>
+                            <div class="form-group" data-toggle="tooltip"
+                                title="Sets the maximum number of votes for a single work item. The number of votes per work item cannot exceed the number of votes per user!">
+                                <label>Votes per work item</label>
+                                <input type="number" class="form-control" name="voteLimit" min="1"
+                                    v-model="actualVoting.voteLimit" @change="validateInput">
                             </div>
                         </div>
                     </div>

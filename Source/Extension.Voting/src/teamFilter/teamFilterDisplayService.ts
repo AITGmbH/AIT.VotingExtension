@@ -8,8 +8,6 @@ export class TeamFilterDisplayService {
     }
 
     public setTeam(value) {
-        console.log(value);
-
         if (value) {
             this.team = value;
             this.eventBus.$emit("teamChanged", this.team);
