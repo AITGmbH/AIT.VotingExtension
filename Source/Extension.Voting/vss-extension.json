@@ -41,7 +41,7 @@
     "vso.work_write"
   ],
   "targets": [{
-    "id": "Microsoft.VisualStudio.Services"
+    "id": "Microsoft.VisualStudio.Services.Cloud"
   }],
   "contributions": [{
       "id": "Voting.Home",
