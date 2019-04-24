@@ -692,5 +692,5 @@ export class AdminPageController extends Vue {
         this.adminPageService.team = team;
         this.initAsync();
     }
-
+  
 }
