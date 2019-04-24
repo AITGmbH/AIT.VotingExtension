@@ -85,7 +85,8 @@
                 <div class="col-sm-12" id="errorMessage" v-if="status === 0">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
-                        The voting session is disabled. Create a new voting at the
+                        The voting session is no longer active. Create a new voting or have a look within the details at
+                        the
                         <a id="linkToAdminpage" :href="adminpageUri" target="_blank">admin page</a>
                     </p>
                 </div>
@@ -93,7 +94,7 @@
                 <div class="col-sm-12" id="errorMessage" v-if="status === 2">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
-                        The voting session is paused. You can only take a look at the voting result.
+                        The voting session is paused. You can only take a look at the current voting result.
                     </p>
                 </div>
 
