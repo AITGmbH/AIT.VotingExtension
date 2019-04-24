@@ -126,10 +126,12 @@
 
                     <hr />
                     <div class="row">
-                        <label class="col-sm-12">Voting session <span class="required"
-                                v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
-                                start date of
-                                your voting needs to be before the end date!</span></label>
+                        <label class="col-sm-12" data-toggle="tooltip"
+                            title="Specify a start and end date for the voting session.">Voting session
+                            <span class="required"
+                                v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">
+                                The start date of your voting needs to be before the end date!</span>
+                        </label>
                         <div class="form-group col-sm-6">
                             <label>
                                 <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime"
