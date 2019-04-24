@@ -2,7 +2,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
-import * as navigation from "VSS/Controls/Navigation";
 import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";

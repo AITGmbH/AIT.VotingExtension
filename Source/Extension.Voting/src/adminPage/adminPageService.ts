@@ -57,4 +57,20 @@ export class AdminPageService extends BaseDataService {
         }
 
     }
+
+    public async removeVotesByTeamAsync(): Promise<void> {
+        const docs = await this.votingDataService.getAllVotingsAsync();
+        try {
+            for (const doc of docs) {
+                if (doc.voting.team === this.team.id) {
+                    doc.vote = [];
+
+                    await this.votingDataService.updateDocumentAsync(doc);
+                }
+            }
+            bsNotify("success", "Your votes have been successfully removed.");
+        } catch (e) {
+            LogExtension.log(e);
+        }
+    }
 }

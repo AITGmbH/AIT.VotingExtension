@@ -356,8 +356,7 @@ export class VotingPageController extends Vue {
             buttons: {
                 Delete: async () => {
                     dialog.close();
-
-                    this.removeAllUserVotesAsync();
+                    this.removeUserVotesByTeamAsync();
                 },
                 Cancel: () => {
                     dialog.close();
@@ -465,11 +464,11 @@ export class VotingPageController extends Vue {
         }
     }
 
-    private async removeAllUserVotesAsync() {
+    private async removeUserVotesByTeamAsync() {
         this.waitControl.startWait();
 
         try {
-            await this.votingService.removeAllUserVotesAsync(this.user.id);
+            await this.votingService.removeUserVotesByTeamAsync(this.user.id);
             await this.refreshAsync();
         } finally {
             this.waitControl.endWait();
