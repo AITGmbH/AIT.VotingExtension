@@ -6,7 +6,6 @@ import * as controls from "VSS/Controls";
 import * as menus from "VSS/Controls/Menus";
 import { TreeView, TreeNode } from "VSS/Controls/TreeView";
 import * as dialogs from "VSS/Controls/Dialogs";
-import * as navigation from "VSS/Controls/Navigation";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
 import Vue from "vue";
 import Component from "vue-class-component";
@@ -24,6 +23,9 @@ export class AdminPageController extends Vue {
     private menuBar: menus.MenuBar;
     private reportDisplayService: ReportDisplayService;
     private teamFilterDisplayService: TeamFilterDisplayService;
+    private isTypeDirty: boolean = false;
+    private isTypeLevelQueryDirty: boolean = false;
+    private isVotesCountSettingsDirty: boolean = false;
 
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
@@ -33,6 +35,7 @@ export class AdminPageController extends Vue {
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
     public isPageVisible: boolean = true;
+
 
     public startDate: string = "";
     public startTime: string = "";
@@ -84,12 +87,16 @@ export class AdminPageController extends Vue {
             1,
             this.actualVoting.numberOfVotes
         );
+        this.isVotesCountSettingsDirty = true;
     }
 
     /**
      * Helper function since direct binding runs into race-condition.
      */
     public updateVotingType() {
+        if (this.actualVoting.type !== this.votingType) {
+            this.isTypeDirty = true;
+        }
         this.votingType = this.actualVoting.type;
 
         switch (this.votingType) {
@@ -248,13 +255,26 @@ export class AdminPageController extends Vue {
         let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
     }
 
-    private showInfo() {
-        dialogs.show(dialogs.ModalDialog, {
-            title: "Help",
-            contentText:
-                "During a voting you can edit all properties. But please be aware that when changing the voting level or the number of votes per item all votes are reset.",
-            buttons: []
-        });
+    private showSaveOnRunningVotingDialog() {
+        let htmlContentString: string =
+            "<html><body><div>There may be changes to voting type and/or the number of votes. Please be aware that due to this change existing votes are reset!</div></body></html>";
+        let dialogContent = $.parseHTML(htmlContentString);
+        let dialogOptions = {
+            title: "Save voting",
+            content: dialogContent,
+            buttons: {
+                Confirm: async () => {
+                    dialog.close();
+                    await this.adminPageService.removeVotesByTeamAsync();
+                    await this.saveSettingsAsync(true);
+                },
+                Cancel: () => {
+                    dialog.close();
+                }
+            },
+            hideCloseButton: true
+        };
+        let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
     }
 
     /**
@@ -297,7 +317,6 @@ export class AdminPageController extends Vue {
         try {
             await this.adminPageService.loadProjectAsync();
             await this.adminPageService.loadTeamsAsync();
-
             await this.initAsync();
         } finally {
             this.waitControl.endWait();
@@ -313,6 +332,9 @@ export class AdminPageController extends Vue {
             this.updateVotingType();
             this.buildAdminpage();
             this.validateReportVisibility();
+            this.isTypeDirty = false;
+            this.isTypeLevelQueryDirty = false;
+            this.isVotesCountSettingsDirty = false;
         } finally {
             this.waitControl.endWait();
         }
@@ -409,6 +431,13 @@ export class AdminPageController extends Vue {
         await this.initAsync();
     }
 
+    private async pauseVotingAsync() {
+        let voting = this.actualVoting;
+        voting.isVotingPaused = true;
+        await this.adminPageService.saveVotingAsync(voting);
+        await this.initAsync();
+    } 
+
     private async terminateVotingAsync() {
         let voting = await this.adminPageService.loadVotingAsync();
         voting.isVotingEnabled = false;
@@ -461,13 +490,6 @@ export class AdminPageController extends Vue {
             title: "Stop voting",
             icon: "icon icon-tfs-build-status-canceled",
             disabled: !this.userIsAdmin || !this.canTerminate()
-        });
-        items.push({ separator: true });
-        items.push({
-            id: "infoButton",
-            title: "Help",
-            icon: "icon icon-info",
-            disabled: false
         });
 
         return items;
@@ -578,8 +600,15 @@ export class AdminPageController extends Vue {
         );
     }
 
+    public votingBacklogLevelChanged() {
+        this.isTypeLevelQueryDirty = true;
+    }
+
     public queryTreeSelectionChanged(selectedNode) {
         if (selectedNode.application) {
+            if (this.actualVoting.query !== selectedNode.application.id) {
+                this.isTypeLevelQueryDirty = true;
+            }
             $("#query-select-button").text(selectedNode.application.path);
             this.actualVoting.query = selectedNode.application.id;
         }
@@ -596,16 +625,18 @@ export class AdminPageController extends Vue {
                 }
                 break;
             case "saveSettings":
-                this.saveSettingsAsync(true);
+                if (this.actualVoting.isVotingEnabled && (this.isTypeLevelQueryDirty || this.isTypeDirty || this.isVotesCountSettingsDirty)) {
+                    this.showSaveOnRunningVotingDialog();
+                } else {
+                    this.saveSettingsAsync(true);
+                }
                 break;
             case "pauseVoting":
-                this.saveSettingsAsync(true, true);
+                // this.saveSettingsAsync(true, true);
+                this.pauseVotingAsync();
                 break;
             case "resumeVoting":
                 this.saveSettingsAsync(true, false);
-                break;
-            case "infoButton":
-                this.showInfo();
                 break;
             case "terminateVoting":
                 this.terminateVotingAsync();
@@ -661,4 +692,5 @@ export class AdminPageController extends Vue {
         this.adminPageService.team = team;
         this.initAsync();
     }
+  
 }

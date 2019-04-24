@@ -423,21 +423,20 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async removeAllUserVotesAsync(userId: string): Promise<void> {
+    public async removeUserVotesByTeamAsync(userId: string): Promise<void> {
         const docs = await this.votingDataService.getAllVotingsAsync();
 
         try {
-            const promises = [];
             for (const doc of docs) {
-                doc.vote = doc.vote.filter(vote => vote.userId !== userId);
-                promises.push(this.votingDataService.updateDocumentAsync(doc));
+                if (doc.voting.team === this.team.id) {
+                    doc.vote = doc.vote.filter(vote => vote.userId !== userId);
+                    await this.votingDataService.updateDocumentAsync(doc);
+                }
             }
-
-            await Promise.all(promises);
-
             bsNotify("success", "Your votes have been successfully removed.");
         } catch (e) {
             LogExtension.log(e);
         }
     }
+
 }

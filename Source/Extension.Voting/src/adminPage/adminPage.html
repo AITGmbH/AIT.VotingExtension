@@ -43,7 +43,7 @@
 
             <div id="admin-form" style="overflow-y: auto; height: 80vh" v-show="showContent">
                 <div id="content" style="padding-top: 10px;" class="row container">
-                    <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.
+                    <div class="form-group">Changing the voting level or votes per user/item will reset the votes.
                     </div>
 
                     <div class="form-group" data-toggle="tooltip" title="Enter a title for the voting.">
@@ -73,7 +73,8 @@
                             title="Select the backlog level to vote on.">
                             <label>Vote on Backlog <span class="required"
                                     v-if="actualVoting.level === ''">*</span></label>
-                            <select class="form-control" name="level" v-model="actualVoting.level">
+                            <select class="form-control" name="level" v-model="actualVoting.level"
+                                @change="votingBacklogLevelChanged">
                                 <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
                             </select>
                         </div>
@@ -126,10 +127,12 @@
 
                     <hr />
                     <div class="row">
-                        <label class="col-sm-12">Voting session <span class="required"
-                                v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
-                                start date of
-                                your voting needs to be before the end date!</span></label>
+                        <label class="col-sm-12" data-toggle="tooltip"
+                            title="Specify a start and end date for the voting session.">Voting session
+                            <span class="required"
+                                v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">
+                                The start date of your voting needs to be before the end date!</span>
+                        </label>
                         <div class="form-group col-sm-6">
                             <label>
                                 <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime"
