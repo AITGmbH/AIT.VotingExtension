@@ -49,11 +49,6 @@ export class VotingDataService {
             voting.isVotingEnabled = voting.hasOwnProperty("votingEnabled")
                 ? (<any>voting).votingEnabled === "true"
                 : voting.isVotingEnabled;
-            voting.isMultipleVotingEnabled = voting.hasOwnProperty(
-                "multipleVoting"
-            )
-                ? (<any>voting).multipleVoting === "true"
-                : voting.isMultipleVotingEnabled;
             voting.type = voting.type || VotingTypes.LEVEL;
 
             return doc;

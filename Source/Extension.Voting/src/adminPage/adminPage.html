@@ -12,14 +12,16 @@
 </head>
 
 <body>
+    <div id="teamFilter" class="hub-pivot">
+        <div class="filters filter-container"></div>
+    </div>
+
     <div id="adminPage" class="hide">
         <div id="waitContainerAdmin"></div>
         <div class="vso-container" v-show="isAdminPageVisible">
             <div class="row">
                 <h1 class="votingheadline">Voting settings</h1>
-                <div class="hub-pivot">
-                    <div class="filters filter-container"></div>
-                </div>
+
                 <div id="progressBar" class="hub-progress pageProgressIndicator col-sm-12" style="display: none;"></div>
             </div>
 
@@ -41,11 +43,13 @@
 
             <div id="admin-form" style="overflow-y: auto; height: 80vh" v-show="showContent">
                 <div id="content" style="padding-top: 10px;" class="row container">
-                    <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.</div>
+                    <div class="form-group">Changing the voting level or multiple votes per item will reset the votes.
+                    </div>
 
                     <div class="form-group" data-toggle="tooltip" title="Enter a title for the voting.">
                         <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
-                        <input type="text" class="form-control" v-model="actualVoting.title">
+                        <input type="text" class="form-control" v-model="actualVoting.title"
+                            @change="actualVotingTitleChanged">
                     </div>
 
                     <div class="form-group" data-toggle="tooltip" title="Enter a description for the voting.">
@@ -56,36 +60,45 @@
                     <hr />
 
                     <div class="row">
-                        <div class="form-group col-md-3" data-toggle="tooltip" title="Select a voting type. A backlog-based voting allows to vote on items of a specified backlog level. The order of the backlog items from the voting can then be applied to the backlog. A query-based voting allows to vote on work items specified by a shared (flat) query.">
-                            <label>Type</label>
-                            <select class="form-control" name="type" v-model="actualVoting.type" @change="updateVotingType">
+                        <div class="form-group col-md-3" data-toggle="tooltip"
+                            title="Select a voting type. A backlog-based voting allows to vote on items of a specified backlog level. The order of the backlog items from the voting can then be applied to the backlog. A query-based voting allows to vote on work items specified by a shared (flat) query.">
+                            <label>Type <span class="required" v-if="actualVoting.type === ''">*</span></label>
+                            <select class="form-control" name="type" v-model="actualVoting.type"
+                                @change="updateVotingType">
                                 <option v-for="type in types">{{ type }}</option>
                             </select>
                         </div>
 
-                        <div class="form-group col-md-9" v-show="isBacklogBased" data-toggle="tooltip" title="Select the backlog level to vote on.">
-                            <label>Vote on Backlog</label>
+                        <div class="form-group col-md-9" v-show="isBacklogBased" data-toggle="tooltip"
+                            title="Select the backlog level to vote on.">
+                            <label>Vote on Backlog <span class="required"
+                                    v-if="actualVoting.level === ''">*</span></label>
                             <select class="form-control" name="level" v-model="actualVoting.level">
                                 <option v-for="level in levels" v-bind:value="level.id">{{ level.name }}</option>
                             </select>
                         </div>
 
-                        <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip" title="Select the work item type to vote on.">
-                            <label>Vote on WorkItemType</label>
+                        <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip"
+                            title="Select the work item type to vote on.">
+                            <label>Vote on Work item type</label>
                             <select class="form-control" name="item" v-model="actualVoting.item">
                                 <option v-for="item in items">{{ item }}</option>
                             </select>
                         </div>
 
-                        <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip" title="Select the query to vote on.">
-                            <label>Vote on Query</label>
+                        <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip"
+                            title="Select the query to vote on.">
+                            <label>Vote on Query <span class="required"
+                                    v-if="actualVoting.query == null">*</span></label>
                             <div class="form-control">
                                 <span id="query-select-button"></span>
-                                <button class="btn btn-primary dropdown-toggle pull-right" type="button" data-toggle="dropdown"
-                                    style="margin: -5px -10px -5px -5px" @click="createQueryTree">
+                                <button class="btn btn-primary dropdown-toggle pull-right" type="button"
+                                    data-toggle="dropdown" style="margin: -5px -10px -5px -5px"
+                                    @click="createQueryTree">
                                     <span class="caret"></span>
                                 </button>
-                                <div id="query-tree-container" class="dropdown-menu pull-right" style="margin: 0px 15px 0px 0px"></div>
+                                <div id="query-tree-container" class="dropdown-menu pull-right"
+                                    style="margin: 0px 15px 0px 0px"></div>
                             </div>
                         </div>
                     </div>
@@ -93,37 +106,34 @@
                     <hr />
 
                     <div class="row">
-                        <div class="form-group col-sm-12" data-toggle="tooltip" title="Enable multiple votes per item.">
+                        <div class="form-group col-sm-12">
 
-                            <div class="form-group">
+                            <div class="form-group" data-toggle="tooltip"
+                                title="Sets the maximum number of votes for a single user.">
                                 <label>Votes per user</label>
-                                <input type="number" class="form-control" name="numberOfVotes" min="1" v-model="actualVoting.numberOfVotes"
-                                    @change="validateInput">
+                                <input type="number" class="form-control" name="numberOfVotes" min="1"
+                                    v-model="actualVoting.numberOfVotes" @change="validateInput">
                             </div>
 
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" name="multipleVotes" v-model="actualVoting.isMultipleVotingEnabled"
-                                        @change="isMultipleVotingEnabledChanged">
-                                    Multiple votes per work item
-                                </label>
-                                <div v-if="actualVoting.isMultipleVotingEnabled">
-                                    <label>Limit votes per work item</label>
-                                    <input type="number" class="form-control" name="voteLimit" min="1" v-model="actualVoting.voteLimit"
-                                        @change="validateInput">
-                                </div>
+                            <div class="form-group" data-toggle="tooltip"
+                                title="Sets the maximum number of votes for a single work item. The number of votes per work item cannot exceed the number of votes per user!">
+                                <label>Votes per work item</label>
+                                <input type="number" class="form-control" name="voteLimit" min="1"
+                                    v-model="actualVoting.voteLimit" @change="validateInput">
                             </div>
                         </div>
                     </div>
 
                     <hr />
                     <div class="row">
-                        <label class="col-sm-12">Voting session <span class="required" v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
+                        <label class="col-sm-12">Voting session <span class="required"
+                                v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">The
                                 start date of
                                 your voting needs to be before the end date!</span></label>
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime" @change="useStartTimeChanged">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime"
+                                    @change="useStartTimeChanged">
                                 Start
                             </label>
                             <div class="row" v-if="actualVoting.useStartTime">
@@ -138,7 +148,8 @@
 
                         <div class="form-group col-sm-6">
                             <label>
-                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime" @change="useEndTimeChanged">
+                                <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime"
+                                    @change="useEndTimeChanged">
                                 End
                             </label>
                             <div class="row" v-if="actualVoting.useEndTime">
@@ -175,15 +186,16 @@
                     <p>{{ report ? report.title : "" }}</p>
                 </div>
                 <div id="report-type" class="col-sm-6" style="text-align: right">
-                    <p>Voting Type: <span style="font-weight: bold">{{ report ? report.workItemTypeName : "" }}</span></p>
+                    <p>Voting Type: <span style="font-weight: bold">{{ report ? report.workItemTypeName : "" }}</span>
+                    </p>
                 </div>
                 <div id="report-description" class="col-sm-12">
                     <p>{{ report ? report.description : "" }}</p>
                 </div>
             </div>
 
-            <div class="row container" style="padding-top: 10px;">
-                <div id="report-grid-container" class="form-group"></div>
+            <div style="padding-top: 10px;">
+                <div id="report-grid-container"></div>
             </div>
         </div>
     </div>

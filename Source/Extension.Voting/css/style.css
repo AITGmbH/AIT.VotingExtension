@@ -1,6 +1,6 @@
 ﻿body {
     color: #000;
-    font-family: Segoe UI Light,Segoe UI,Tahoma,Arial,Verdana;
+    font-family: Segoe UI Light, Segoe UI, Tahoma, Arial, Verdana;
     font-size: 12px;
     background-color: rgba(var(--palette-neutral-2, 248, 248, 248), 1);
 }
@@ -24,7 +24,7 @@
     border-top: 1px solid #ccc;
     box-sizing: border-box;
     color: #1e1e1e;
-    font: 12px Segoe UI,Tahoma,Arial,Verdana;
+    font: 12px Segoe UI, Tahoma, Arial, Verdana;
     height: 38px;
     margin: 100px 10px;
     overflow: hidden;
@@ -45,7 +45,7 @@
     margin: 0;
     position: relative;
     color: #1e1e1e;
-    font: 12px Segoe UI,Tahoma,Arial,Verdana;
+    font: 12px Segoe UI, Tahoma, Arial, Verdana;
 }
 
 .votingheadline {
@@ -59,7 +59,7 @@
 
 .bodytitle {
     color: #000;
-    font-family: Segoe UI,Tahoma,Arial,Verdana;
+    font-family: Segoe UI, Tahoma, Arial, Verdana;
     font-size: 14px;
     font-weight: bold;
     text-decoration: underline;
@@ -76,7 +76,7 @@
     cursor: pointer !important;
 }
 
-.grid-row-hover > .grid-buttonVoteUp-holder > span > .voting-plus {
+.grid-row-hover>.grid-buttonVoteUp-holder>span>.voting-plus {
     display: inline-block !important;
 }
 
@@ -85,7 +85,7 @@
     cursor: pointer !important;
 }
 
-.grid-row-hover > .grid-buttonVoteDown-holder > span > .voting-remove {
+.grid-row-hover>.grid-buttonVoteDown-holder>span>.voting-remove {
     display: inline-block !important;
 }
 
@@ -115,6 +115,10 @@
 
 .requirement-color {
     background-color: rgb(0, 156, 204);
+}
+
+.task-color {
+    background-color: rgb(242, 203, 29);
 }
 
 .productbacklogitem-color {
@@ -166,16 +170,17 @@ span.required {
     border-left-color: #d00;
 }
 
-[data-notify="container"][class*="alert-pastel-"] > [data-notify="title"] {
+[data-notify="container"][class*="alert-pastel-"]>[data-notify="title"] {
     color: rgb(80, 80, 57);
     display: block;
     font-weight: 700;
     margin-bottom: 5px;
 }
 
-[data-notify="container"][class*="alert-pastel-"] > [data-notify="message"] {
+[data-notify="container"][class*="alert-pastel-"]>[data-notify="message"] {
     font-weight: 400;
 }
+
 /* END: bootstrap notify */
 
 .voting-info-bar {
@@ -187,10 +192,11 @@ span.required {
     border-bottom: 1px solid rgba(var(--palette-neutral-20, 200, 200, 200), 1);
 }
 
-.voting-info-bar > div.titleBar > p {
+.voting-info-bar>div.titleBar>p {
     font-weight: bold;
 }
 
-.hub-pivot {
+#teamFilter.hub-pivot {
     margin-top: 1rem;
+    position: absolute;
 }

@@ -13,6 +13,7 @@ import Component from "vue-class-component";
 import moment from "moment";
 import { VotingTypes } from "../entities/votingTypes";
 import { ReportDisplayService } from "../reportPage/reportDisplayService";
+import { TeamFilterDisplayService } from "../teamFilter/teamFilterDisplayService";
 
 @Component
 export class AdminPageController extends Vue {
@@ -22,6 +23,7 @@ export class AdminPageController extends Vue {
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
     private reportDisplayService: ReportDisplayService;
+    private teamFilterDisplayService: TeamFilterDisplayService;
 
     public adminPageService: AdminPageService = new AdminPageService();
     public actualVoting: Voting = new Voting();
@@ -50,7 +52,11 @@ export class AdminPageController extends Vue {
     }
 
     public get isAdminPageVisible() {
-        return !this.actualVotingHasVotes && !this.actualVoting.isVotingEnabled || this.actualVoting.isVotingEnabled;
+        return (
+            (!this.actualVotingHasVotes &&
+                !this.actualVoting.isVotingEnabled) ||
+            this.actualVoting.isVotingEnabled
+        );
     }
 
     public created() {
@@ -60,27 +66,24 @@ export class AdminPageController extends Vue {
     public mounted() {
         document.getElementById(this.$el.id).classList.remove("hide");
         this.adminPageService = new AdminPageService();
-        this.initWaitControl('#waitContainer');
+        this.initWaitControl("#waitContainer");
         this.initializeAdminpageAsync();
         this.$el.classList.remove("hide");
-        this.reportDisplayService.subscribeToCreateNewVoting(this.showVotingIsExistingDialog);
+        this.reportDisplayService.subscribeToCreateNewVoting(
+            this.showVotingIsExistingDialog
+        );
+        this.teamFilterDisplayService.subscribe(this.teamFilterChanged);
     }
 
     public validateInput() {
+        if (this.actualVoting.voteLimit > this.actualVoting.numberOfVotes) {
+            this.actualVoting.voteLimit = this.actualVoting.numberOfVotes;
+        }
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
             1,
             this.actualVoting.numberOfVotes
         );
-    }
-
-    public isMultipleVotingEnabledChanged() {
-        if (
-            this.actualVoting.isMultipleVotingEnabled &&
-            this.actualVoting.numberOfVotes === 1
-        ) {
-            this.actualVoting.numberOfVotes = 3;
-        }
     }
 
     /**
@@ -91,6 +94,7 @@ export class AdminPageController extends Vue {
 
         switch (this.votingType) {
             case VotingTypes.LEVEL:
+                this.actualVoting.query = null;
                 this.waitControl.startWait();
                 this.adminPageService
                     .loadWitLevelNamesAsync()
@@ -115,6 +119,7 @@ export class AdminPageController extends Vue {
                 LogExtension.log("warning:", "Unknown VotingType!");
                 break;
         }
+        this.createMenueBar(true);
     }
 
     public get isBacklogBased() {
@@ -208,18 +213,22 @@ export class AdminPageController extends Vue {
         return this.getStartDate().isBefore(this.getEndDate());
     }
 
+    public actualVotingTitleChanged($event) {
+        this.createMenueBar(true);
+    }
 
     private createNewVoting() {
         this.adminPageService.deleteDocumentAsync();
         this.initVoting();
         this.showContent = true;
         this.actualVotingHasVotes = false; // New votings have no votes.
+        this.updateVotingType();
         this.createMenueBar(true);
     }
 
     private showVotingIsExistingDialog() {
         let htmlContentString: string =
-            "<html><body><div>When you create a new voting, the results of the last voting are discarded. If you need them, please copy them first.</div></body></html>"
+            "<html><body><div>When you create a new voting, the results of the last voting are discarded. If you need them, please copy them first.</div></body></html>";
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Create new voting",
@@ -288,8 +297,6 @@ export class AdminPageController extends Vue {
         try {
             await this.adminPageService.loadProjectAsync();
             await this.adminPageService.loadTeamsAsync();
-
-            this.generateTeamPivot();
 
             await this.initAsync();
         } finally {
@@ -429,7 +436,7 @@ export class AdminPageController extends Vue {
                 text: "Save",
                 title: "Save voting",
                 icon: "icon icon-save",
-                disabled: !this.userIsAdmin
+                disabled: !this.userIsAdmin || !this.canSave()
             }
         ];
 
@@ -438,14 +445,14 @@ export class AdminPageController extends Vue {
                 id: "resumeVoting",
                 title: "Resume voting",
                 icon: "icon icon-play",
-                disabled: !this.userIsAdmin
+                disabled: !this.userIsAdmin || !this.canResume()
             });
         } else {
             items.push({
                 id: "pauseVoting",
                 title: "Pause voting",
                 icon: "icon icon-pause",
-                disabled: !this.userIsAdmin
+                disabled: !this.userIsAdmin || !this.canPause()
             });
         }
 
@@ -453,7 +460,7 @@ export class AdminPageController extends Vue {
             id: "terminateVoting",
             title: "Stop voting",
             icon: "icon icon-tfs-build-status-canceled",
-            disabled: !this.userIsAdmin
+            disabled: !this.userIsAdmin || !this.canTerminate()
         });
         items.push({ separator: true });
         items.push({
@@ -527,7 +534,7 @@ export class AdminPageController extends Vue {
         }
 
         function createNodes() {
-            var hasAtLeastOneNode: boolean;
+            var hasAtLeastOneNode = false;
             for (let key in pathTree) {
                 hasAtLeastOneNode = true;
                 let node = new TreeNode(key);
@@ -571,6 +578,14 @@ export class AdminPageController extends Vue {
         );
     }
 
+    public queryTreeSelectionChanged(selectedNode) {
+        if (selectedNode.application) {
+            $("#query-select-button").text(selectedNode.application.path);
+            this.actualVoting.query = selectedNode.application.id;
+        }
+        this.createMenueBar(true);
+    }
+
     private executeMenuAction(command: string) {
         switch (command) {
             case "createNewVoting":
@@ -598,32 +613,15 @@ export class AdminPageController extends Vue {
         }
     }
 
-    private generateTeamPivot() {
-        controls.create(navigation.PivotFilter, $(".filter-container"), {
-            behavior: "dropdown",
-            text: "Team",
-            items: this.adminPageService.teams
-                .map(team => {
-                    return {
-                        id: team.id,
-                        text: team.name,
-                        value: team.id,
-                        selected: this.adminPageService.team.id === team.id
-                    };
-                })
-                .sort((a, b) => a.text.localeCompare(b.text)),
-            change: item => {
-                this.adminPageService.team = item;
-                this.initAsync();
-            }
-        });
-    }
-
     public initWaitControl(ele: any): statusIndicators.WaitControl {
         if (!this.waitControl) {
-            this.waitControl = controls.create(statusIndicators.WaitControl, $(ele), {
-                message: "Loading..."
-            });
+            this.waitControl = controls.create(
+                statusIndicators.WaitControl,
+                $(ele),
+                {
+                    message: "Loading..."
+                }
+            );
         }
         return this.waitControl;
     }
@@ -636,4 +634,31 @@ export class AdminPageController extends Vue {
         this.reportDisplayService.setReportVisibility(isReportVisible);
     }
 
+    private canSave(): boolean {
+        const hasValidTitle =
+            this.actualVoting.title != null && this.actualVoting.title != "";
+        const hasValidQueryBasedType =
+            (this.actualVoting.query != null &&
+                this.actualVoting.query != "" &&
+                this.actualVoting.isQueryBased) ||
+            !this.actualVoting.isQueryBased;
+        return hasValidQueryBasedType && hasValidTitle;
+    }
+
+    private canResume(): boolean {
+        return this.canSave();
+    }
+
+    private canTerminate(): boolean {
+        return this.canSave() && this.actualVoting.isVotingEnabled;
+    }
+
+    private canPause(): boolean {
+        return this.canSave();
+    }
+
+    private teamFilterChanged(team) {
+        this.adminPageService.team = team;
+        this.initAsync();
+    }
 }

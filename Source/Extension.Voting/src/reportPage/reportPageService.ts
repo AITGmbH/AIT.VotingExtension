@@ -7,6 +7,7 @@ import { getClient } from "TFS/Work/RestClient";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { TeamContext } from "TFS/Core/Contracts";
 import { WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
+import { VotingTypes } from "../entities/votingTypes";
 
 export class ReportPageService extends BaseDataService {
     private _areas: string;
@@ -15,27 +16,58 @@ export class ReportPageService extends BaseDataService {
         super();
     }
 
-
-    public async loadReportData(sort: boolean = false, filter?: (req: ReportItem) => boolean): Promise<Report> {
-        const votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
-        await this.getAreasAsync();
-        if (!votingDoc.voting) {
-            return;
-        }
-        const workItems = await this.loadRequirementsAsync(votingDoc.voting.level, this._areas);
+    public async loadReportDataAsync(
+        sort: boolean = false,
+        filter?: (req: ReportItem) => boolean
+    ): Promise<Report> {
         const report = new Report();
+
+        const votingDocument = await this.votingDataService.getDocumentAsync(
+            this.documentId
+        );
+        await this.getAreasAsync();
+        if (!votingDocument.voting) {
+            return report;
+        }
+        let workItems = [] as TinyRequirement[];
+        switch (votingDocument.voting.type) {
+            case VotingTypes.LEVEL:
+                workItems = await this.loadWorkItemsByTypesAsync(
+                    votingDocument.voting.level
+                );
+                report.workItemTypeName = votingDocument.voting.level;
+
+                break;
+            case VotingTypes.QUERY:
+                workItems = await this.loadWorkItemsByQueryAsync(
+                    votingDocument.voting.query
+                );
+                await this.loadFlatQueryNamesAsync();
+                for (const query of this.flatQueryNames) {
+                    if (query.id === votingDocument.voting.query) {
+                        report.workItemTypeName = query.name;
+                        break;
+                    }
+                }
+                break;
+            default:
+                LogExtension.log("error:", "Unknown VotingType!");
+                return report;
+        }
+
         let repItems = workItems.map(wit => <ReportItem>Object.assign(wit));
 
-        report.description = votingDoc.voting.description;
-        report.title = votingDoc.voting.title;
-        report.workItemTypeName = votingDoc.voting.level;
+        report.description = votingDocument.voting.description;
+        report.title = votingDocument.voting.title;
 
         if (filter) {
             repItems = repItems.filter(filter);
         }
 
         // Count Votes
-        votingDoc.vote.forEach(vote => { this.countVotes(repItems, vote.workItemId) });
+        votingDocument.vote.forEach(vote => {
+            this.countVotes(repItems, vote.workItemId);
+        });
 
         if (sort) {
             repItems = repItems
@@ -47,9 +79,11 @@ export class ReportPageService extends BaseDataService {
         return report;
     }
 
-    public async isVotingActive(): Promise<boolean> {
+    public async isVotingActiveAsync(): Promise<boolean> {
         try {
-            const votingDoc = await this.votingDataService.getDocumentAsync(this.documentId);
+            const votingDoc = await this.votingDataService.getDocumentAsync(
+                this.documentId
+            );
             return votingDoc == null || votingDoc.voting.isVotingEnabled;
         } catch (error) {
             return false;
@@ -60,27 +94,63 @@ export class ReportPageService extends BaseDataService {
         const item = workItems.find(x => x.id == itemId);
         if (!item) {
             //ignore!
-        }
-        else if (!item.totalVotes) {
+        } else if (!item.totalVotes) {
             item.totalVotes = 1;
-        }
-        else {
+        } else {
             item.totalVotes++;
         }
     }
 
-    public async loadRequirementsAsync(level: string, areas: string): Promise<TinyRequirement[]> {
-        let requirements = new Array<TinyRequirement>();
+    /**
+     * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
+     *
+     * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
+     * @see VotingTypes
+     */
+    public async loadWorkItemsByTypesAsync(
+        types: string
+    ): Promise<TinyRequirement[]> {
+        const wiql =
+            "SELECT [System.Id] FROM WorkItems" +
+            " WHERE [System.State] <> 'Closed'" +
+            " AND [System.State] <> 'Done'" +
+            " AND [System.State] <> 'Removed'" +
+            " AND ( [System.WorkItemType] = '" +
+            types.replace(",", "' OR [System.WorkItemType] = '") +
+            "' )" +
+            " AND " +
+            this._areas;
 
-        const wiql = "SELECT [System.Id] FROM WorkItems WHERE [System.State] <> 'Closed' AND [System.State] <> 'Done' AND [System.State] <> 'Removed'"
-            + " AND [System.WorkItemType] = '" + level + "' AND " + areas;
+        return this.loadWorkItemsAsync(wiql);
+    }
+
+    /**
+     * Loads WorkItems based on a Query.
+     *
+     * @param queryId Id of a query.
+     * @see VotingTypes
+     */
+    public async loadWorkItemsByQueryAsync(
+        queryId: string
+    ): Promise<TinyRequirement[]> {
+        const query = await this.getQueryById(queryId);
+        return this.loadWorkItemsAsync(query.wiql);
+    }
+
+    private async loadWorkItemsAsync(wiql: string): Promise<TinyRequirement[]> {
+        let requirements = new Array<TinyRequirement>();
+        const witClient = getWitClient();
+
         const wiqlJson = {
-            query: wiql,
+            query: wiql
         };
 
         LogExtension.log("WIQL-Abfrage: " + wiql);
 
-        const idJson = await getWitClient().queryByWiql(wiqlJson, this.context.project.id);
+        const idJson = await witClient.queryByWiql(
+            wiqlJson,
+            this.context.project.id
+        );
         LogExtension.log(idJson);
         const headArray = new Array();
         let tempArray = new Array();
@@ -105,7 +175,12 @@ export class ReportPageService extends BaseDataService {
                     continue;
                 }
 
-                const result = await getWitClient().getWorkItems(array, null, null, WorkItemExpand.Links);
+                const result = await getWitClient().getWorkItems(
+                    array,
+                    null,
+                    null,
+                    WorkItemExpand.Links
+                );
                 for (const req of result) {
                     LogExtension.log(req);
                     const tempRequirement = this.createTinyRequirement(req);
@@ -155,9 +230,13 @@ export class ReportPageService extends BaseDataService {
         const tempRequirement = new TinyRequirement();
         tempRequirement.id = req.id;
         if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
-            tempRequirement.order = req.fields["Microsoft.VSTS.Common.StackRank"];
-        } else if (req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined) {
-            tempRequirement.order = req.fields["Microsoft.VSTS.Common.BacklogPriority"];
+            tempRequirement.order =
+                req.fields["Microsoft.VSTS.Common.StackRank"];
+        } else if (
+            req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined
+        ) {
+            tempRequirement.order =
+                req.fields["Microsoft.VSTS.Common.BacklogPriority"];
         } else {
             tempRequirement.order = "0";
         }
@@ -165,7 +244,8 @@ export class ReportPageService extends BaseDataService {
         tempRequirement.workItemType = req.fields["System.WorkItemType"];
         tempRequirement.state = req.fields["System.State"];
         tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
-        tempRequirement.valueArea = req.fields["Microsoft.VSTS.Common.BusinessValue"];
+        tempRequirement.valueArea =
+            req.fields["Microsoft.VSTS.Common.BusinessValue"];
         tempRequirement.iterationPath = req.fields["System.IterationPath"];
         tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
         tempRequirement.description = req.fields["System.Description"];
@@ -180,5 +260,4 @@ export class ReportPageService extends BaseDataService {
         }
         return "";
     }
-
 }

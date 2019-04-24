@@ -2,6 +2,8 @@
 import { AdminPageController } from "./adminPageController";
 import { ReportPageController } from "../reportPage/reportPageController";
 import { ReportDisplayService } from "../reportPage/reportDisplayService";
+import { TeamFilterController } from "../teamFilter/teamFilterController";
+import { TeamFilterDisplayService } from "../teamFilter/teamFilterDisplayService";
 
 (function () {
     LogExtension.debugEnabled = false;
@@ -9,10 +11,19 @@ import { ReportDisplayService } from "../reportPage/reportDisplayService";
     try {
         VSS.ready(() => {
             LogExtension.log("VSS ready");
+            const teamFilterDisplayService = new TeamFilterDisplayService();
             const reportDisplayService = new ReportDisplayService();
-            const apc = new AdminPageController({ data: { reportDisplayService } });
-            const rpc = new ReportPageController({ data: { reportDisplayService } });
-            const wc = apc.initWaitControl('#waitContainer');
+
+            const tfc = new TeamFilterController({
+                data: { teamFilterDisplayService }
+            });
+            const apc = new AdminPageController({
+                data: { reportDisplayService, teamFilterDisplayService }
+            });
+            const rpc = new ReportPageController({
+                data: { reportDisplayService }
+            });
+            const wc = apc.initWaitControl("#waitContainer");
 
             rpc.report_grid_container = "report-grid-container";
             rpc.report_menu_container = "report-menu-container";
@@ -20,20 +31,16 @@ import { ReportDisplayService } from "../reportPage/reportDisplayService";
 
             apc.$mount("#adminPage");
             rpc.$mount("#reportPage");
+            tfc.$mount("#teamFilter");
 
-            $('#appVersion').text(VSS.getExtensionContext().version);
+            $("#appVersion").text(VSS.getExtensionContext().version);
 
             let form = $("#admin-form");
-            let querySelectButton = $("#query-select-button");
             let queryTreeContainer = $("#query-tree-container");
 
-            queryTreeContainer.bind("selectionchanged", function (e, args) {
-                if (args.selectedNode.application) {
-                    querySelectButton.text(args.selectedNode.application.path);
-                    apc.actualVoting.query =
-                        args.selectedNode.application.id;
-                }
-            });
+            queryTreeContainer.bind("selectionchanged", (e, args) =>
+                apc.queryTreeSelectionChanged(args.selectedNode)
+            );
 
             window.addEventListener("resize", function () {
                 form.height(window.innerHeight * 0.9 - 100);
