@@ -2,6 +2,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
+import * as navigation from "VSS/Controls/Navigation";
 import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
@@ -22,7 +23,7 @@ export class ReportPageController extends Vue {
     public report: Report = null;
     public showContent = true;
     public waitControl: WaitControl;
-    public height: string = "30vh";
+    public height: string = "70vh";
 
     public report_grid_container: string = "report-grid-container";
     public report_menu_container: string = "report-menu-container";
@@ -95,23 +96,14 @@ export class ReportPageController extends Vue {
 
     protected async createMenuBar() {
         let menuItems = [] as IMenuItemSpec[];
-        if (!await this.reportPageService.isVotingActive()) {
-            menuItems.push({
+
+        menuItems.push(...[
+            {
                 id: "createNewVoting",
                 text: "Create new voting",
                 icon: "icon icon-add",
                 disabled: false
-            });
-        }
-
-        menuItems.push(...[
-            {
-                id: "refresh",
-                title: "Refresh",
-                icon: "bowtie-icon bowtie-navigate-refresh",
-                disabled: false
-            },
-            {
+            }, {
                 separator: true
             },
             {
@@ -122,15 +114,16 @@ export class ReportPageController extends Vue {
             }
         ]);
 
+        menuItems.push(...[
+
+        ]);
+
         controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
             showIcon: true,
             items: menuItems,
             executeAction: (args) => {
                 var command = args.get_commandName();
                 switch (command) {
-                    case "refresh":
-                        this.refreshAsync();
-                        break;
                     case "copy":
                         this.copyToClipboard();
                         break;
@@ -149,18 +142,52 @@ export class ReportPageController extends Vue {
                 height: this.height,
                 allowMultiSelect: true,
                 columns: [
-                    { tooltip: "Work Item ID", text: "ID", index: "id", width: 50 },
-                    { tooltip: "Work Item Type", text: "Work Item Type", index: "workItemType", width: 100 },
-                    { tooltip: "Work Item Title", text: "Title", index: "title", width: 650 },
-                    { tooltip: "Assigned team member", text: "Assigned To", index: "assignedTo", width: 125 },
-                    { tooltip: "Work Item State", text: "State", index: "state", width: 100 },
-                    { tooltip: "All votes per item", text: "Votes", index: "totalVotes", width: 60 },
-                    { text: "Order", index: "order", width: 50, hidden: true }
+                    {
+                        tooltip: "Work Item ID",
+                        text: "ID",
+                        index: "id",
+                        width: 50
+                    },
+                    {
+                        tooltip: "Work Item Type",
+                        text: "Work Item Type",
+                        index: "workItemType",
+                        width: 100
+                    },
+                    {
+                        tooltip: "Work Item Title",
+                        text: "Title", index: "title",
+                        width: 650
+                    },
+                    {
+                        tooltip: "Assigned team member",
+                        text: "Assigned To",
+                        index: "assignedTo",
+                        width: 125
+                    },
+                    {
+                        tooltip: "Work Item State",
+                        text: "State",
+                        index: "state",
+                        width: 100
+                    },
+                    {
+                        tooltip: "All votes per item",
+                        text: "Votes",
+                        index: "totalVotes",
+                        width: 60
+                    },
+                    {
+                        text: "Order",
+                        index: "order",
+                        width: 50,
+                        hidden: true
+                    }
                 ],
                 sortOrder: [
                     {
-                        index: "order",
-                        order: "asc"
+                        index: "totalVotes",
+                        order: "desc"
                     }
                 ],
                 autoSort: true
@@ -191,7 +218,7 @@ export class ReportPageController extends Vue {
     }
 
     protected async loadReportAsync(): Promise<void> {
-        this.report = await this.reportPageService.loadReportData(true);
+        this.report = await this.reportPageService.loadReportDataAsync(true);
         LogExtension.log(this.report);
     }
 
@@ -204,7 +231,4 @@ export class ReportPageController extends Vue {
             this.waitControl.endWait();
         }
     }
-
-
-
 }

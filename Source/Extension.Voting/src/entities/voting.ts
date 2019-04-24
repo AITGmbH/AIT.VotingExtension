@@ -6,13 +6,13 @@ export class Voting {
     public numberOfVotes: number = 3;
     public voteLimit: number = 1;
     public isMultipleVotingEnabled: boolean = true;
-    public isVotingPaused = false;
+    public isVotingPaused = true;
     public group = "Team";
     public team: string;
-    public type: string;
+    public type: string = VotingTypes.LEVEL;
     public level: string;
     public item: string;
-    public query: string;
+    public query: string = "";
     public created: number;
     public lastModified: number;
     public title = "";
