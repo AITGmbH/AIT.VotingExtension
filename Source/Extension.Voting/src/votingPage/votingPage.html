@@ -46,7 +46,8 @@
                 <div id="informationDiv" class="col-sm-12">
                     <p v-if="actualVoting != null">{{ actualVoting.description }}</p>
                 </div>
-                <div id="informationDiv" class="col-xs-6" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.start)">
+                <div id="informationDiv" class="col-xs-6" data-toggle="tooltip"
+                    :title="getLocaleTimeString(actualVoting.start)">
                     <div v-if="actualVoting.start != null">
                         <p v-if="status === 5">
                             Starts
@@ -63,7 +64,8 @@
                     </div>
                 </div>
 
-                <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip" :title="getLocaleTimeString(actualVoting.end)">
+                <div id="informationDiv" class="col-xs-6" style="text-align: right" data-toggle="tooltip"
+                    :title="getLocaleTimeString(actualVoting.end)">
                     <div v-if="actualVoting.end != null">
                         <p v-if="status === 6">
                             Overdue
@@ -150,8 +152,6 @@
             explicitNotifyLoaded: true,
             usePlatformScripts: true,
             usePlatformStyles: true,
-            moduleLoaderConfig: {},
-            applyTheme: true
         });
 
         VSS.require(["vendors.js", "voting.js"], function () {
