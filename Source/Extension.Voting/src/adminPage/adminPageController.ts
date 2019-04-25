@@ -79,6 +79,9 @@ export class AdminPageController extends Vue {
     }
 
     public validateInput() {
+        if (this.actualVoting.voteLimit > this.actualVoting.numberOfVotes) {
+            this.actualVoting.voteLimit = this.actualVoting.numberOfVotes;
+        }
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
             1,
@@ -696,5 +699,5 @@ export class AdminPageController extends Vue {
         this.adminPageService.team = team;
         this.initAsync();
     }
-
+  
 }

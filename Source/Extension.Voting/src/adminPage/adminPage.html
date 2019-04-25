@@ -43,14 +43,12 @@
 
             <div id="admin-form" style="overflow-y: auto; height: 80vh" v-show="showContent">
                 <div id="content" style="padding-top: 10px;" class="row container">
-
                     <div class="row">
                         <div class="form-group col-sm-12" data-toggle="tooltip" title="Enter a title for the voting.">
                             <label>Title <span class="required" v-if="actualVoting.title === ''">*</span></label>
                             <input type="text" class="form-control" v-model="actualVoting.title"
                                 @change="actualVotingTitleChanged">
                         </div>
-
                         <div class="form-group col-sm-12" data-toggle="tooltip"
                             title="Enter a description for the voting.">
                             <label>Description</label>
