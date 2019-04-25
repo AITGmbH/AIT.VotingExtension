@@ -42,8 +42,6 @@ export class ReportPageController extends Vue {
         );
     }
 
-
-
     public async refreshAsync(lazy: boolean = false): Promise<void> {
         this.waitControl.startWait();
         try {

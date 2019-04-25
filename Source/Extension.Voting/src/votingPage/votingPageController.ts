@@ -30,6 +30,8 @@ export class VotingPageController extends Vue {
     private waitControl: statusIndicators.WaitControl;
     private cookieService: CookieService;
     private user: User;
+    private startTimerId: number;
+    private endTimerId: number;
 
     public votingService: VotingPageService = new VotingPageService();
     public remainingVotes: number = 0;
@@ -139,17 +141,19 @@ export class VotingPageController extends Vue {
         try {
             await this.votingService.loadProjectAsync();
             await this.votingService.loadTeamsAsync();
+            var voting = await this.votingService.loadVotingAsync();
             <Voting>(
                 Object.assign(
                     this.actualVoting,
-                    await this.votingService.loadVotingAsync()
+                    voting
                 )
             ); //assign keeps bindings!!!
-
             this.createVotingMenue();
+
             this.createVotingTable();
             this.generateTeamPivot();
             this.updateTeam(this.votingService.team);
+            this.createTimers();
         } finally {
             this.waitControl.endWait();
         }
@@ -181,9 +185,9 @@ export class VotingPageController extends Vue {
                         await this.votingService.loadVotingAsync()
                     )
                 ); //assign keeps bindings!!!
-                this.createVotingMenue();
             }
             this.setStatus();
+            this.createVotingMenue();
             this.validateSessionTimes();
 
             if (this.isVisible()) {
@@ -428,10 +432,10 @@ export class VotingPageController extends Vue {
                     separator: true
                 },
                 {
-                    id: "removeAllUserdata",
+                    id: "removeUserVotes",
                     title: "Delete all your votes",
                     icon: "icon icon-delete",
-                    disabled: false
+                    disabled: this.canRemoveUserVotes()
                 }
             ],
             executeAction: args => {
@@ -446,7 +450,7 @@ export class VotingPageController extends Vue {
                     case "refresh":
                         this.refreshAsync();
                         break;
-                    case "removeAllUserdata":
+                    case "removeUserVotes":
                         this.showRemoveAllUserVotesDialog();
                         break;
                 }
@@ -740,5 +744,35 @@ export class VotingPageController extends Vue {
      */
     public isApplyable() {
         return this.actualVoting.type === VotingTypes.LEVEL;
+    }
+
+    private canRemoveUserVotes(): boolean {
+        return this.status !== VotingStatus.ActiveVoting;
+    }
+
+    private createTimers() {
+        if (this.actualVoting.useStartTime && this.actualVoting.start) {
+            var ticksUntilStart = moment(this.actualVoting.start).diff(moment());
+            if (ticksUntilStart > 0) {
+                this.startTimerId = setTimeout(() => {
+                    this.refreshAsync();
+                    clearTimeout(this.startTimerId);
+                }, ticksUntilStart);
+            }
+        }
+
+        if (this.actualVoting.useEndTime && this.actualVoting.end) {
+            var ticksUntilEnd = moment(this.actualVoting.end).diff(moment());
+            console.log(ticksUntilEnd);
+
+            if (ticksUntilEnd > 0) {
+                this.endTimerId = setTimeout(() => {
+                    this.refreshAsync();
+                    clearTimeout(this.endTimerId);
+                }, ticksUntilEnd);
+                console.log(this.endTimerId);
+
+            }
+        }
     }
 }
