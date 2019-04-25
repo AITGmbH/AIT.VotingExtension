@@ -9,6 +9,7 @@ import { TeamContext } from "TFS/Core/Contracts";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import * as _ from "lodash";
 import { Voting } from "../entities/voting";
+import { WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
 
 export class VotingPageService extends BaseDataService {
     private _areas: string;

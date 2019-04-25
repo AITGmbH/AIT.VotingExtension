@@ -763,15 +763,11 @@ export class VotingPageController extends Vue {
 
         if (this.actualVoting.useEndTime && this.actualVoting.end) {
             var ticksUntilEnd = moment(this.actualVoting.end).diff(moment());
-            console.log(ticksUntilEnd);
-
             if (ticksUntilEnd > 0) {
                 this.endTimerId = setTimeout(() => {
                     this.refreshAsync();
                     clearTimeout(this.endTimerId);
                 }, ticksUntilEnd);
-                console.log(this.endTimerId);
-
             }
         }
     }
