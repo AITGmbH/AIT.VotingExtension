@@ -33,13 +33,13 @@
                     <p v-if="actualVoting != null">{{ actualVoting.title }}</p>
                 </div>
 
-                <div id="remainingVotesDiv" class="col-sm-2 col-sm-offset-2">
+                <div id="remainingVotesDiv" class="col-sm-2 col-sm-offset-2" v-if="status == 1 || status == 2">
                     <p v-if="remainingVotes > 1">You have {{ remainingVotes }} votes left</p>
                     <p v-else-if="remainingVotes === 1">You have 1 vote left</p>
                     <p v-else>You have no votes left</p>
                 </div>
 
-                <div id="voteLimitDiv" class="col-sm-2" style="text-align: right">
+                <div id="voteLimitDiv" class="col-sm-2" style="text-align: right" v-if="status == 1 || status == 2">
                     <p>Vote limit per work item: {{ actualVoting.voteLimit }}</p>
                 </div>
 
@@ -121,10 +121,9 @@
                         The voting session has expired. You can only take a look at the voting result.
                     </p>
                 </div>
-
             </div>
 
-            <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: !isVisible() }">
+            <div id="grid-container" class="col-sm-12">
             </div>
 
             <div id="nothingToVote" class="col-sm-12" v-bind:class="{ hide: status !== 3 }">
@@ -139,10 +138,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="row">
-                <div id="grid-container" class="col-sm-12" v-bind:class="{ hide: status !== 1 && status !== 2 }"></div>
             </div>
 
         </div>

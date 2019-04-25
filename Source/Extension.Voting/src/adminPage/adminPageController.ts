@@ -257,7 +257,7 @@ export class AdminPageController extends Vue {
 
     private showSaveOnRunningVotingDialog() {
         let htmlContentString: string =
-            "<html><body><div>There may be changes to voting type and/or the number of votes. Please be aware that due to this change existing votes are reset!</div></body></html>";
+            "<html><body><div>Please note that the changes made to the settings lead to a reset of all existing votes. Do you want to continue?</div></body></html>";
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Save voting",
@@ -266,7 +266,7 @@ export class AdminPageController extends Vue {
                 Confirm: async () => {
                     dialog.close();
                     await this.adminPageService.removeVotesByTeamAsync();
-                    await this.saveSettingsAsync(true);
+                    await this.saveSettingsAsync(true, false);
                 },
                 Cancel: () => {
                     dialog.close();
@@ -415,6 +415,14 @@ export class AdminPageController extends Vue {
             return;
         }
 
+        if (voting.numberOfVotes < voting.voteLimit) {
+            bsNotify(
+                "danger",
+                "Invalid votes per work item. Please make sure that votes per work item do not exceed the votes per user!"
+            );
+            return;
+        }
+
         voting.lastModified = Math.round(new Date().getTime() / 1000);
         voting.description = escapeText(voting.description);
         voting.team = this.adminPageService.team.id;
@@ -436,7 +444,7 @@ export class AdminPageController extends Vue {
         voting.isVotingPaused = true;
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
-    } 
+    }
 
     private async terminateVotingAsync() {
         let voting = await this.adminPageService.loadVotingAsync();
@@ -628,11 +636,10 @@ export class AdminPageController extends Vue {
                 if (this.actualVoting.isVotingEnabled && (this.isTypeLevelQueryDirty || this.isTypeDirty || this.isVotesCountSettingsDirty)) {
                     this.showSaveOnRunningVotingDialog();
                 } else {
-                    this.saveSettingsAsync(true);
+                    this.saveSettingsAsync(true, false);
                 }
                 break;
             case "pauseVoting":
-                // this.saveSettingsAsync(true, true);
                 this.pauseVotingAsync();
                 break;
             case "resumeVoting":
@@ -644,11 +651,11 @@ export class AdminPageController extends Vue {
         }
     }
 
-    public initWaitControl(ele: any): statusIndicators.WaitControl {
+    public initWaitControl(element: any): statusIndicators.WaitControl {
         if (!this.waitControl) {
             this.waitControl = controls.create(
                 statusIndicators.WaitControl,
-                $(ele),
+                $(element),
                 {
                     message: "Loading..."
                 }

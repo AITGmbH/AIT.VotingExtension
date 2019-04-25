@@ -295,9 +295,9 @@ export class BaseDataService {
     }
 
     public getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"];
+        const assignedTo = req.fields["System.AssignedTo"] as string;
         const displayName =
-            assignedTo === undefined ? "" : assignedTo.displayName;
+            assignedTo === undefined ? "" : assignedTo.replace(/\<.*\>/, "").trim();
         return displayName;
     }
 
