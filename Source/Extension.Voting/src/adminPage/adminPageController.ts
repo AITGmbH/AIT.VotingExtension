@@ -257,7 +257,7 @@ export class AdminPageController extends Vue {
 
     private showSaveOnRunningVotingDialog() {
         let htmlContentString: string =
-            "<html><body><div>There may be changes to voting type and/or the number of votes. Please be aware that due to this change existing votes are reset!</div></body></html>";
+            "<html><body><div>Please note that the changes made to the settings lead to a reset of all existing votes. Do you want to continue?</div></body></html>";
         let dialogContent = $.parseHTML(htmlContentString);
         let dialogOptions = {
             title: "Save voting",
@@ -436,7 +436,7 @@ export class AdminPageController extends Vue {
         voting.isVotingPaused = true;
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
-    } 
+    }
 
     private async terminateVotingAsync() {
         let voting = await this.adminPageService.loadVotingAsync();
