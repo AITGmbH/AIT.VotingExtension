@@ -23,7 +23,7 @@
     "watch-test": "jest --watch"
   },
   "dependencies": {
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.0",
     "lodash": "^4.17.10",
     "vss-web-extension-sdk": "^5.134.0",
     "vue": "^2.5.17",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
-    "@types/jquery": "^3.3.4",
+    "@types/jquery": "^3.3.29",
     "@types/lodash": "^4.14.112",
     "@types/moment-timezone": "^0.5.10",
     "babel-loader": "^7.1.5",
