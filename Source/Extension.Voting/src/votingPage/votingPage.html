@@ -51,13 +51,13 @@
                     <div v-if="actualVoting.start != null">
                         <p v-if="status === 5">
                             Starts
-                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="20">
+                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.start) }}
                             </timeago>
                         </p>
                         <p v-else-if="actualVoting.useStartTime">
                             Has started
-                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="20">
+                            <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">
                                 {{ getRelativeTimeString(actualVoting.start) }}
                             </timeago>
                         </p>
