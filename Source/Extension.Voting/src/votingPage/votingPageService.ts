@@ -78,7 +78,7 @@ export class VotingPageService extends BaseDataService {
      * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
      * @see VotingTypes
      */
-    public async loadWorkItemsByTypes(types: string): Promise<void> {
+    public async loadWorkItemsByTypes(types: string = ""): Promise<void> {
         const wiql =
             "SELECT [System.Id] FROM WorkItems" +
             " WHERE [System.State] <> 'Closed'" +
