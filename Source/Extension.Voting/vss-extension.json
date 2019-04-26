@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "id": "asap-voting-aitgmb-de-preview",
+  "id": "asap-voting-aitgmbh-de-preview",
   "version": "0.1.37",
   "publisher": "aitgmbh",
   "public": false,
@@ -15,7 +15,7 @@
     }
   },
   "screenshots": [{
-      "path": "images/screenshots/VotingSettingsStarted.png"
+      "path": "images/screenshots/VotingSettingsBeforeStart.png"
     },
     {
       "path": "images/screenshots/VotingtableUnvoted.png"
@@ -53,7 +53,13 @@
       "properties": {
         "name": "Voting",
         "order": 99,
-        "uri": "dist/votingPage.html"
+        "uri": "dist/votingPage.html",
+        "iconAsset": "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
+        "_sharedData": {
+          "assets": [
+            "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
+          ]
+        }
       }
     },
     {

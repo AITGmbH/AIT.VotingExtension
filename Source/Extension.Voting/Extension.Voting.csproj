@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" 
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.TypeScript.MSBuild.2.8.3\build\Microsoft.TypeScript.MSBuild.props" Condition="Exists('..\packages\Microsoft.TypeScript.MSBuild.2.8.3\build\Microsoft.TypeScript.MSBuild.props')" />
   <!-- Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" / -->
   <PropertyGroup>
@@ -38,18 +39,11 @@
     <Content Include="Data\vote.txt" />
     <Content Include="Images\Logo\AIT-Logo_128.png" />
     <Content Include="Images\Logo\AIT-Voting-Extension.png" />
-    <Content Include="Images\Screenshots\ClickToVote.jpg" />
-    <Content Include="Images\Screenshots\VotingSettingsAfterSave.png" />
-    <Content Include="Images\Screenshots\VotingSettingsAfterSaveJPG.jpg" />
-    <Content Include="Images\Screenshots\VotingSettingsBeforeSave.jpg" />
-    <Content Include="Images\Screenshots\VotingSettingsBeforeStart.jpg" />
-    <Content Include="Images\Screenshots\VotingSettingsStarted.png" />
-    <Content Include="Images\Screenshots\VotingtableUnvoted.jpg" />
+    <Content Include="Images\Screenshots\VotingSettingsBeforeStart.png" />
     <Content Include="Images\Screenshots\VotingtableUnvoted.png" />
-    <Content Include="Images\Screenshots\VotingtableVoted.jpg" />
+    <Content Include="Images\Screenshots\VotingtableVoted.png" />
     <Content Include="Images\Logo\AIT-logo.png" />
     <Content Include="Images\info_icon.png" />
-    <Content Include="Images\Screenshots\VotingtableVoted.png" />
     <Content Include="Images\vso-cloud.png" />
     <Content Include="Scripts\AppInsights.js" />
     <Content Include="Scripts\bootstrap-notify.min.js" />

@@ -16,14 +16,15 @@ Democratize your backlog with Voting Extension. Ask your stakeholders to vote fo
 
 For more detailed release notes please refer to our [release blog posts](https://www.aitgmbh.de/blog/).
 
--   **Version "BuildNumber"**
-    -   Support of the new Azure DevOps vertical navigation
-    -   Possibility to pause voting
-    -   Extension is now hosted directly in Azure DevOps
-    -   Redesign of admin page
-        -   Configure number of votes for a voting
-        -   Change voting settings during a running voting
-    -   Fixed link to the admin page on the voting page
+-   **Version "**BuildNumber**"**
+    -   Introduction of voting types: backlog-based and query-based votings
+    -   Limit votes per work item (in addition to limit per user)
+    -   Support for fixed voting period: start and end date for a voting can be configured
+    -   Summary of finished voting on admin page with possibility to copy to HTML
+    -   Icon in vertical navigation
+    -   Bugfixes
+        -   Solve problem that terms of use can not be confirmed
+        -   "Assigned to" is displayed correctly
 
 ## Additional Links
 
