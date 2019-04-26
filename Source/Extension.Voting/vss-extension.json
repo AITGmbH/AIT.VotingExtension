@@ -53,7 +53,13 @@
       "properties": {
         "name": "Voting",
         "order": 99,
-        "uri": "dist/votingPage.html"
+        "uri": "dist/votingPage.html",
+        "iconAsset": "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
+        "_sharedData": {
+          "assets": [
+            "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
+          ]
+        }
       }
     },
     {

@@ -5,12 +5,12 @@
   "license": "MIT",
   "description": "",
   "scripts": {
-    "package": "tfx extension create --rev-version",
-    "package-debug": "cross-var tfx extension create --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",
-    "build-package-debug": "npm run build && npm run package-debug",
-    "gallery-publish": "tfx extension publish --rev-version",
     "clean": "rimraf ./dist && rimraf ./*.vsix",
-    "gallery-publish-debug": "cross-var tfx extension publish --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",
+    "package": "npm run update-manifest && tfx extension create --rev-version",
+    "package-debug": "npm run update-manifest-debug && cross-var tfx extension create --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",
+    "build-package-debug": "npm run build && npm run package-debug",
+    "gallery-publish": " npm run update-manifest && tfx extension publish --rev-version",
+    "gallery-publish-debug": "npm run update-manifest-debug && cross-var tfx extension publish --rev-version --override {\\\"baseUri\\\": \\\"https://localhost:44300\\\", \\\"publisher\\\": \\\"$tfx_publisher\\\"}",
     "publish-package": "npm run clean && npm run build-prod && npm run gallery-publish",
     "publish-debug-package": "npm run clean && npm run build && npm run gallery-publish-debug",
     "debug": "concurrently \"ws --https -p 44300\" \"npm run watch\"",
@@ -20,7 +20,9 @@
     "watch": "webpack --config webpack.dev.config.js --watch",
     "watch-prod": "webpack --config webpack.prod.config.js --watch",
     "test": "jest",
-    "watch-test": "jest --watch"
+    "watch-test": "jest --watch",
+    "update-manifest-debug": "node updateVssManifest.js $tfx_publisher $tfx_extension_id",
+    "update-manifest": "node updateVssManifest.js"
   },
   "dependencies": {
     "jquery": "^3.4.0",
