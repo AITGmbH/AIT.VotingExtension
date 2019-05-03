@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
-  "id": "asap-voting-aitgmbh-de-preview",
-  "version": "0.1.37",
-  "publisher": "aitgmbh",
+  "id": "asap-voting-aitgmb-de-preview",
+  "version": "0.1.38",
+  "publisher": "lochsenreiter",
   "public": false,
   "name": "AIT Voting Extension (Preview)",
   "description": "Democratize your backlog with Voting Extension. Ask your stakeholders to vote for their favorite backlog items. Align your work on your stakeholders' needs.",
@@ -14,7 +14,8 @@
       "path": "Markdown/VotingExtension_License.md"
     }
   },
-  "screenshots": [{
+  "screenshots": [
+    {
       "path": "images/screenshots/VotingSettingsBeforeStart.png"
     },
     {
@@ -24,10 +25,16 @@
       "path": "images/screenshots/VotingtableVoted.png"
     }
   ],
-  "files": [{
-    "path": "dist",
-    "addressable": true
-  }],
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    },
+    {
+      "path": "images/logo/AIT-Voting-Extension-Hub-Icon.png",
+      "addressable": true
+    }
+  ],
   "icons": {
     "default": "images/logo/AIT-Voting-Extension.png"
   },
@@ -40,10 +47,13 @@
   "scopes": [
     "vso.work_write"
   ],
-  "targets": [{
-    "id": "Microsoft.VisualStudio.Services.Cloud"
-  }],
-  "contributions": [{
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services.Cloud"
+    }
+  ],
+  "contributions": [
+    {
       "id": "Voting.Home",
       "type": "ms.vss-web.hub",
       "description": "Adds a 'voting' hub to the Work hub group.",
@@ -54,10 +64,10 @@
         "name": "Voting",
         "order": 99,
         "uri": "dist/votingPage.html",
-        "iconAsset": "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
+        "iconAsset": "lochsenreiter.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
         "_sharedData": {
           "assets": [
-            "aitgmbh.asap-voting-aitgmbh-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
+            "lochsenreiter.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
           ]
         }
       }
