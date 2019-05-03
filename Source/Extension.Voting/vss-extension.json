@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
   "id": "asap-voting-aitgmb-de-preview",
-  "version": "0.1.38",
-  "publisher": "lochsenreiter",
+  "version": "0.1.37",
+  "publisher": "aitgmbh",
   "public": false,
   "name": "AIT Voting Extension (Preview)",
   "description": "Democratize your backlog with Voting Extension. Ask your stakeholders to vote for their favorite backlog items. Align your work on your stakeholders' needs.",
@@ -64,10 +64,10 @@
         "name": "Voting",
         "order": 99,
         "uri": "dist/votingPage.html",
-        "iconAsset": "lochsenreiter.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
+        "iconAsset": "aitgmbh.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png",
         "_sharedData": {
           "assets": [
-            "lochsenreiter.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
+            "aitgmbh.asap-voting-aitgmb-de-preview/images/logo/AIT-Voting-Extension-Hub-Icon.png"
           ]
         }
       }
