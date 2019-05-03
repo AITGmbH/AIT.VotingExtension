@@ -2,6 +2,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
+import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
 import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
@@ -176,6 +177,11 @@ export class ReportPageController extends Vue {
                         hidden: true
                     }
                 ],
+                openRowDetail: async (index) => {
+                    var item = this.grid.getRowData(index);
+                    const service = await workItemTrackingService.WorkItemFormNavigationService.getService();
+                    service.openWorkItem(item.id);
+                },
                 sortOrder: [
                     {
                         index: "totalVotes",

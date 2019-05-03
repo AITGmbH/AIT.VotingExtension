@@ -3,9 +3,10 @@ import { VotingTypes } from "../entities/votingTypes";
 export class Voting {
     public description = "";
     public isVotingEnabled = false;
+    public isVotingPaused = true;
+    public isVotingTerminated = false;
     public numberOfVotes: number = 3;
     public voteLimit: number = 1;
-    public isVotingPaused = true;
     public group = "Team";
     public team: string;
     public type: string = VotingTypes.LEVEL;
@@ -16,9 +17,9 @@ export class Voting {
     public lastModified: number;
     public title = "";
     public useStartTime: boolean = false;
-    public start: number;
+    public start: number = null;
     public useEndTime: boolean = false;
-    public end: number;
+    public end: number = null;
 
     public get isBacklogBased() {
         return this.type == VotingTypes.LEVEL;

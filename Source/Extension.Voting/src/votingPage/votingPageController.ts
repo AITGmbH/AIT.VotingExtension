@@ -9,7 +9,7 @@ import { parseEmail } from "../shared/common";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
-import * as wi from "TFS/WorkItemTracking/Services";
+import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
 import * as dialogs from "VSS/Controls/Dialogs";
 import * as navigation from "VSS/Controls/Navigation";
 import * as menus from "VSS/Controls/Menus";
@@ -575,9 +575,9 @@ export class VotingPageController extends Vue {
                 },
                 { text: "Order", index: "order", width: 50, hidden: true }
             ],
-            openRowDetail: async index => {
+            openRowDetail: async (index) => {
                 var item = this.grid.getRowData(index);
-                const service = await wi.WorkItemFormNavigationService.getService();
+                const service = await workItemTrackingService.WorkItemFormNavigationService.getService();
                 service.openWorkItem(item.id);
             },
             sortOrder: [
@@ -597,38 +597,51 @@ export class VotingPageController extends Vue {
 
         var observer = new MutationObserver(_ => {
             observer.disconnect();
+            if(this.actualVoting.isVotingTerminated) {
 
-            $(".grid-row").each((_, element) => {
-                var cellAddButton = $(element).find("div:nth-child(1)");
-                var cellRemoveButton = $(element).find("div:nth-child(2)");
-                var cellId = $(element).find("div:nth-child(3)");
-                var cellWorkItemType = $(element).find("div:nth-child(4)");
-                var cellTitle = $(element).find("div:nth-child(5)");
-                var cellAssignedTo = $(element).find("div:nth-child(6)");
+                $(".grid-row").each((_, element) => {
+                    var cellWorkItemType = $(element).find("div:nth-child(2)");
+                    var cellTitle = $(element).find("div:nth-child(3)");
+                    var title = $(cellTitle).text();
+                    var cssClass = $(cellWorkItemType)
+                        .text()
+                        .toLowerCase()
+                        .replace(/\s+/g, "");
+                    $(cellTitle).text("");
+                    $(cellTitle).append(
+                        `<div class="work-item-color ${ cssClass }-color"></div>`
+                    );
+                    $(cellTitle).append(`<span> ${ title }</span>`);
+                });
+            } else {
+                $(".grid-row").each((_, element) => {
+                    var cellAddButton = $(element).find("div:nth-child(1)");
+                    var cellRemoveButton = $(element).find("div:nth-child(2)");
+                    var cellId = $(element).find("div:nth-child(3)");
+                    var cellWorkItemType = $(element).find("div:nth-child(4)");
+                    var cellTitle = $(element).find("div:nth-child(5)");
+                    var title = $(cellTitle).text();
+                    var cssClass = $(cellWorkItemType)
+                        .text()
+                        .toLowerCase()
+                        .replace(/\s+/g, "");
+                    $(cellTitle).text("");
+                    $(cellTitle).append(
+                        `<div class="work-item-color ${ cssClass }-color"></div>`
+                    );
+                    $(cellTitle).append(`<span> ${ title }</span>`);
+                    var voteUpButton = $(cellAddButton).find("span > span.icon");
+                    var voteDownButton = $(cellRemoveButton).find(
+                        "span > span.icon"
+                    );
+    
+                    const voteId = parseInt($(cellId).text(), 10);
+    
+                    this.initializeItem(voteId, voteUpButton[0], voteDownButton[0]);
+                });
+            }
 
-                var title = $(cellTitle).text();
-                var cssClass = $(cellWorkItemType)
-                    .text()
-                    .toLowerCase()
-                    .replace(/\s+/g, "");
-                var assignedTo = parseEmail($(cellAssignedTo).text());
 
-                $(cellTitle).text("");
-                $(cellTitle).append(
-                    `<div class="work-item-color ${ cssClass }-color"></div>`
-                );
-                $(cellTitle).append(`<span> ${ title }</span>`);
-                $(cellAssignedTo).text(assignedTo);
-
-                var voteUpButton = $(cellAddButton).find("span > span.icon");
-                var voteDownButton = $(cellRemoveButton).find(
-                    "span > span.icon"
-                );
-
-                const voteId = parseInt($(cellId).text(), 10);
-
-                this.initializeItem(voteId, voteUpButton[0], voteDownButton[0]);
-            });
 
             observer.observe(document.getElementById("grid-container"), {
                 childList: true,
