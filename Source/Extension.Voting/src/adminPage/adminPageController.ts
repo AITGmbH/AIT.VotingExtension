@@ -78,15 +78,14 @@ export class AdminPageController extends Vue {
     }
 
     public validateInput() {
-        if (this.actualVoting.voteLimit > this.actualVoting.numberOfVotes) {
-            this.actualVoting.voteLimit = this.actualVoting.numberOfVotes;
-        }
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
             1,
             this.actualVoting.numberOfVotes
         );
         this.isVotesCountSettingsDirty = true;
+
+        this.createMenueBar(true);
     }
 
     /**
@@ -204,11 +203,10 @@ export class AdminPageController extends Vue {
     }
 
     public setEndDate(value: number) {
-        var currentDateTime = moment();
+        var currentDateTime = moment().add(1, "days");
         if (value != null) {
             currentDateTime = moment(value);
         }
-        var currentDateTime = moment(value);
         this.endDate = currentDateTime.format(this.StandardDatePattern);
         this.endTime = currentDateTime.format(this.StandardTimePattern);
     }
@@ -413,16 +411,17 @@ export class AdminPageController extends Vue {
             );
             return;
         }
-
-        if (voting.start >= voting.end) {
-            bsNotify(
-                "danger",
-                "Invalid time period. Please make sure that End is later than Start!"
-            );
-            return;
+        if (voting.useEndTime && voting.useStartTime) {
+            if (voting.start >= voting.end) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that End is later than Start!"
+                );
+                return;
+            }
         }
 
-        if (voting.numberOfVotes < voting.voteLimit) {
+        if (voting.voteLimit >= voting.numberOfVotes) {
             bsNotify(
                 "danger",
                 "Invalid votes per work item. Please make sure that votes per work item do not exceed the votes per user!"
@@ -689,7 +688,9 @@ export class AdminPageController extends Vue {
                 this.actualVoting.query != "" &&
                 this.actualVoting.isQueryBased) ||
             !this.actualVoting.isQueryBased;
-        return hasValidQueryBasedType && hasValidTitle;
+        const hasValidVotesPerWorkitem = this.actualVoting.voteLimit <= this.actualVoting.numberOfVotes;
+
+        return hasValidQueryBasedType && hasValidTitle && hasValidVotesPerWorkitem;
     }
 
     private canResume(): boolean {

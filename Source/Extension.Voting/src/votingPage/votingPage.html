@@ -48,7 +48,7 @@
                 </div>
                 <div id="informationDiv" class="col-xs-6" data-toggle="tooltip"
                     :title="getLocaleTimeString(actualVoting.start)">
-                    <div v-if="actualVoting.start != null">
+                    <div v-if="actualVoting.start != null && !actualVoting.isVotingPaused">
                         <p v-if="status === 5">
                             Starts
                             <timeago :datetime="getDatetimeString(actualVoting.start)" :auto-update="60">

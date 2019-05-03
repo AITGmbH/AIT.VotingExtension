@@ -126,7 +126,9 @@
 
                             <div class="form-group" data-toggle="tooltip"
                                 title="Sets the maximum number of votes for a single work item. The number of votes per work item cannot exceed the number of votes per user!">
-                                <label>Votes per work item</label>
+                                <label>Votes per work item <span class="required"
+                                        v-if="actualVoting.voteLimit > actualVoting.numberOfVotes">The number of votes
+                                        per work item can not exceed the number of votes per user!</span></label>
                                 <input type="number" class="form-control" name="voteLimit" min="1"
                                     v-model="actualVoting.voteLimit" @change="validateInput" />
                             </div>

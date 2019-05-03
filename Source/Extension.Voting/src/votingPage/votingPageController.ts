@@ -597,8 +597,7 @@ export class VotingPageController extends Vue {
 
         var observer = new MutationObserver(_ => {
             observer.disconnect();
-            if(this.actualVoting.isVotingTerminated) {
-
+            if (this.status !== VotingStatus.ActiveVoting) {
                 $(".grid-row").each((_, element) => {
                     var cellWorkItemType = $(element).find("div:nth-child(2)");
                     var cellTitle = $(element).find("div:nth-child(3)");
@@ -634,9 +633,9 @@ export class VotingPageController extends Vue {
                     var voteDownButton = $(cellRemoveButton).find(
                         "span > span.icon"
                     );
-    
+
                     const voteId = parseInt($(cellId).text(), 10);
-    
+
                     this.initializeItem(voteId, voteUpButton[0], voteDownButton[0]);
                 });
             }
@@ -700,21 +699,24 @@ export class VotingPageController extends Vue {
 
     private setStatus() {
         var nowValue = moment().valueOf();
-        if (!this.actualVoting.isVotingEnabled) {
+
+        if (
+            this.actualVoting.useEndTime &&
+            nowValue > this.actualVoting.end
+        ) {
+            this.status = VotingStatus.OverdueVoting;
+        }
+        else if (!this.actualVoting.isVotingEnabled) {
             this.status = VotingStatus.NoVoting;
-        } else if (this.actualVoting.isVotingPaused) {
-            this.status = VotingStatus.PausedVoting;
         } else if (
             this.actualVoting.useStartTime &&
             nowValue < this.actualVoting.start
         ) {
             this.status = VotingStatus.ProspectiveVoting;
-        } else if (
-            this.actualVoting.useEndTime &&
-            nowValue > this.actualVoting.end
-        ) {
-            this.status = VotingStatus.OverdueVoting;
-        } else {
+        } else if (this.actualVoting.isVotingPaused) {
+            this.status = VotingStatus.PausedVoting;
+        }
+        else {
             this.status = VotingStatus.ActiveVoting;
         }
     }
