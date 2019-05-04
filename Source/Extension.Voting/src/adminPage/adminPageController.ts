@@ -56,8 +56,7 @@ export class AdminPageController extends Vue {
 
     public get isAdminPageVisible() {
         return (
-            (!this.actualVotingHasVotes &&
-                !this.actualVoting.isVotingEnabled) ||
+            (!this.actualVoting.isVotingTerminated && !this.actualVoting.isVotingEnabled) ||
             this.actualVoting.isVotingEnabled
         );
     }
@@ -79,15 +78,14 @@ export class AdminPageController extends Vue {
     }
 
     public validateInput() {
-        if (this.actualVoting.voteLimit > this.actualVoting.numberOfVotes) {
-            this.actualVoting.voteLimit = this.actualVoting.numberOfVotes;
-        }
         this.actualVoting.voteLimit = Math.max(1, this.actualVoting.voteLimit);
         this.actualVoting.numberOfVotes = Math.max(
             1,
             this.actualVoting.numberOfVotes
         );
         this.isVotesCountSettingsDirty = true;
+
+        this.createMenueBar(true);
     }
 
     /**
@@ -205,13 +203,19 @@ export class AdminPageController extends Vue {
     }
 
     public setEndDate(value: number) {
-        var currentDateTime = moment(value);
+        var currentDateTime = moment().add(1, "days");
+        if (value != null) {
+            currentDateTime = moment(value);
+        }
         this.endDate = currentDateTime.format(this.StandardDatePattern);
         this.endTime = currentDateTime.format(this.StandardTimePattern);
     }
 
     public setStartDate(value: number) {
-        var currentDateTime = moment(value);
+        var currentDateTime = moment();
+        if (value != null) {
+            currentDateTime = moment(value);
+        }
         this.startDate = currentDateTime.format(this.StandardDatePattern);
         this.startTime = currentDateTime.format(this.StandardTimePattern);
     }
@@ -303,12 +307,13 @@ export class AdminPageController extends Vue {
             this.actualVoting.query ||
             (this.queries.length ? this.queries[0].id : null);
 
-        if (this.actualVoting.useStartTime) {
-            this.setStartDate(this.actualVoting.start);
-        }
-        if (this.actualVoting.useEndTime) {
-            this.setEndDate(this.actualVoting.end);
-        }
+        this.setStartDate(this.actualVoting.start);
+        this.setEndDate(this.actualVoting.end);
+
+        // if (this.actualVoting.useStartTime) {
+        // }
+        // if (this.actualVoting.useEndTime) {
+        // }
     }
 
     private async initializeAdminpageAsync(): Promise<void> {
@@ -344,7 +349,7 @@ export class AdminPageController extends Vue {
         this.waitControl.startWait();
 
         try {
-            if (this.actualVoting.isVotingEnabled) {
+            if (this.actualVoting.isVotingEnabled && !this.actualVoting.isVotingTerminated) {
                 LogExtension.log("actual voting enabled");
 
                 this.showContent = true;
@@ -406,16 +411,17 @@ export class AdminPageController extends Vue {
             );
             return;
         }
-
-        if (voting.start >= voting.end) {
-            bsNotify(
-                "danger",
-                "Invalid time period. Please make sure that End is later than Start!"
-            );
-            return;
+        if (voting.useEndTime && voting.useStartTime) {
+            if (voting.start >= voting.end) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that End is later than Start!"
+                );
+                return;
+            }
         }
 
-        if (voting.numberOfVotes < voting.voteLimit) {
+        if (voting.voteLimit >= voting.numberOfVotes) {
             bsNotify(
                 "danger",
                 "Invalid votes per work item. Please make sure that votes per work item do not exceed the votes per user!"
@@ -428,6 +434,7 @@ export class AdminPageController extends Vue {
         voting.team = this.adminPageService.team.id;
 
         voting.isVotingEnabled = isEnabled;
+        voting.isVotingTerminated = false;
 
         if (isPaused != null) {
             voting.isVotingPaused = isPaused;
@@ -449,6 +456,7 @@ export class AdminPageController extends Vue {
     private async terminateVotingAsync() {
         let voting = await this.adminPageService.loadVotingAsync();
         voting.isVotingEnabled = false;
+        voting.isVotingTerminated = true;
         await this.adminPageService.saveVotingAsync(voting);
         await this.initAsync();
     }
@@ -666,7 +674,7 @@ export class AdminPageController extends Vue {
 
     public validateReportVisibility() {
         let isReportVisible = false;
-        if (!this.actualVoting.isVotingEnabled && this.actualVotingHasVotes) {
+        if (!this.actualVoting.isVotingEnabled && this.actualVoting.isVotingTerminated) {
             isReportVisible = true;
         }
         this.reportDisplayService.setReportVisibility(isReportVisible);
@@ -680,7 +688,9 @@ export class AdminPageController extends Vue {
                 this.actualVoting.query != "" &&
                 this.actualVoting.isQueryBased) ||
             !this.actualVoting.isQueryBased;
-        return hasValidQueryBasedType && hasValidTitle;
+        const hasValidVotesPerWorkitem = this.actualVoting.voteLimit <= this.actualVoting.numberOfVotes;
+
+        return hasValidQueryBasedType && hasValidTitle && hasValidVotesPerWorkitem;
     }
 
     private canResume(): boolean {
@@ -699,5 +709,5 @@ export class AdminPageController extends Vue {
         this.adminPageService.team = team;
         this.initAsync();
     }
-  
+
 }

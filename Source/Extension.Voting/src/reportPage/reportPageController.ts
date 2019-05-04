@@ -2,13 +2,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
-import * as navigation from "VSS/Controls/Navigation";
+import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
 import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
 import { ReportPageService } from "./reportPageService";
 import { Report } from "../entities/report";
-import { parseEmail, bsNotify } from "../shared/common";
+import { bsNotify } from "../shared/common";
 import { CopyToClipboardService } from "../services/copyToClipboardService";
 import { ReportDisplayService } from "./reportDisplayService";
 
@@ -31,8 +31,8 @@ export class ReportPageController extends Vue {
     public mounted() {
         this.reportPageService = new ReportPageService();
         this.copyToClipboardService = new CopyToClipboardService();
-
         this.initWaitControl('#waitContainer');
+
         this.initializeAsync().then(() => this.refreshAsync());
         this.$el.classList.remove("hide");
 
@@ -43,18 +43,15 @@ export class ReportPageController extends Vue {
         );
     }
 
-    public async refreshAsync(lazy: boolean = false): Promise<void> {
+    public async refreshAsync(): Promise<void> {
         this.waitControl.startWait();
         try {
-            if (!lazy) {
-                await this.loadReportAsync();
-            }
+            await this.loadReportAsync();
             let dataSource = [];
             if (this.report) {
-                dataSource = this.report.workItems
+                dataSource = this.report.workItems;
             }
             this.grid.setDataSource(dataSource);
-
         } finally {
             this.waitControl.endWait();
         }
@@ -94,7 +91,6 @@ export class ReportPageController extends Vue {
 
     protected async createMenuBar() {
         let menuItems = [] as IMenuItemSpec[];
-
         menuItems.push(...[
             {
                 id: "createNewVoting",
@@ -102,6 +98,7 @@ export class ReportPageController extends Vue {
                 icon: "icon icon-add",
                 disabled: false
             }, {
+
                 separator: true
             },
             {
@@ -111,11 +108,8 @@ export class ReportPageController extends Vue {
                 disabled: false
             }
         ]);
-
         menuItems.push(...[
-
         ]);
-
         controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
             showIcon: true,
             items: menuItems,
@@ -130,6 +124,7 @@ export class ReportPageController extends Vue {
                         break;
                 }
             }
+
         });
     }
 
@@ -182,6 +177,11 @@ export class ReportPageController extends Vue {
                         hidden: true
                     }
                 ],
+                openRowDetail: async (index) => {
+                    var item = this.grid.getRowData(index);
+                    const service = await workItemTrackingService.WorkItemFormNavigationService.getService();
+                    service.openWorkItem(item.id);
+                },
                 sortOrder: [
                     {
                         index: "totalVotes",
@@ -197,16 +197,13 @@ export class ReportPageController extends Vue {
             $('.grid-row').each((_, element) => {
                 const cellWorkItemType = $(element).find('div:nth-child(2)');
                 const cellTitle = $(element).find('div:nth-child(3)');
-                const cellAssignedTo = $(element).find('div:nth-child(4)');
 
                 const title = $(cellTitle).text();
                 const cssClass = $(cellWorkItemType).text().toLowerCase().replace(/\s+/g, '');
-                const assignedTo = parseEmail($(cellAssignedTo).text());
 
                 $(cellTitle).text('');
                 $(cellTitle).append(`<div class="work-item-color ${ cssClass }-color"></div>`);
                 $(cellTitle).append(`<span>${ title }</span>`);
-                $(cellAssignedTo).text(assignedTo);
             });
 
             observer.observe(document.getElementById(this.report_grid_container), { childList: true, subtree: true });
@@ -216,12 +213,17 @@ export class ReportPageController extends Vue {
     }
 
     protected async loadReportAsync(): Promise<void> {
-        this.report = await this.reportPageService.loadReportDataAsync(true);
-        LogExtension.log(this.report);
+        try {
+            this.report = await this.reportPageService.loadReportDataAsync(true);
+            LogExtension.log(this.report);
+        } catch {
+            this.report = null;
+        }
     }
 
     private async initializeAsync(): Promise<void> {
         this.waitControl.startWait();
+        await this.loadReportAsync();
         try {
             this.createMenuBar();
             this.createReportTable();

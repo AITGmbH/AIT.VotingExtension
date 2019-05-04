@@ -25,8 +25,6 @@ import { TeamFilterDisplayService } from "../teamFilter/teamFilterDisplayService
             });
             const wc = apc.initWaitControl("#waitContainer");
 
-            rpc.report_grid_container = "report-grid-container";
-            rpc.report_menu_container = "report-menu-container";
             rpc.waitControl = wc;
 
             apc.$mount("#adminPage");

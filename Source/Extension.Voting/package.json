@@ -21,8 +21,8 @@
     "watch-prod": "webpack --config webpack.prod.config.js --watch",
     "test": "jest",
     "watch-test": "jest --watch",
-    "update-manifest-debug": "node updateVssManifest.js $tfx_publisher $tfx_extension_id",
-    "update-manifest": "node updateVssManifest.js"
+    "update-manifest-debug": " cross-var node updateVssManifest.js $tfx_publisher $tfx_extension_id",
+    "update-manifest": "cross -var node updateVssManifest.js"
   },
   "dependencies": {
     "jquery": "^3.4.0",

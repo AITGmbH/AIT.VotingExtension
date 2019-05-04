@@ -32,6 +32,9 @@ npm install
 # Set tfx_publisher to your publisher name as environment variable
 $env:tfx_publisher = "YourPublisherName"
 
+# Set tfx_extension_id to your extension id as environment variable
+$env:tfx_extension_id = "YourExtensionId"
+
 # Create new extension version
 #   - run the following command from within the folder ~\Source\Extension.Voting
 #   - enter your Personal Access Token when requested
@@ -55,6 +58,6 @@ For information on how to create a publisher and to acquire a personal access to
 
 ## Additional links
 
--   [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmbh-de-production)
+-   [Visual Studio Marketplace: AIT Voting Extension](https://marketplace.visualstudio.com/items?itemName=AITGmbH.asap-voting-aitgmb-de-production)
 -   [AIT-Homepage](http://www.aitgmbh.de)
 -   [AIT TFS-Tools](https://www.aitgmbh.de/downloads/?term=20&orderby=date&order=desc)
