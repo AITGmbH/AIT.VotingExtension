@@ -22,7 +22,7 @@
     "test": "jest",
     "watch-test": "jest --watch",
     "update-manifest-debug": " cross-var node updateVssManifest.js $tfx_publisher $tfx_extension_id",
-    "update-manifest": "cross -var node updateVssManifest.js"
+    "update-manifest": "cross-var node updateVssManifest.js"
   },
   "dependencies": {
     "jquery": "^3.4.0",
