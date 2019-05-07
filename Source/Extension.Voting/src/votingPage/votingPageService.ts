@@ -387,7 +387,15 @@ export class VotingPageService extends BaseDataService {
             if (!voting.isBacklogBased) {
                 bsNotify(
                     "danger",
-                    "This voting is not applyable.\nPlease refresh the page and try again."
+                    "This voting is not applyable.\nPlease change the voting type to backlog-based voting!"
+                );
+                return;
+            }
+
+            if (!await this.votingHasVotes()) {
+                bsNotify(
+                    "warning",
+                    "This voting is not applyable.\nPlease vote any item to apply the voting to your backlog."
                 );
                 return;
             }

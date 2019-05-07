@@ -166,6 +166,10 @@ span.required {
     border-left-color: rgb(0, 156, 204);
 }
 
+[data-notify="container"].alert-pastel-warning {
+    border-left-color: #f0ad4e;
+}
+
 [data-notify="container"].alert-pastel-danger {
     border-left-color: #d00;
 }
