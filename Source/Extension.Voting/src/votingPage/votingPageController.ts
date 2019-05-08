@@ -214,7 +214,8 @@ export class VotingPageController extends Vue {
                     break;
                 default:
                     LogExtension.log("error:", "Unknown VotingType!");
-                    return;
+                    this.votingService.resetRequirements();
+                    break;
             }
 
             const hasAcceptedDataProtection = this.cookieService.isCookieSet();
@@ -302,6 +303,7 @@ export class VotingPageController extends Vue {
         this.calculateMyVotes();
 
         LogExtension.log("set Data");
+        
         this.grid.setDataSource(this.actualVotingItems);
         this.lockButtons = false;
 
@@ -673,6 +675,13 @@ export class VotingPageController extends Vue {
                 .sort((a, b) => a.text.localeCompare(b.text)),
             change: item => {
                 this.updateTeam(item);
+                this.actualVoting = new Voting();
+                // <Voting>(
+                //     Object.assign(
+                //         this.actualVoting,
+                //         new Voting()
+                //     )
+                // );
                 this.refreshAsync();
             }
         });

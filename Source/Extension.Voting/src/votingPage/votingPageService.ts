@@ -13,7 +13,7 @@ import { WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
 
 export class VotingPageService extends BaseDataService {
     private _areas: string;
-    private _requirements: TinyRequirement[];
+    private _requirements: TinyRequirement[] = [];
 
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
@@ -446,6 +446,10 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
+    }
+
+    public resetRequirements() {
+        this._requirements = [];
     }
 
 }
