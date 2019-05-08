@@ -133,6 +133,18 @@
     background-color: rgb(204, 41, 61);
 }
 
+.testcase-color {
+    background-color: rgb(0, 75, 80);
+}
+
+.testsuite-color {
+    background-color: rgb(0, 75, 80);
+}
+
+.testplan-color {
+    background-color: rgb(0, 75, 80);
+}
+
 .work-item-color {
     width: 6px;
     height: 100%;
