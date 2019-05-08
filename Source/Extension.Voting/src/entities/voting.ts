@@ -9,7 +9,7 @@ export class Voting {
     public voteLimit: number = 1;
     public group = "Team";
     public team: string;
-    public type: string = VotingTypes.LEVEL;
+    public type: string;
     public level: string;
     public item: string;
     public query: string = "";

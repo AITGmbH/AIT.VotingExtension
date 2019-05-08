@@ -23,6 +23,7 @@ For more detailed release notes please refer to our [release blog posts](https:/
   - Support for fixed voting period: start and end date for a voting can be configured
   - Summary of finished voting on admin page with possibility to copy to HTML
   - Icon in vertical navigation
+  - Moved apply to backlog option to report page for terminated votings
   - Bugfixes
     - Solves problem that terms of use can not be confirmed
     - "Assigned to" is displayed correctly

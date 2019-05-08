@@ -9,18 +9,15 @@ import { TeamContext } from "TFS/Core/Contracts";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import * as _ from "lodash";
 import { Voting } from "../entities/voting";
-import { WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
 
 export class VotingPageService extends BaseDataService {
     private _areas: string;
-    private _requirements: TinyRequirement[];
+    private _requirements: TinyRequirement[] = [];
 
     public votes: Vote[];
     public nothingToVote: (isThereAnythingToVote: boolean) => void;
     public numberOfMyVotes: () => number;
-    public calculating: () => void;
     public getVoteItem: (id: number) => VotingItem;
-    public getActualVotingItems: () => VotingItem[];
 
     constructor() {
         super();
@@ -303,135 +300,6 @@ export class VotingPageService extends BaseDataService {
         }
     }
 
-    public async updateBacklogAsync(
-        wis: VotingItem[],
-        firstBacklogItem: VotingItem
-    ): Promise<void> {
-        LogExtension.log("begin updating");
-
-        const order = this.getTemplate();
-        let success = true;
-
-        for (let i = 0; i < wis.length; i++) {
-            const item = wis[i];
-
-            const newOrder = parseInt(firstBacklogItem.order) - (i + 1);
-            const comment = "Updated by AIT Voting Extension";
-            const pathOrder = "/fields/" + order;
-            const pathComment = "/fields/System.History";
-            const newJson = [
-                {
-                    op: "replace",
-                    path: pathOrder,
-                    value: newOrder
-                },
-                {
-                    op: "add",
-                    path: pathComment,
-                    value: comment
-                }
-            ];
-
-            const witClient = getWitClient();
-
-            try {
-                await witClient.updateWorkItem(newJson, item.id);
-                LogExtension.log("replace success: " + item.id);
-            } catch (err) {
-                LogExtension.log(
-                    "replace failed: " + item.id + ", trying to add..."
-                );
-                const addJson = [
-                    {
-                        op: "add",
-                        path: pathOrder,
-                        value: newOrder
-                    },
-                    {
-                        op: "add",
-                        path: pathComment,
-                        value: comment
-                    }
-                ];
-
-                witClient.updateWorkItem(addJson, item.id).then(
-                    result => {
-                        LogExtension.log("add success: " + item.id);
-                    },
-                    error => {
-                        LogExtension.log(error);
-                    }
-                );
-
-                success = false;
-            }
-        }
-
-        if (success) {
-            bsNotify("success", "Your backlog has been successfully updated.");
-        } else {
-            bsNotify(
-                "danger",
-                "An error occured.\nPlease refresh the page and try again"
-            );
-        }
-    }
-
-    public async applyToBacklogAsync(): Promise<void> {
-        try {
-            const voting = new Voting();
-            <Voting>Object.assign(voting, await this.loadVotingAsync());
-            await this.loadVotesAsync();
-            await this.getAreasAsync();
-
-            if (!voting.isBacklogBased) {
-                bsNotify(
-                    "danger",
-                    "This voting is not applyable.\nPlease change the voting type to backlog-based voting!"
-                );
-                return;
-            }
-
-            if (!await this.votingHasVotes()) {
-                bsNotify(
-                    "warning",
-                    "This voting is not applyable.\nPlease vote any item to apply the voting to your backlog."
-                );
-                return;
-            }
-
-            this.calculating();
-
-            const votingItems = this.getActualVotingItems();
-            LogExtension.log("VotingItems: ", votingItems);
-
-            votingItems.sort((a, b) => {
-                return parseInt(a.order) - parseInt(b.order);
-            });
-            const tempItem = votingItems[0];
-            votingItems.sort((a, b) => {
-                return a.allVotes - b.allVotes;
-            });
-
-            for (let idx = 0; idx < votingItems.length; idx++) {
-                const item = votingItems[idx];
-
-                if (item.allVotes > 0) {
-                    votingItems.splice(0, idx);
-                    continue;
-                }
-            }
-
-            await this.updateBacklogAsync(votingItems, tempItem);
-        } catch (err) {
-            bsNotify(
-                "danger",
-                "An error occured.\nPlease refresh the page and try again"
-            );
-            LogExtension.log(err);
-        }
-    }
-
     public async removeUserVotesByTeamAsync(userId: string): Promise<void> {
         const docs = await this.votingDataService.getAllVotingsAsync();
 
@@ -446,6 +314,10 @@ export class VotingPageService extends BaseDataService {
         } catch (e) {
             LogExtension.log(e);
         }
+    }
+
+    public resetRequirements() {
+        this._requirements = [];
     }
 
 }

@@ -269,8 +269,10 @@ export class AdminPageController extends Vue {
             buttons: {
                 Confirm: async () => {
                     dialog.close();
-                    await this.adminPageService.removeVotesByTeamAsync();
-                    await this.saveSettingsAsync(true, false);
+                    if (this.isVotingValid()) {
+                        await this.adminPageService.removeVotesByTeamAsync();
+                        await this.saveSettingsAsync(true, false);
+                    }
                 },
                 Cancel: () => {
                     dialog.close();
@@ -378,54 +380,7 @@ export class AdminPageController extends Vue {
             voting.end = this.getEndDate().valueOf();
         }
 
-        voting.title = escapeText(voting.title);
-        if ((voting.title == null || voting.title === "") && isEnabled) {
-            bsNotify("danger", "Please provide a title for the voting.");
-            return;
-        }
-
-        if (voting.useStartTime) {
-            if (!voting.start) {
-                bsNotify(
-                    "danger",
-                    "Invalid time period. Please make sure that start date and time is filled!"
-                );
-                return;
-            }
-        }
-
-        if (voting.useEndTime) {
-            if (!voting.end) {
-                bsNotify(
-                    "danger",
-                    "Invalid time period. Please make sure that end date and time is filled!"
-                );
-                return;
-            }
-        }
-
-        if (voting.useEndTime && voting.end < Date.now()) {
-            bsNotify(
-                "danger",
-                "Invalid time period. Please make sure that End is in the future!"
-            );
-            return;
-        }
-        if (voting.useEndTime && voting.useStartTime) {
-            if (voting.start >= voting.end) {
-                bsNotify(
-                    "danger",
-                    "Invalid time period. Please make sure that End is later than Start!"
-                );
-                return;
-            }
-        }
-
-        if (voting.voteLimit >= voting.numberOfVotes) {
-            bsNotify(
-                "danger",
-                "Invalid votes per work item. Please make sure that votes per work item do not exceed the votes per user!"
-            );
+        if (!this.isVotingValid()) {
             return;
         }
 
@@ -708,6 +663,70 @@ export class AdminPageController extends Vue {
     private teamFilterChanged(team) {
         this.adminPageService.team = team;
         this.initAsync();
+    }
+
+    private isVotingValid(): boolean {
+        const voting = this.actualVoting;
+        if (voting.useStartTime) {
+            voting.start = this.getStartDate().valueOf();
+        }
+
+        if (voting.useEndTime) {
+            voting.end = this.getEndDate().valueOf();
+        }
+
+
+        voting.title = escapeText(voting.title);
+        if ((voting.title == null || voting.title === "")) {
+            bsNotify("danger", "Please provide a title for the voting.");
+            return false;
+        }
+
+        if (voting.useStartTime) {
+            if (!voting.start) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that start date and time is filled!"
+                );
+                return false;
+            }
+        }
+
+        if (voting.useEndTime) {
+            if (!voting.end) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that end date and time is filled!"
+                );
+                return false;
+            }
+        }
+
+        if (voting.useEndTime && voting.end < Date.now()) {
+            bsNotify(
+                "danger",
+                "Invalid time period. Please make sure that End is in the future!"
+            );
+            return false;
+        }
+        if (voting.useEndTime && voting.useStartTime) {
+            if (voting.start >= voting.end) {
+                bsNotify(
+                    "danger",
+                    "Invalid time period. Please make sure that End is later than Start!"
+                );
+                return false;
+            }
+        }
+
+        if (voting.voteLimit > voting.numberOfVotes) {
+            bsNotify(
+                "danger",
+                "Invalid votes per work item. Please make sure that votes per work item do not exceed the votes per user!"
+            );
+            return false;
+        }
+        return true;
     }
 
 }
