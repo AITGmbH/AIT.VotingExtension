@@ -1,9 +1,10 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
+import * as menus from "VSS/Controls/Menus";
 import * as grids from "VSS/Controls/Grids";
 import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
-import { MenuBar, IMenuItemSpec } from "VSS/Controls/Menus";
+import { MenuBar } from "VSS/Controls/Menus";
 import { WaitControl } from "VSS/Controls/StatusIndicator";
 import { LogExtension } from "../shared/logExtension";
 import { ReportPageService } from "./reportPageService";
@@ -11,6 +12,7 @@ import { Report } from "../entities/report";
 import { bsNotify } from "../shared/common";
 import { CopyToClipboardService } from "../services/copyToClipboardService";
 import { ReportDisplayService } from "./reportDisplayService";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class ReportPageController extends Vue {
@@ -18,6 +20,8 @@ export class ReportPageController extends Vue {
     private reportPageService: ReportPageService;
     private copyToClipboardService: CopyToClipboardService;
     private grid: grids.Grid;
+    private menuBar: menus.MenuBar;
+    private actualVotingHasVotes: boolean = false;
 
     public reportDisplayService: ReportDisplayService;
     public report: Report = null;
@@ -37,13 +41,14 @@ export class ReportPageController extends Vue {
         this.$el.classList.remove("hide");
 
         this.reportDisplayService.subscribeToShowReport(
-            () => {
-                this.refreshAsync();
+            async () => {
+                await this.refreshAsync();
             }
         );
     }
 
     public async refreshAsync(): Promise<void> {
+        this.actualVotingHasVotes = await this.reportPageService.votingHasVotes();
         this.waitControl.startWait();
         try {
             await this.loadReportAsync();
@@ -54,6 +59,8 @@ export class ReportPageController extends Vue {
             this.grid.setDataSource(dataSource);
         } finally {
             this.waitControl.endWait();
+            await this.createMenuBar();
+
         }
     }
 
@@ -89,15 +96,25 @@ export class ReportPageController extends Vue {
         return this.waitControl;
     }
 
-    protected async createMenuBar() {
-        let menuItems = [] as IMenuItemSpec[];
-        menuItems.push(...[
-            {
+    private getMenuItems(): IContributedMenuItem[] {
+        const items = [
+            <any>{
                 id: "createNewVoting",
                 text: "Create new voting",
                 icon: "icon icon-add",
                 disabled: false
-            }, {
+            },
+            {
+                separator: true,
+            },
+            {
+                id: "applyToBacklog",
+                title:
+                    "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
+                icon: "icon icon-tfs-query-edit",
+                disabled: !this.isApplyable()
+            },
+            {
 
                 separator: true
             },
@@ -106,26 +123,22 @@ export class ReportPageController extends Vue {
                 title: "Copy to clipboard",
                 icon: "bowtie-icon bowtie-clone",
                 disabled: false
-            }
-        ]);
-        menuItems.push(...[
-        ]);
-        controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
-            showIcon: true,
-            items: menuItems,
-            executeAction: (args) => {
-                var command = args.get_commandName();
-                switch (command) {
-                    case "copy":
-                        this.copyToClipboard();
-                        break;
-                    case "createNewVoting":
-                        this.createNewVoting();
-                        break;
-                }
-            }
+            }];
 
-        });
+        return items;
+    }
+
+    protected async createMenuBar() {
+        if (this.menuBar == null) {
+            this.menuBar = controls.create(MenuBar, $(`#${ this.report_menu_container }`), {
+                showIcon: true,
+                executeAction: (args) => {
+                    var command = args.get_commandName();
+                    this.executeMenuAction(command);
+                }
+            });
+        }
+        this.menuBar.updateItems(this.getMenuItems());
     }
 
     protected createReportTable() {
@@ -186,6 +199,10 @@ export class ReportPageController extends Vue {
                     {
                         index: "totalVotes",
                         order: "desc"
+                    },
+                    {
+                        index: "order",
+                        order: "asc"
                     }
                 ],
                 autoSort: true
@@ -221,12 +238,41 @@ export class ReportPageController extends Vue {
         }
     }
 
+    private executeMenuAction(command: string) {
+        switch (command) {
+            case "copy":
+                this.copyToClipboard();
+                break;
+            case "applyToBacklog":
+                this.applyToBacklogAsync();
+                break;
+            case "createNewVoting":
+                this.createNewVoting();
+                break;
+        }
+    }
+
     private async initializeAsync(): Promise<void> {
         this.waitControl.startWait();
+        this.actualVotingHasVotes = await this.reportPageService.votingHasVotes();
         await this.loadReportAsync();
         try {
             this.createMenuBar();
             this.createReportTable();
+        } finally {
+            this.waitControl.endWait();
+        }
+    }
+
+    private isApplyable() {
+        return this.report.voting.type === VotingTypes.LEVEL && this.report.voting.isVotingTerminated && this.actualVotingHasVotes;
+    }
+
+    private async applyToBacklogAsync() {
+        this.waitControl.startWait();
+
+        try {
+            await this.reportPageService.applyToBacklogAsync(this.report);
         } finally {
             this.waitControl.endWait();
         }

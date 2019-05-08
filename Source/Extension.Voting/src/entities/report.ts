@@ -1,5 +1,6 @@
 ﻿import { User } from "./user";
 import { ReportItem } from "./reportItem";
+import { Voting } from "./voting";
 
 export class Report {
     name: string;
@@ -8,4 +9,5 @@ export class Report {
     description: string;
     workItems: ReportItem[];
     users: User[];
+    voting: Voting;
 }

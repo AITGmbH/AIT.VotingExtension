@@ -5,7 +5,6 @@ import { VotingPageService } from "./votingPageService";
 import { LogExtension } from "../shared/logExtension";
 import { CookieService } from "../services/cookieService";
 import { VotingStatus } from "../entities/votingStatus";
-import { parseEmail } from "../shared/common";
 import * as controls from "VSS/Controls";
 import * as grids from "VSS/Controls/Grids";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
@@ -57,13 +56,8 @@ export class VotingPageController extends Vue {
             (this.status = !isThereAnythingToVote
                 ? VotingStatus.NothingToVote
                 : this.status);
-        this.votingService.calculating = () => {
-            this.calculating();
-            this.calculateMyVotes();
-        };
         this.votingService.getVoteItem = (id: number) =>
             this.actualVotingItem(id);
-        this.votingService.getActualVotingItems = () => this.actualVotingItems;
         this.votingService.numberOfMyVotes = () => this.numberOfMyVotes;
         this.initializeVotingpageAsync();
     }
@@ -410,18 +404,6 @@ export class VotingPageController extends Vue {
                     disabled: false
                 },
                 {
-                    separator: true,
-                    hidden: !this.isApplyable()
-                },
-                {
-                    id: "applyToBacklog",
-                    title:
-                        "Apply to backlog (this applies the order of the backlog items from the voting to your backlog)",
-                    icon: "icon icon-tfs-query-edit",
-                    disabled: !this.isApplyable(),
-                    hidden: !this.isApplyable()
-                },
-                {
                     separator: true
                 },
                 {
@@ -443,9 +425,6 @@ export class VotingPageController extends Vue {
             executeAction: args => {
                 var command = args.get_commandName();
                 switch (command) {
-                    case "applyToBacklog":
-                        this.applyToBacklogAsync();
-                        break;
                     case "adminpageLink":
                         window.open(this.adminpageUri, "_blank");
                         break;
@@ -460,15 +439,15 @@ export class VotingPageController extends Vue {
         });
     }
 
-    private async applyToBacklogAsync() {
-        this.waitControl.startWait();
+    // private async applyToBacklogAsync() {
+    //     this.waitControl.startWait();
 
-        try {
-            await this.votingService.applyToBacklogAsync();
-        } finally {
-            this.waitControl.endWait();
-        }
-    }
+    //     try {
+    //         await this.votingService.applyToBacklogAsync();
+    //     } finally {
+    //         this.waitControl.endWait();
+    //     }
+    // }
 
     private async removeUserVotesByTeamAsync() {
         this.waitControl.startWait();
@@ -762,12 +741,6 @@ export class VotingPageController extends Vue {
             return "";
         }
         return moment(timestamp).format("YYYY-MM-DD HH:mm");
-    }
-    /**
-     * Determines whether this voting is applyable to backlog.
-     */
-    public isApplyable() {
-        return this.actualVoting.type === VotingTypes.LEVEL;
     }
 
     private canRemoveUserVotes(): boolean {
