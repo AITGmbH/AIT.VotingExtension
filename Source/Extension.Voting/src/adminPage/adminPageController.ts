@@ -1,24 +1,23 @@
-﻿import { Voting } from "../entities/voting";
-import { AdminPageService } from "./adminPageService";
-import { LogExtension } from "../shared/logExtension";
-import { bsNotify, escapeText } from "../shared/common";
-import * as controls from "VSS/Controls";
-import * as menus from "VSS/Controls/Menus";
-import { TreeView, TreeNode } from "VSS/Controls/TreeView";
+﻿import * as controls from "VSS/Controls";
 import * as dialogs from "VSS/Controls/Dialogs";
+import * as menus from "VSS/Controls/Menus";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
-import Vue from "vue";
 import Component from "vue-class-component";
 import moment from "moment";
-import { VotingTypes } from "../entities/votingTypes";
+import Vue from "vue";
+import { AdminPageService } from "./adminPageService";
+import { bsNotify, escapeText } from "../shared/common";
+import { LogExtension } from "../shared/logExtension";
 import { ReportDisplayService } from "../reportPage/reportDisplayService";
 import { TeamFilterDisplayService } from "../teamFilter/teamFilterDisplayService";
+import { TreeNode, TreeView } from "VSS/Controls/TreeView";
+import { Voting } from "../entities/voting";
+import { VotingTypes } from "../entities/votingTypes";
 
 @Component
 export class AdminPageController extends Vue {
     private readonly StandardDatePattern = "YYYY-MM-DD";
     private readonly StandardTimePattern = "HH:mm";
-    private readonly StandardDateTimePattern = "YYYY-MM-DD HH:mm";
     private waitControl: statusIndicators.WaitControl;
     private menuBar: menus.MenuBar;
     private reportDisplayService: ReportDisplayService;
@@ -35,8 +34,6 @@ export class AdminPageController extends Vue {
     public showContent: boolean = false;
     public votingType: string = VotingTypes.LEVEL;
     public isPageVisible: boolean = true;
-
-
     public startDate: string = "";
     public startTime: string = "";
     public endDate: string = "";

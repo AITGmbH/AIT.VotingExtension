@@ -1,21 +1,21 @@
-﻿import { User } from "../entities/user";
-import { Vote } from "../entities/vote";
-import { VotingItem } from "../entities/votingItem";
-import { VotingPageService } from "./votingPageService";
-import { LogExtension } from "../shared/logExtension";
-import { CookieService } from "../services/cookieService";
-import { VotingStatus } from "../entities/votingStatus";
-import * as controls from "VSS/Controls";
+﻿import * as controls from "VSS/Controls";
+import * as dialogs from "VSS/Controls/Dialogs";
 import * as grids from "VSS/Controls/Grids";
+import * as menus from "VSS/Controls/Menus";
+import * as navigation from "VSS/Controls/Navigation";
 import * as statusIndicators from "VSS/Controls/StatusIndicator";
 import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
-import * as dialogs from "VSS/Controls/Dialogs";
-import * as navigation from "VSS/Controls/Navigation";
-import * as menus from "VSS/Controls/Menus";
-import Vue from "vue";
 import Component from "vue-class-component";
-import { Voting } from "../entities/voting";
 import moment from "moment";
+import Vue from "vue";
+import { CookieService } from "../services/cookieService";
+import { LogExtension } from "../shared/logExtension";
+import { User } from "../entities/user";
+import { Vote } from "../entities/vote";
+import { Voting } from "../entities/voting";
+import { VotingItem } from "../entities/votingItem";
+import { VotingPageService } from "./votingPageService";
+import { VotingStatus } from "../entities/votingStatus";
 import { VotingTypes } from "../entities/votingTypes";
 
 @Component
@@ -273,7 +273,14 @@ export class VotingPageController extends Vue {
                             continue;
                         }
 
-                        votingItemTemp.allVotes++;
+                        const isBlindVotingUser = this.actualVoting.isBlindVotingEnabled 
+                            && vote.userId === this.user.id;
+
+                        const isNotBlindVoting = !this.actualVoting.isBlindVotingEnabled;
+
+                        if (isNotBlindVoting || isBlindVotingUser) {
+                            votingItemTemp.allVotes++;
+                        }
 
                         if (vote.userId === this.user.id) {
                             this.myVotes.push(vote);

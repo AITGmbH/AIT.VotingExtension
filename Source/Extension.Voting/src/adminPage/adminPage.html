@@ -61,7 +61,6 @@
                                 v-model="actualVoting.description" />
                         </div>
                     </div>
-                    <hr />
 
                     <div class="row">
                         <div class="form-group col-md-3" data-toggle="tooltip"
@@ -70,15 +69,13 @@
                                 <span class="required" v-if="actualVoting.type === ''">*</span></label>
                             <select class="form-control" name="type" v-model="actualVoting.type"
                                 @change="updateVotingType">
-                                <option v-for="type in types">{{
-                                        type
-                                    }}</option>
+                                <option v-for="type in types">{{ type }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-md-9" v-show="isBacklogBased" data-toggle="tooltip"
                             title="Select the backlog level to vote on.">
-                            <label>Vote on Backlog
+                            <label>Vote on backlog
                                 <span class="required" v-if="actualVoting.level === ''">*</span></label>
                             <select class="form-control" name="level" v-model="actualVoting.level"
                                 @change="votingBacklogLevelChanged">
@@ -88,17 +85,15 @@
 
                         <div class="form-group col-md-9" v-show="isItemBased" data-toggle="tooltip"
                             title="Select the work item type to vote on.">
-                            <label>Vote on Work item type</label>
+                            <label>Vote on work item type</label>
                             <select class="form-control" name="item" v-model="actualVoting.item">
-                                <option v-for="item in items">{{
-                                        item
-                                    }}</option>
+                                <option v-for="item in items">{{ item }}</option>
                             </select>
                         </div>
 
                         <div class="form-group col-md-9" v-show="isQueryBased" data-toggle="tooltip"
                             title="Select the query to vote on. A query-based voting allows to vote on work items specified by a shared (flat) query.">
-                            <label>Vote on Query
+                            <label>Vote on query
                                 <span class="required" v-if="actualVoting.query == null">*</span></label>
                             <div class="form-control">
                                 <span id="query-select-button"></span>
@@ -113,32 +108,39 @@
                         </div>
                     </div>
 
-                    <hr />
-
                     <div class="row">
-                        <div class="form-group col-sm-12">
-                            <div class="form-group" data-toggle="tooltip"
-                                title="Sets the maximum number of votes for a single user.">
-                                <label>Votes per user</label>
-                                <input type="number" class="form-control" name="numberOfVotes" min="1"
-                                    v-model="actualVoting.numberOfVotes" @change="validateInput" />
-                            </div>
+                        <h4 class="col-sm-12">Voting options</h4>
 
-                            <div class="form-group" data-toggle="tooltip"
-                                title="Sets the maximum number of votes for a single work item. The number of votes per work item cannot exceed the number of votes per user!">
-                                <label>Votes per work item <span class="required"
-                                        v-if="actualVoting.voteLimit > actualVoting.numberOfVotes">The number of votes
-                                        per work item can not exceed the number of votes per user!</span></label>
-                                <input type="number" class="form-control" name="voteLimit" min="1"
-                                    v-model="actualVoting.voteLimit" @change="validateInput" />
-                            </div>
+                        <div class="form-group col-md-6" data-toggle="tooltip"
+                            title="Sets the maximum number of votes for a single user.">
+                            <label>Votes per user</label>
+                            <input type="number" class="form-control" name="numberOfVotes" min="1"
+                                v-model="actualVoting.numberOfVotes" @change="validateInput" />
+                        </div>
+
+                        <div class="form-group col-md-6" data-toggle="tooltip"
+                            title="Sets the maximum number of votes for a single work item. The number of votes per work item cannot exceed the number of votes per user!">
+                            <label>Votes per work item <span class="required"
+                                    v-if="actualVoting.voteLimit > actualVoting.numberOfVotes">The number of votes
+                                    per work item can not exceed the number of votes per user!</span></label>
+                            <input type="number" class="form-control" name="voteLimit" min="1"
+                                v-model="actualVoting.voteLimit" @change="validateInput" />
                         </div>
                     </div>
 
-                    <hr />
+                    <div class="row">                       
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="isBlindVotingEnabled" v-model="actualVoting.isBlindVotingEnabled" />
+                                <span data-toggle="tooltip"
+                                    title="If blind voting is enabled, users can only see their own votes but not votes of other users.">Enable blind voting</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="row">
-                        <label class="col-sm-12" data-toggle="tooltip"
-                            title="Specify a start and end date for the voting session.">Voting session
+                        <h4 class="col-sm-12" title="Specify a start and end date for the voting session.">Voting period</h4>
+                        <label class="col-sm-12" data-toggle="tooltip">
                             <span class="required"
                                 v-if="!isDateRangeValid() && actualVoting.useStartTime && actualVoting.useEndTime">
                                 The start date of your voting needs to be
@@ -148,7 +150,7 @@
                             <label>
                                 <input type="checkbox" name="startTime" v-model="actualVoting.useStartTime"
                                     @change="useStartTimeChanged" />
-                                Start
+                                Enable start date time
                             </label>
                             <div class="row" v-if="actualVoting.useStartTime">
                                 <div class="col-xs-6">
@@ -164,7 +166,7 @@
                             <label>
                                 <input type="checkbox" name="startTime" v-model="actualVoting.useEndTime"
                                     @change="useEndTimeChanged" />
-                                End
+                                Enable end date time
                             </label>
                             <div class="row" v-if="actualVoting.useEndTime">
                                 <div class="col-xs-6">
