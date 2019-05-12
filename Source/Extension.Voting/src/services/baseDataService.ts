@@ -1,16 +1,12 @@
-﻿import { Voting } from "../entities/voting";
-import { LogExtension } from "../shared/logExtension";
-import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
+﻿import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { getClient as getCoreClient } from "TFS/Core/RestClient";
 import { getClient as getWorkClient } from "TFS/Work/RestClient";
-import { VotingDataService } from "./votingDataService";
 import { getUrlParameterByName } from "../shared/common";
 import { HostNavigationService } from "VSS/SDK/Services/Navigation";
-import {
-    QueryExpand,
-    QueryType,
-    QueryHierarchyItem
-} from "TFS/WorkItemTracking/Contracts";
+import { LogExtension } from "../shared/logExtension";
+import { QueryExpand, QueryHierarchyItem, QueryType } from "TFS/WorkItemTracking/Contracts";
+import { Voting } from "../entities/voting";
+import { VotingDataService } from "./votingDataService";
 
 export class BaseDataService {
 
@@ -294,11 +290,8 @@ export class BaseDataService {
         return false;
     }
 
-    public getNameOfWiResponsiveness(req: any): string {
-        const assignedTo = req.fields["System.AssignedTo"] as string;
-        const displayName =
-            assignedTo === undefined ? "" : assignedTo.replace(/\<.*\>/, "").trim();
-        return displayName;
+    public getNameOfWiResponsiveness(name: string): string {
+        return name === undefined ? "" : name.replace(/\<.*\>/, "").trim();
     }
 
     /**

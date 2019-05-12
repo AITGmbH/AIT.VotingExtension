@@ -129,11 +129,31 @@
                     </div>
 
                     <div class="row">                       
-                        <div class="form-group col-sm-6">
+                        <div class="form-group col-sm-12">
                             <label>
                                 <input type="checkbox" name="isBlindVotingEnabled" v-model="actualVoting.isBlindVotingEnabled" />
                                 <span data-toggle="tooltip"
                                     title="If blind voting is enabled, users can only see their own votes but not votes of other users.">Enable blind voting</span>
+                            </label>
+                        </div>
+                    </div>
+                          
+                    <div class="row">                        
+                        <h4 class="col-sm-12">Restrict voting</h4>
+
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="cannotVoteForOwnWorkItems" v-model="actualVoting.cannotVoteForOwnWorkItems" />
+                                <span data-toggle="tooltip"
+                                    title="If enabled, the user cannot vote for work items they created.">User cannot vote for own work items</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="cannotVoteForAssignedWorkItems" v-model="actualVoting.cannotVoteForAssignedWorkItems" />
+                                <span data-toggle="tooltip"
+                                    title="If enabled, the user cannot vote for work items they are assigned to.">User cannot vote for assigned work items</span>
                             </label>
                         </div>
                     </div>
