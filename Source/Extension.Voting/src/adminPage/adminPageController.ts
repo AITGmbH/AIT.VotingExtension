@@ -405,12 +405,52 @@ export class AdminPageController extends Vue {
         await this.initAsync();
     }
 
-    private async terminateVotingAsync() {
-        let voting = await this.adminPageService.loadVotingAsync();
-        voting.isVotingEnabled = false;
-        voting.isVotingTerminated = true;
-        await this.adminPageService.saveVotingAsync(voting);
-        await this.initAsync();
+    private async terminateVotingAsync() {        
+        let htmlContentString: string =
+            "<html><body><div>Are you sure that you want to stop the voting?</div></body></html>";
+        let dialogContent = $.parseHTML(htmlContentString);
+        let dialogOptions = {
+            title: "Stop voting",
+            content: dialogContent,
+            buttons: {
+                Confirm: async () => {
+                    dialog.close();
+
+                    let voting = await this.adminPageService.loadVotingAsync();
+                    voting.isVotingEnabled = false;
+                    voting.isVotingTerminated = true;
+                    await this.adminPageService.saveVotingAsync(voting);
+                    await this.initAsync();
+                },
+                Cancel: () => {
+                    dialog.close();
+                }
+            },
+            hideCloseButton: true
+        };
+        let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
+    }
+
+    private async resetVotingAsync() {
+        let htmlContentString: string =
+            "<html><body><div>Are you sure that you want to reset all votes?</div></body></html>";
+        let dialogContent = $.parseHTML(htmlContentString);
+        let dialogOptions = {
+            title: "Reset votes",
+            content: dialogContent,
+            buttons: {
+                Confirm: async () => {
+                    dialog.close();
+
+                    await this.adminPageService.removeVotesByTeamAsync();
+                },
+                Cancel: () => {
+                    dialog.close();
+                }
+            },
+            hideCloseButton: true
+        };
+        let dialog = dialogs.show(dialogs.ModalDialog, dialogOptions);
     }
 
     private getMenuItems(isActive: boolean): IContributedMenuItem[] {
@@ -419,7 +459,7 @@ export class AdminPageController extends Vue {
                 return [
                     {
                         id: "createNewVoting",
-                        text: "Create new voting",
+                        title: "Create new voting",
                         icon: "icon icon-add",
                         disabled: !this.userIsAdmin
                     }
@@ -430,7 +470,6 @@ export class AdminPageController extends Vue {
         const items = [
             <any>{
                 id: "saveSettings",
-                text: "Save",
                 title: "Save voting",
                 icon: "icon icon-save",
                 disabled: !this.userIsAdmin || !this.canSave()
@@ -457,6 +496,13 @@ export class AdminPageController extends Vue {
             id: "terminateVoting",
             title: "Stop voting",
             icon: "icon icon-tfs-build-status-canceled",
+            disabled: !this.userIsAdmin || !this.canTerminate()
+        });
+
+        items.push({
+            id: "resetVotes",
+            title: "Reset votes",
+            icon: "icon icon-delete",
             disabled: !this.userIsAdmin || !this.canTerminate()
         });
 
@@ -607,6 +653,9 @@ export class AdminPageController extends Vue {
                 break;
             case "terminateVoting":
                 this.terminateVotingAsync();
+                break;
+            case "resetVotes":
+                this.resetVotingAsync();
                 break;
         }
     }

@@ -1,18 +1,18 @@
-import Vue from "vue";
-import Component from "vue-class-component";
 import * as controls from "VSS/Controls";
-import * as menus from "VSS/Controls/Menus";
 import * as grids from "VSS/Controls/Grids";
+import * as menus from "VSS/Controls/Menus";
 import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
-import { MenuBar } from "VSS/Controls/Menus";
-import { WaitControl } from "VSS/Controls/StatusIndicator";
-import { LogExtension } from "../shared/logExtension";
-import { ReportPageService } from "./reportPageService";
-import { Report } from "../entities/report";
+import Component from "vue-class-component";
+import Vue from "vue";
 import { bsNotify } from "../shared/common";
 import { CopyToClipboardService } from "../services/copyToClipboardService";
+import { LogExtension } from "../shared/logExtension";
+import { MenuBar } from "VSS/Controls/Menus";
+import { Report } from "../entities/report";
 import { ReportDisplayService } from "./reportDisplayService";
+import { ReportPageService } from "./reportPageService";
 import { VotingTypes } from "../entities/votingTypes";
+import { WaitControl } from "VSS/Controls/StatusIndicator";
 
 @Component
 export class ReportPageController extends Vue {
@@ -100,7 +100,7 @@ export class ReportPageController extends Vue {
         const items = [
             <any>{
                 id: "createNewVoting",
-                text: "Create new voting",
+                title: "Create new voting",
                 icon: "icon icon-add",
                 disabled: false
             },
