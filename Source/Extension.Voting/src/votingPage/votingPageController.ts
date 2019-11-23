@@ -9,6 +9,10 @@ import Component from "vue-class-component";
 import moment from "moment";
 import Vue from "vue";
 import { CookieService } from "../services/cookieService";
+<<<<<<< HEAD
+import { isUrlWithinConstraints } from "VSS/Utils/Url";
+=======
+>>>>>>> master
 import { LogExtension } from "../shared/logExtension";
 import { User } from "../entities/user";
 import { Vote } from "../entities/vote";
@@ -127,6 +131,39 @@ export class VotingPageController extends Vue {
         if (votingItem.myVotes > 0) {
             voteDown.parentElement.classList.remove("hide");
         }
+
+        if (this.actualVoting.cannotVoteForAssignedWorkItems) {
+            if (this.compareUserString(votingItem.assignedToFull, this.user)) {                
+                voteUp.parentElement.classList.add("hide");
+                voteDown.parentElement.classList.add("hide");
+            }
+        }        
+
+        if (this.actualVoting.cannotVoteForOwnWorkItems) {
+            if (this.compareUserString(votingItem.createdByFull, this.user)) {                
+                voteUp.parentElement.classList.add("hide");
+                voteDown.parentElement.classList.add("hide");
+            }
+        }
+    }
+
+    private compareUserString(votingItemUser: string, user: User) {
+        if (votingItemUser == null || user == null) {
+            return false;
+        }
+
+        const fullUserName = `${user.name} <${user.email}>`;
+        const votingItemUserHasFullName = votingItemUser.indexOf("<") >= 0;
+
+        if (votingItemUserHasFullName && votingItemUser == fullUserName) {
+            return true;
+        }
+        
+        if (!votingItemUserHasFullName && votingItemUser == user.name) {
+            return true;
+        }
+
+        return false;
     }
 
     private async initializeVotingpageAsync() {
@@ -446,16 +483,6 @@ export class VotingPageController extends Vue {
         });
     }
 
-    // private async applyToBacklogAsync() {
-    //     this.waitControl.startWait();
-
-    //     try {
-    //         await this.votingService.applyToBacklogAsync();
-    //     } finally {
-    //         this.waitControl.endWait();
-    //     }
-    // }
-
     private async removeUserVotesByTeamAsync() {
         this.waitControl.startWait();
 
@@ -660,12 +687,6 @@ export class VotingPageController extends Vue {
             change: item => {
                 this.updateTeam(item);
                 this.actualVoting = new Voting();
-                // <Voting>(
-                //     Object.assign(
-                //         this.actualVoting,
-                //         new Voting()
-                //     )
-                // );
                 this.refreshAsync();
             }
         });

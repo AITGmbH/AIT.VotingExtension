@@ -1,14 +1,14 @@
+import * as _ from "lodash";
 import { BaseDataService } from "../services/baseDataService";
-import { Vote } from "../entities/vote";
-import { TinyRequirement } from "../entities/tinyRequirement";
-import { LogExtension } from "../shared/logExtension";
-import { VotingItem } from "../entities/votingItem";
 import { bsNotify } from "../shared/common";
 import { getClient } from "TFS/Work/RestClient";
-import { TeamContext } from "TFS/Core/Contracts";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
-import * as _ from "lodash";
+import { LogExtension } from "../shared/logExtension";
+import { TeamContext } from "TFS/Core/Contracts";
+import { TinyRequirement } from "../entities/tinyRequirement";
+import { Vote } from "../entities/vote";
 import { Voting } from "../entities/voting";
+import { VotingItem } from "../entities/votingItem";
 
 export class VotingPageService extends BaseDataService {
     private _areas: string;
@@ -177,8 +177,11 @@ export class VotingPageService extends BaseDataService {
                     tempRequirement.iterationPath =
                         req.fields["System.IterationPath"];
                     tempRequirement.assignedTo = this.getNameOfWiResponsiveness(
-                        req
-                    );
+                        req.fields["System.AssignedTo"]);
+                    tempRequirement.createdBy = this.getNameOfWiResponsiveness(
+                        req.fields["System.CreatedBy"]);                        
+                    tempRequirement.assignedToFull = req.fields["System.AssignedTo"];
+                    tempRequirement.createdByFull = req.fields["System.CreatedBy"];
                     tempRequirement.description =
                         req.fields["System.Description"];
 

@@ -9,6 +9,9 @@
     public valueArea: string;
     public iterationPath: string;
     public assignedTo: string;
+    public createdBy: string;
+    public assignedToFull: string;
+    public createdByFull: string;
     public description: string;
     public link: string;
 }
