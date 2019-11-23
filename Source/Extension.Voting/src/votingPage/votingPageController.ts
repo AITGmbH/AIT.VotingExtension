@@ -507,14 +507,13 @@ export class VotingPageController extends Vue {
                         var voteId = this.getRowData(dataIndex).id;
 
                         var upVoteControl =
-                            '<div class="grid-cell grid-buttonVoteUp-holder" role="gridcell" style="width: 20px;">';
+                            '<div class="grid-cell grid-buttonVoteUp-holder cursor-pointer" role="gridcell" style="width: 20px;">';
                         upVoteControl += '<span class="upvote-holder">';
                         upVoteControl += `<span class="icon icon-add voting-plus hide" aria-hidden="true"></span>`;
                         upVoteControl += "</span></div>";
 
                         var element = $(upVoteControl);
                         element
-                            .find(".voting-plus")
                             .click(() => that.voteUpClicked(voteId));
 
                         return element;
@@ -529,14 +528,13 @@ export class VotingPageController extends Vue {
                         var voteId = this.getRowData(dataIndex).id;
 
                         var downVoteControl =
-                            '<div class="grid-cell grid-buttonVoteDown-holder" role="gridcell" style="width: 20px;">';
+                            '<div class="grid-cell grid-buttonVoteDown-holder cursor-pointer" role="gridcell" style="width: 20px;">';
                         downVoteControl += '<span class="downvote-holder">';
                         downVoteControl += `<span class="icon icon-delete voting-remove hide" aria-hidden="true"></span>`;
                         downVoteControl += "</span></div>";
 
                         var element = $(downVoteControl);
                         element
-                            .find(".voting-remove")
                             .click(() => that.voteDownClicked(voteId));
 
                         return element;
