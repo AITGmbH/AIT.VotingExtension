@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "jquery": "^3.4.0",
-    "lodash": "^4.17.10",
-    "vss-web-extension-sdk": "^5.134.0",
+    "lodash": "^4.17.15",
+    "vss-web-extension-sdk": "^5.141.0",
     "vue": "^2.5.17",
     "vue-class-component": "^6.3.2",
     "vue-property-decorator": "^7.2.0"
