@@ -21,11 +21,8 @@ export class Voting {
     public useEndTime: boolean = false;
     public end: number = null;
     public isBlindVotingEnabled: boolean = false;
-<<<<<<< HEAD
     public cannotVoteForAssignedWorkItems: boolean = false;
     public cannotVoteForOwnWorkItems: boolean = false;
-=======
->>>>>>> master
 
     public get isBacklogBased() {
         return this.type == VotingTypes.LEVEL;

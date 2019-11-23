@@ -91,19 +91,12 @@
                     </p>
                 </div>
 
-<<<<<<< HEAD
                 <div class="col-sm-12" v-if="actualVoting.isBlindVotingEnabled || actualVoting.cannotVoteForAssignedWorkItems || actualVoting.cannotVoteForOwnWorkItems">
                     <p>
                         <span class="bowtie-icon bowtie-status-info"></span>
                         <span v-if="actualVoting.isBlindVotingEnabled">Blind voting is enabled. You can only see your own votes. </span>
                         <span v-if="actualVoting.cannotVoteForAssignedWorkItems">You cannot vote for work items which are assigned to you. </span>
                         <span v-if="actualVoting.cannotVoteForOwnWorkItems">You cannot vote for work items you created. </span>
-=======
-                <div class="col-sm-12" v-if="actualVoting.isBlindVotingEnabled">
-                    <p>
-                        <span class="bowtie-icon bowtie-status-info"></span>
-                        Blind voting is enabled. You can only see your own votes.
->>>>>>> master
                     </p>
                 </div>
 
