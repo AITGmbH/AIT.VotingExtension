@@ -9,7 +9,6 @@ import Component from "vue-class-component";
 import moment from "moment";
 import Vue from "vue";
 import { CookieService } from "../services/cookieService";
-import { isUrlWithinConstraints } from "VSS/Utils/Url";
 import { LogExtension } from "../shared/logExtension";
 import { User } from "../entities/user";
 import { Vote } from "../entities/vote";
