@@ -20,6 +20,7 @@ export class Voting {
     public start: number = null;
     public useEndTime: boolean = false;
     public end: number = null;
+    public isBlindVotingEnabled: boolean = false;
 
     public get isBacklogBased() {
         return this.type == VotingTypes.LEVEL;

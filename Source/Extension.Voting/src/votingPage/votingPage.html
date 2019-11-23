@@ -91,6 +91,13 @@
                     </p>
                 </div>
 
+                <div class="col-sm-12" v-if="actualVoting.isBlindVotingEnabled">
+                    <p>
+                        <span class="bowtie-icon bowtie-status-info"></span>
+                        Blind voting is enabled. You can only see your own votes.
+                    </p>
+                </div>
+
                 <div class="col-sm-12" id="errorMessage" v-if="status === 2">
                     <p id="votingdisabledmessage">
                         <span class="bowtie-icon bowtie-status-warning"></span>
