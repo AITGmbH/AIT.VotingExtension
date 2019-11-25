@@ -3,19 +3,12 @@ import { ReportItem } from "../entities/reportItem";
 import { Report } from "../entities/report";
 import { LogExtension } from "../shared/logExtension";
 import { TinyRequirement } from "../entities/TinyRequirement";
-import { getClient } from "TFS/Work/RestClient";
 import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
-import { TeamContext } from "TFS/Core/Contracts";
-import { WorkItemExpand } from "TFS/WorkItemTracking/Contracts";
 import { VotingTypes } from "../entities/votingTypes";
 import { Voting } from "../entities/voting";
 import { bsNotify } from "../shared/common";
-import { Vote } from "../entities/vote";
 
 export class ReportPageService extends BaseDataService {
-    private _areas: string;
-    private votes: Vote[];
-
     constructor() {
         super();
     }
@@ -34,17 +27,16 @@ export class ReportPageService extends BaseDataService {
             return report;
         }
         report.voting = votingDocument.voting;
-        let workItems = [] as TinyRequirement[];
         switch (votingDocument.voting.type) {
             case VotingTypes.LEVEL:
-                workItems = await this.loadWorkItemsByTypesAsync(
+                await this.loadWorkItemsByTypesAsync(
                     votingDocument.voting.level
                 );
                 report.workItemTypeName = votingDocument.voting.level;
 
                 break;
             case VotingTypes.QUERY:
-                workItems = await this.loadWorkItemsByQueryAsync(
+                await this.loadWorkItemsByQueryAsync(
                     votingDocument.voting.query
                 );
                 await this.loadFlatQueryNamesAsync();
@@ -60,7 +52,7 @@ export class ReportPageService extends BaseDataService {
                 return report;
         }
 
-        let repItems = workItems.map(wit => <ReportItem>Object.assign(wit));
+        let repItems = this.requirements.map(wit => <ReportItem>Object.assign(wit));
 
         report.description = votingDocument.voting.description;
         report.title = votingDocument.voting.title;
@@ -104,166 +96,6 @@ export class ReportPageService extends BaseDataService {
         } else {
             item.totalVotes++;
         }
-    }
-
-    /**
-     * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
-     *
-     * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
-     * @see VotingTypes
-     */
-    public async loadWorkItemsByTypesAsync(
-        types: string
-    ): Promise<TinyRequirement[]> {
-        const wiql =
-            "SELECT [System.Id] FROM WorkItems" +
-            " WHERE [System.State] <> 'Closed'" +
-            " AND [System.State] <> 'Done'" +
-            " AND [System.State] <> 'Removed'" +
-            " AND ( [System.WorkItemType] = '" +
-            types.replace(",", "' OR [System.WorkItemType] = '") +
-            "' )" +
-            " AND " +
-            this._areas;
-
-        return this.loadWorkItemsAsync(wiql);
-    }
-
-    /**
-     * Loads WorkItems based on a Query.
-     *
-     * @param queryId Id of a query.
-     * @see VotingTypes
-     */
-    public async loadWorkItemsByQueryAsync(
-        queryId: string
-    ): Promise<TinyRequirement[]> {
-        const query = await this.getQueryById(queryId);
-        return this.loadWorkItemsAsync(query.wiql);
-    }
-
-    private async loadWorkItemsAsync(wiql: string): Promise<TinyRequirement[]> {
-        let requirements = new Array<TinyRequirement>();
-        const witClient = getWitClient();
-
-        const wiqlJson = {
-            query: wiql
-        };
-
-        LogExtension.log("WIQL-Abfrage: " + wiql);
-
-        const idJson = await witClient.queryByWiql(
-            wiqlJson,
-            this.context.project.id
-        );
-        LogExtension.log(idJson);
-        const headArray = new Array();
-        let tempArray = new Array();
-        LogExtension.log(idJson.workItems);
-        for (let i = 0; i < idJson.workItems.length; i++) {
-            const item = idJson.workItems[i];
-
-            if ((i + 1) % 200 !== 0) {
-                tempArray.push(item.id);
-            } else {
-                headArray.push(tempArray);
-                tempArray = new Array<string>();
-                tempArray.push(item.id);
-            }
-        }
-
-        headArray.push(tempArray);
-
-        for (const array of headArray) {
-            try {
-                if (array == null || array.length == 0) {
-                    continue;
-                }
-
-                const result = await getWitClient().getWorkItems(
-                    array,
-                    null,
-                    null,
-                    WorkItemExpand.Links
-                );
-                for (const req of result) {
-                    LogExtension.log(req);
-                    const tempRequirement = this.createTinyRequirement(req);
-                    requirements.push(tempRequirement);
-                }
-            } catch (err) {
-                LogExtension.log("Error at getWorkItems()");
-                LogExtension.log(err);
-            }
-        }
-        return requirements;
-    }
-
-    public async getAreasAsync(): Promise<void> {
-        const client = getClient();
-        let areas = "( ";
-
-        const teamcontext: TeamContext = {
-            project: null,
-            projectId: this.context.project.id,
-            team: null,
-            teamId: this.team.id
-        };
-
-        const teamfieldvalues = await client.getTeamFieldValues(teamcontext);
-        LogExtension.log(teamfieldvalues);
-
-        for (let i = 0; i < teamfieldvalues.values.length; i++) {
-            const value = teamfieldvalues.values[i];
-            areas += `[System.AreaPath] ${
-                value.includeChildren ? "UNDER" : "="
-                } '${ value.value }'`;
-
-            if (i < teamfieldvalues.values.length - 1) {
-                areas += " OR ";
-            } else {
-                areas += " )";
-            }
-        }
-
-        LogExtension.log(areas);
-        this._areas = areas;
-        LogExtension.log("finish area");
-    }
-
-    private createTinyRequirement(req: any): TinyRequirement {
-        const tempRequirement = new TinyRequirement();
-        tempRequirement.id = req.id;
-        if (req.fields["Microsoft.VSTS.Common.StackRank"] !== undefined) {
-            tempRequirement.order =
-                req.fields["Microsoft.VSTS.Common.StackRank"];
-        } else if (
-            req.fields["Microsoft.VSTS.Common.BacklogPriority"] !== undefined
-        ) {
-            tempRequirement.order =
-                req.fields["Microsoft.VSTS.Common.BacklogPriority"];
-        } else {
-            tempRequirement.order = "0";
-        }
-        tempRequirement.title = req.fields["System.Title"];
-        tempRequirement.workItemType = req.fields["System.WorkItemType"];
-        tempRequirement.state = req.fields["System.State"];
-        tempRequirement.size = req.fields["Microsoft.VSTS.Scheduling.Size"];
-        tempRequirement.valueArea =
-            req.fields["Microsoft.VSTS.Common.BusinessValue"];
-        tempRequirement.iterationPath = req.fields["System.IterationPath"];
-        tempRequirement.assignedTo = this.getNameOfWiResponsiveness(req);
-        tempRequirement.description = req.fields["System.Description"];
-        tempRequirement.link = this.getWebLinkToWi(req);
-
-        return tempRequirement;
-    }
-
-    private getWebLinkToWi(req: any): string {
-        if (req._links) {
-            return req._links.html.href ? req._links.html.href : req.url;
-        }
-        return "";
     }
 
     public async applyToBacklogAsync(report: Report): Promise<void> {
@@ -400,16 +232,4 @@ export class ReportPageService extends BaseDataService {
             return doc.voting;
         }
     }
-
-    private async loadVotesAsync() {
-        const doc = await this.votingDataService.getDocumentAsync(
-            this.documentId
-        );
-        this.votes = [];
-
-        if (doc.vote != null && doc.vote.length > 0) {
-            this.votes = doc.vote;
-        }
-    }
-
 }

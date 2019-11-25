@@ -1,198 +1,17 @@
 import * as _ from "lodash";
 import { BaseDataService } from "../services/baseDataService";
 import { bsNotify } from "../shared/common";
-import { getClient } from "TFS/Work/RestClient";
-import { getClient as getWitClient } from "TFS/WorkItemTracking/RestClient";
 import { LogExtension } from "../shared/logExtension";
-import { TeamContext } from "TFS/Core/Contracts";
-import { TinyRequirement } from "../entities/tinyRequirement";
 import { Vote } from "../entities/vote";
 import { Voting } from "../entities/voting";
 import { VotingItem } from "../entities/votingItem";
 
 export class VotingPageService extends BaseDataService {
-    private _areas: string;
-    private _requirements: TinyRequirement[] = [];
-
-    public votes: Vote[];
-    public nothingToVote: (isThereAnythingToVote: boolean) => void;
     public numberOfMyVotes: () => number;
     public getVoteItem: (id: number) => VotingItem;
 
     constructor() {
         super();
-    }
-
-    public get requirements(): TinyRequirement[] {
-        return this._requirements;
-    }
-
-    public async loadVotesAsync() {
-        const doc = await this.votingDataService.getDocumentAsync(
-            this.documentId
-        );
-        this.votes = [];
-
-        if (doc.vote != null && doc.vote.length > 0) {
-            this.votes = doc.vote;
-        }
-    }
-
-    public async getAreasAsync(): Promise<void> {
-        const client = getClient();
-        let areas = "( ";
-
-        const teamcontext: TeamContext = {
-            project: null,
-            projectId: this.context.project.id,
-            team: null,
-            teamId: this.team.id
-        };
-
-        const teamfieldvalues = await client.getTeamFieldValues(teamcontext);
-        LogExtension.log(teamfieldvalues);
-
-        for (let i = 0; i < teamfieldvalues.values.length; i++) {
-            const value = teamfieldvalues.values[i];
-            areas += `[System.AreaPath] ${
-                value.includeChildren ? "UNDER" : "="
-                } '${ value.value }'`;
-
-            if (i < teamfieldvalues.values.length - 1) {
-                areas += " OR ";
-            } else {
-                areas += " )";
-            }
-        }
-
-        LogExtension.log(areas);
-        this._areas = areas;
-        LogExtension.log("finish area");
-    }
-
-    /**
-     * Loads WorkItems by list of WorkItemTypes (backlog-level-based).
-     *
-     * @param type A comma separated string of required WorkItemTypes. Example: "Requirement,Bug"
-     * @see VotingTypes
-     */
-    public async loadWorkItemsByTypes(types: string = ""): Promise<void> {
-        const wiql =
-            "SELECT [System.Id] FROM WorkItems" +
-            " WHERE [System.State] <> 'Closed'" +
-            " AND [System.State] <> 'Done'" +
-            " AND [System.State] <> 'Removed'" +
-            " AND ( [System.WorkItemType] = '" +
-            types.replace(",", "' OR [System.WorkItemType] = '") +
-            "' )" +
-            " AND " +
-            this._areas;
-
-        return this.loadWorkItemsAsync(wiql);
-    }
-
-    /**
-     * Loads WorkItems based on a Query.
-     *
-     * @param queryId Id of a query.
-     * @see VotingTypes
-     */
-    public async loadWorkItemsByQuery(queryId: string): Promise<void> {
-        const query = await this.getQueryById(queryId);
-        return this.loadWorkItemsAsync(query.wiql);
-    }
-
-    /**
-     * Loads WorkItems based on a WIQL string.
-     *
-     * @param wiql Id of a query or comma separated string of required WorkItemTypes.
-     */
-    private async loadWorkItemsAsync(wiql: string): Promise<void> {
-        this._requirements = new Array<TinyRequirement>();
-        const witClient = getWitClient();
-
-        const wiqlJson = {
-            query: wiql
-        };
-
-        LogExtension.log("WIQL-Abfrage: " + wiql);
-
-        const idJson = await witClient.queryByWiql(
-            wiqlJson,
-            this.context.project.id
-        );
-        LogExtension.log(idJson);
-        const headArray = new Array();
-        let tempArray = new Array();
-        LogExtension.log(idJson.workItems);
-        for (let i = 0; i < idJson.workItems.length; i++) {
-            const item = idJson.workItems[i];
-
-            if ((i + 1) % 200 !== 0) {
-                tempArray.push(item.id);
-            } else {
-                headArray.push(tempArray);
-                tempArray = new Array<string>();
-                tempArray.push(item.id);
-            }
-        }
-
-        headArray.push(tempArray);
-
-        for (const array of headArray) {
-            try {
-                if (array == null || array.length == 0) {
-                    continue;
-                }
-
-                const result = await witClient.getWorkItems(array);
-                for (const req of result) {
-                    LogExtension.log(req);
-
-                    const tempRequirement = new TinyRequirement();
-                    tempRequirement.id = req.id;
-                    if (
-                        req.fields["Microsoft.VSTS.Common.StackRank"] !==
-                        undefined
-                    ) {
-                        tempRequirement.order =
-                            req.fields["Microsoft.VSTS.Common.StackRank"];
-                    } else if (
-                        req.fields["Microsoft.VSTS.Common.BacklogPriority"] !==
-                        undefined
-                    ) {
-                        tempRequirement.order =
-                            req.fields["Microsoft.VSTS.Common.BacklogPriority"];
-                    } else {
-                        tempRequirement.order = "0";
-                    }
-                    tempRequirement.title = req.fields["System.Title"];
-                    tempRequirement.workItemType =
-                        req.fields["System.WorkItemType"];
-                    tempRequirement.state = req.fields["System.State"];
-                    tempRequirement.size =
-                        req.fields["Microsoft.VSTS.Scheduling.Size"];
-                    tempRequirement.valueArea =
-                        req.fields["Microsoft.VSTS.Common.BusinessValue"];
-                    tempRequirement.iterationPath =
-                        req.fields["System.IterationPath"];
-                    tempRequirement.assignedTo = this.getNameOfWiResponsiveness(
-                        req.fields["System.AssignedTo"]);
-                    tempRequirement.createdBy = this.getNameOfWiResponsiveness(
-                        req.fields["System.CreatedBy"]);                        
-                    tempRequirement.assignedToFull = req.fields["System.AssignedTo"];
-                    tempRequirement.createdByFull = req.fields["System.CreatedBy"];
-                    tempRequirement.description =
-                        req.fields["System.Description"];
-
-                    this.requirements.push(tempRequirement);
-                }
-            } catch (err) {
-                LogExtension.log("Error at getWorkItems()");
-                LogExtension.log(err);
-                this.nothingToVote(false);
-            }
-        }
     }
 
     private validateVote(voting: Voting, id: number, upVote: boolean): boolean {
@@ -318,9 +137,4 @@ export class VotingPageService extends BaseDataService {
             LogExtension.log(e);
         }
     }
-
-    public resetRequirements() {
-        this._requirements = [];
-    }
-
 }

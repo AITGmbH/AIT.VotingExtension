@@ -230,12 +230,12 @@ export class VotingPageController extends Vue {
 
             switch (this.actualVoting.type) {
                 case VotingTypes.LEVEL:
-                    await this.votingService.loadWorkItemsByTypes(
+                    await this.votingService.loadWorkItemsByTypesAsync(
                         this.actualVoting.level
                     );
                     break;
                 case VotingTypes.QUERY:
-                    await this.votingService.loadWorkItemsByQuery(
+                    await this.votingService.loadWorkItemsByQueryAsync(
                         this.actualVoting.query
                     );
                     break;
@@ -283,6 +283,20 @@ export class VotingPageController extends Vue {
         }
     }
 
+    public get isBlindVotingEnabled() {
+        const isBlindVoting = this.actualVoting.isBlindVotingEnabled;
+
+        // if vote is paused, stopped or has ended (overdue), publish the result if enabled
+        const isBlindVotingPublishResult = 
+            this.actualVoting.isBlindVotingEnabled &&
+            this.actualVoting.isBlindVotingPublishEnabled &&
+            (this.status === VotingStatus.PausedVoting ||
+                this.status === VotingStatus.OverdueVoting ||
+                this.status === VotingStatus.NoVoting);
+
+        return isBlindVoting && !isBlindVotingPublishResult;
+    }
+
     private calculateMyVotes() {
         const userVotes = {};
         const numberOfVotes = this.actualVoting.numberOfVotes;
@@ -311,7 +325,15 @@ export class VotingPageController extends Vue {
 
                         const isNotBlindVoting = !this.actualVoting.isBlindVotingEnabled;
 
-                        if (isNotBlindVoting || isBlindVotingUser) {
+                        // if vote is paused, stopped or has ended (overdue), publish the result if enabled
+                        const isBlindVotingPublishResult = 
+                            this.actualVoting.isBlindVotingEnabled &&
+                            this.actualVoting.isBlindVotingPublishEnabled &&
+                            (this.status === VotingStatus.PausedVoting ||
+                                this.status === VotingStatus.OverdueVoting ||
+                                this.status === VotingStatus.NoVoting);
+
+                        if (isNotBlindVoting || isBlindVotingUser || isBlindVotingPublishResult) {
                             votingItemTemp.allVotes++;
                         }
 
