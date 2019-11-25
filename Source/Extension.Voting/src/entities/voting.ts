@@ -21,6 +21,7 @@ export class Voting {
     public useEndTime: boolean = false;
     public end: number = null;
     public isBlindVotingEnabled: boolean = false;
+    public isBlindVotingPublishEnabled: boolean = false;
     public cannotVoteForAssignedWorkItems: boolean = false;
     public cannotVoteForOwnWorkItems: boolean = false;
 
