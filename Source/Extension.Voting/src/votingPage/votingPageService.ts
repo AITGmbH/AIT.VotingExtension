@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { BaseDataService } from "../services/baseDataService";
-import { bsNotify } from "../shared/common";
+import { bsNotify, compareUserString } from "../shared/common";
 import { LogExtension } from "../shared/logExtension";
 import { Vote } from "../entities/vote";
 import { Voting } from "../entities/voting";
@@ -21,6 +21,8 @@ export class VotingPageService extends BaseDataService {
         const isPaused = voting.isVotingPaused;
         const isProspective = voting.useStartTime && now < voting.start;
         const isOverdue = voting.useEndTime && now > voting.end;
+        const cannotVoteForAssignedWorkItems = voting.cannotVoteForAssignedWorkItems && compareUserString(voteItem.assignedToFull, this.context.user);
+        const cannotVoteForOwnWorkItems = voting.cannotVoteForOwnWorkItems && compareUserString(voteItem.createdByFull, this.context.user);
 
         if (voting == null) {
             bsNotify(
@@ -76,6 +78,18 @@ export class VotingPageService extends BaseDataService {
                 }. \nPlease refresh your browser window to get the actual content.`
             );
             return false;
+        } else if (cannotVoteForAssignedWorkItems) {
+            bsNotify(
+                "danger",
+                `You cannot vote for your assigned work items.`
+            );
+            return false;            
+        } else if (cannotVoteForOwnWorkItems) {
+            bsNotify(
+                "danger",
+                `You cannot vote for your own work items.`
+            );
+            return false;            
         } else {
             return true;
         }

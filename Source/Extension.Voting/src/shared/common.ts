@@ -1,4 +1,5 @@
 import { LogExtension } from "./logExtension";
+import { User } from "../entities/user";
 
 export function bsNotify(type, message) {
     LogExtension.log("in notify function");
@@ -67,4 +68,23 @@ export function getUrlParameterByName(name, url) {
 
 export function escapeText(s: string): string {
     return s.replace(/<|>/g, "");
+}
+
+export function compareUserString(votingItemUser: string, user: User | UserContext) {
+    if (votingItemUser == null || user == null) {
+        return false;
+    }
+
+    const fullUserName = `${user.name} <${user.email}>`;
+    const votingItemUserHasFullName = votingItemUser.indexOf("<") >= 0;
+
+    if (votingItemUserHasFullName && votingItemUser == fullUserName) {
+        return true;
+    }
+    
+    if (!votingItemUserHasFullName && votingItemUser == user.name) {
+        return true;
+    }
+
+    return false;
 }
