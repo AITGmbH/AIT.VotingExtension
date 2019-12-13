@@ -78,13 +78,13 @@ export class VotingPageService extends BaseDataService {
                 }. \nPlease refresh your browser window to get the actual content.`
             );
             return false;
-        } else if (cannotVoteForAssignedWorkItems) {
+        } else if (upVote && cannotVoteForAssignedWorkItems) {
             bsNotify(
                 "danger",
                 `You cannot vote for your assigned work items.`
             );
             return false;            
-        } else if (cannotVoteForOwnWorkItems) {
+        } else if (upVote && cannotVoteForOwnWorkItems) {
             bsNotify(
                 "danger",
                 `You cannot vote for your own work items.`
