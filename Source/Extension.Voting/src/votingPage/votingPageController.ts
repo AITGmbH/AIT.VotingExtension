@@ -125,10 +125,6 @@ export class VotingPageController extends Vue {
             }
         }
 
-        if (votingItem.myVotes > 0) {
-            voteDown.parentElement.classList.remove("hide");
-        }
-
         if (this.actualVoting.cannotVoteForAssignedWorkItems) {
             if (compareUserString(votingItem.assignedToFull, this.user)) {                
                 voteUp.parentElement.classList.add("hide");
@@ -141,6 +137,10 @@ export class VotingPageController extends Vue {
                 voteUp.parentElement.classList.add("hide");
                 voteDown.parentElement.classList.add("hide");
             }
+        }
+
+        if (votingItem.myVotes > 0) {
+            voteDown.parentElement.classList.remove("hide");
         }
     }
 
