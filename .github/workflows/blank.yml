@@ -14,7 +14,7 @@ on:
 jobs:
   
   # This workflow contains a single job called "build"
-  build preview:
+  Build_preview:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
 
@@ -65,7 +65,7 @@ jobs:
         name: drop
         path: ./../output/
         
-  build Production:
+  Build_Production:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
 
