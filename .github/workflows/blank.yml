@@ -94,7 +94,7 @@ jobs:
       shell: cmd
       working-directory: ./Source/Extension.Voting
     - name: Update manifest
-      run: npm run update-manifest $PublisherId $ExtensionIdPreview
+      run: npm run update-manifest $PublisherId $ExtensionIdProduction
       shell: cmd
       working-directory: ./Source/Extension.Voting
       env:
