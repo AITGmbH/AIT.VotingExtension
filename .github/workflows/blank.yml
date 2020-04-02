@@ -108,7 +108,7 @@ jobs:
       run: npm install -g tfx-cli
       shell: cmd
     - name: Package Extension
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-1.0.0.0.vsix
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
       shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
