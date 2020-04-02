@@ -6,18 +6,20 @@ name: Tools.TFSASAP.vNext.Voting.Production
 # events but only for the master branch
 on:
   push:
-    branches: [ Wlad-Workflow-Migration ]
-#  pull_request:
-#    branches: [ master ]
+    branches: Wlad-Workflow-Migration
+  pull_request:
+    branches: master
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  
+ 
   # This workflow contains a single job called "build"
   Build_preview:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
-
+    env:
+        PublisherId: aitgmbh
+        ExtensionIdPreview: asap-voting-aitgmb-de-preview
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -46,9 +48,6 @@ jobs:
       run: npm run update-manifest $PublisherId $ExtensionIdPreview
       shell: cmd
       working-directory: ./Source/Extension.Voting
-      env:
-        PublisherId: aitgmbh
-        ExtensionIdPreview: asap-voting-aitgmb-de-preview
     - name: Build prod
       run: npm run build-prod
       shell: cmd
@@ -69,6 +68,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
 
+    env:
+        PublisherId: aitgmbh
+        ExtensionIdProduction: asap-voting-aitgmb-de-production
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -97,9 +99,6 @@ jobs:
       run: npm run update-manifest $PublisherId $ExtensionIdProduction
       shell: cmd
       working-directory: ./Source/Extension.Voting
-      env:
-        PublisherId: aitgmbh
-        ExtensionIdProduction: asap-voting-aitgmb-de-production
     - name: Build prod
       run: npm run build-prod
       shell: cmd
