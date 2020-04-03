@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Tools.TFSASAP.vNext.Voting.Production.Deployment
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -13,7 +13,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  Demployment:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
 
@@ -31,7 +31,7 @@ jobs:
         # Optional, will get head commit SHA
         pr: ${{github.event.pull_request.number}}
         # Optional, no need to specify if PR is
-        commit: ${{github.event.pull_request.head.sha}}
+        commit: ${{github.event.push.head.sha}}
         name: drop
         path: .
         # Optional, defaults to current repo
