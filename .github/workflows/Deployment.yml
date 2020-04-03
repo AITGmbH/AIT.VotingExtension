@@ -53,7 +53,7 @@ jobs:
     - name: Download artifact
       uses: dawidd6/action-download-artifact@v2
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
+        github_token: $GITHUB_TOKEN
         workflow: Tools.TFSASAP.vNext.Voting.Production
         name: drop       
         commit: c1586e03808503ed587a6c386218a8aedb3a4943
