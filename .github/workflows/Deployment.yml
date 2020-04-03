@@ -56,7 +56,7 @@ jobs:
         github_token: ${{secrets.GITHUB_TOKEN}}
         workflow: Tools.TFSASAP.vNext.Voting.Production
         name: drop       
-        commit: c1586e0
+        commit: c1586e03808503ed587a6c386218a8aedb3a4943
         path: .
         # Optional, defaults to current repo
         repo: ${{github.repository}}
