@@ -39,3 +39,23 @@ jobs:
         env:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: echo "$MATRIX_CONTEXT"
+  # This workflow contains a single job called "build"
+  Demployment:
+    # The type of runner that the job will run on
+    runs-on: [windows-latest]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Runs a single command using the runners shell
+    - name: Download artifact
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: Tools.TFSASAP.vNext.Voting.Production
+        name: drop
+        path: .
+        # Optional, defaults to current repo
+        repo: ${{github.repository}}
