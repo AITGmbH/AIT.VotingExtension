@@ -1,0 +1,99 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Tools.TFSASAP.vNext.Voting.ProductionDeploy
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+
+  pull_request:    
+    tags: [release]
+    types: [closed]
+    branches: [ Wlad-Workflow-Deployment]
+
+jobs:
+  Production_Build:
+    # The type of runner that the job will run on
+    runs-on: [windows-latest]
+
+    env:
+        PublisherId: aitgmbh
+        ExtensionIdProduction: asap-voting-aitgmb-de-production
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Replace Instrumentation Key in AppInsights.js
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: __
+        tokenSuffix: __
+        files: '["**/appInsights.js"]'
+      env:
+        InstrumentationKey: 41197235-8c40-49e7-9880-93cf3c85d882
+    - name: Replace Build Number in VotingExtension_Description.md
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: __
+        tokenSuffix: __
+        files: '["**/VotingExtension_Description.md"]'
+      env:
+        BuildNumber: $GITHUB_RUN_NUMBER
+    - name: npm install
+      run: npm ci
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+    - name: Update manifest
+      run: npm run update-manifest $PublisherId $ExtensionIdProduction
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+    - name: Build prod
+      run: npm run build-prod
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+    - name: Install tfx-cli
+      run: npm install -g tfx-cli
+      shell: cmd
+    - name: Package Extension
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
+      shell: cmd
+    - name: Publish Artifact drop
+      uses: actions/upload-artifact@v1
+      with:
+        name: drop
+        path: ./../output/
+
+  Production_Deployment:
+      runs-on: [windows-latest]
+      needs: Production_Build
+      steps:      
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: drop
+          path: .
+      - name: Install tfx-cli
+        run: npm install -g tfx-cli
+        shell: cmd
+      - name: publish Extension
+        run: |
+          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
+        shell: cmd
+        env:
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
+          PublisherID: aitgmbh
+          ExtensionID: asap-voting-aitgmb-de-production
+          ExtensionName: AIT Voting Extension 
+          #Azure DevOps use the Releasenumber, but here must the old idea rethink
+          ExtensionVersion: $GITHUB_RUN_ID
+          ExtensionVisibility: Public
+          ExtensionPricing: Free
+          SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
+      - name: Check Marketplace validation status $ExtensionID
+        run: |
+          echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID
+        shell: cmd
+      - name: Install Extension
+        run: |
+          echo install --no-color --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID --service-url https://dev.azure.com/ait-customers
+        shell: cmd
