@@ -8,10 +8,10 @@ on:
   pull_request:
     tags: ["release"]
     types: [closed]
-    branches: [ Wlad-Workflow-Deployment-Migration]
+    branches: [ Wlad-Workflow-Deployment]
 
 jobs:
-  Build_Production:
+  Production_Build:
     # The type of runner that the job will run on
     runs-on: [windows-latest]
 
@@ -61,3 +61,38 @@ jobs:
       with:
         name: drop
         path: ./../output/
+
+  Production_Deployment:
+      runs-on: [windows-latest]
+      needs: Production_Build
+      steps:      
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: drop
+          path: .
+      - name: Install tfx-cli
+        run: npm install -g tfx-cli
+        shell: cmd
+      - name: publish Extension
+        run: |
+          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
+        shell: cmd
+        env:
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
+          PublisherID: aitgmbh
+          ExtensionID: asap-voting-aitgmb-de-production
+          ExtensionName: AIT Voting Extension 
+          #Azure DevOps use the Releasenumber, but here must the old idea rethink
+          ExtensionVersion: $GITHUB_RUN_ID
+          ExtensionVisibility: Public
+          ExtensionPricing: Free
+          SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
+      - name: Check Marketplace validation status $ExtensionID
+        run: |
+          echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID
+        shell: cmd
+      - name: Install Extension
+        run: |
+          echo install --no-color --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID --service-url https://dev.azure.com/ait-customers
+        shell: cmd
