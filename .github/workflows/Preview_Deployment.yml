@@ -1,0 +1,84 @@
+name: Tools.TFSASAP.vNext.Voting.Production
+
+on:
+  push:
+    branches: Wlad-Workflow-Migration
+
+jobs:
+  Preview_Build:
+    runs-on: [windows-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Replace Instrumentation Key in AppInsights.js
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: __
+        tokenSuffix: __
+        files: '["**/appInsights.js"]'
+      env:
+        InstrumentationKey: 41197235-8c40-49e7-9880-93cf3c85d882
+    - name: Replace Build Number in VotingExtension_Description.md
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: __
+        tokenSuffix: __
+        files: '["**/VotingExtension_Description.md"]'
+      env:
+        BuildNumber: $GITHUB_RUN_NUMBER
+    - name: npm install
+      run: npm ci
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+    - name: Update manifest
+      run: npm run update-manifest $PublisherId $ExtensionIdPreview
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+      env:
+        PublisherId: aitgmbh
+        ExtensionIdPreview: asap-voting-aitgmb-de-preview
+    - name: Build prod
+      run: npm run build-prod
+      shell: cmd
+      working-directory: ./Source/Extension.Voting
+    - name: Install tfx-cli
+      run: npm install -g tfx-cli
+      shell: cmd
+    - name: Package Extension
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-1.0.0.0.vsix
+      shell: cmd
+    - name: Publish Artifact drop
+      uses: actions/upload-artifact@v1
+      with:
+        name: drop
+        path: ./../output/
+        
+  Preview_Deployment:
+      runs-on: [windows-latest]
+      steps:      
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: drop
+          path: .
+      - name: publish Extension
+        run: |
+          echo ${{ secrets.ServerUrl }}  > filename.txt
+        shell: cmd
+        env:
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview-1.0.0.0.vsix
+          PublisherID: aitgmbh
+          ExtensionID: asap-voting-aitgmb-de-preview
+          ExtensionName: AIT Voting Extension (Preview)
+          #Azure DevOps use the Releasenumber, but here must the old idea rethink
+          ExtensionVersion: $GITHUB_RUN_ID
+          ExtensionVisibility: Private Preview
+          ExtensionPricing: Free
+          SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
+      - name: Check Marktplace Validation Status
+        run: |
+          echo test
+        shell: cmd
+      - name: Install Extension
+        run: |
+          echo test
+        shell: cmd
