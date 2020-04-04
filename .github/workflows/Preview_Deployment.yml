@@ -63,7 +63,7 @@ jobs:
           path: .
       - name: publish Extension
         run: |
-          echo ${{ secrets.ServerUrl }}  > filename.txt
+          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
         shell: cmd
         env:
           ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview-1.0.0.0.vsix
@@ -75,16 +75,11 @@ jobs:
           ExtensionVisibility: Private Preview
           ExtensionPricing: Free
           SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
-      - name: Publish Artifact drop
-        uses: actions/upload-artifact@v1
-        with:
-          name: test
-          path: .
-      - name: Check Marktplace Validation Status
+      - name: Check Marketplace validation status $ExtensionID
         run: |
-          echo test
+          echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID
         shell: cmd
       - name: Install Extension
         run: |
-          echo test
+          echo install --no-color --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID --service-url https://dev.azure.com/ait-customers
         shell: cmd
