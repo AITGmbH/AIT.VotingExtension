@@ -7,9 +7,8 @@ name: Tools.TFSASAP.vNext.Voting.ProductionDeploy
 on:
 
   pull_request:    
-    tags: [release]
-    types: [closed]
-    branches: [ Wlad-Workflow-Deployment]
+    tags: release
+    branches: Wlad-Workflow-Deployment
 
 jobs:
   Production_Build:
