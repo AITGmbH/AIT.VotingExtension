@@ -1,4 +1,4 @@
-name: Tools.TFSASAP.vNext.Voting.Production
+name: Tools.TFSASAP.vNext.Voting.Preview
 
 on:
   push:
