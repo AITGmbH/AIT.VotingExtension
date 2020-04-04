@@ -75,6 +75,11 @@ jobs:
           ExtensionVisibility: Private Preview
           ExtensionPricing: Free
           SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
+      - name: Publish Artifact drop
+        uses: actions/upload-artifact@v1
+        with:
+          name: test
+          path: .
       - name: Check Marktplace Validation Status
         run: |
           echo test
