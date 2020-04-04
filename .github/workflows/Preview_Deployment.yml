@@ -61,6 +61,9 @@ jobs:
         with:
           name: drop
           path: .
+      - name: Install tfx-cli
+        run: npm install -g tfx-cli
+        shell: cmd
       - name: publish Extension
         run: |
           echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
