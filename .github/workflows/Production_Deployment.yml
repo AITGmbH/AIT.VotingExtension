@@ -10,6 +10,7 @@ on:
     tags: [release]
     types: [closed]
     branches: [ Wlad-Workflow-Deployment]
+    
 
 jobs:
   Production_Build:
