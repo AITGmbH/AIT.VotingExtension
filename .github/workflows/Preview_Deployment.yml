@@ -54,6 +54,7 @@ jobs:
         
   Preview_Deployment:
       runs-on: [windows-latest]
+      needs: Preview_Build
       steps:      
       - name: Download artifact
         uses: actions/download-artifact@v1.0.0
