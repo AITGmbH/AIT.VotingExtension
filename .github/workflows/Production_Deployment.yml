@@ -75,8 +75,6 @@ jobs:
           PublisherID: aitgmbh
           ExtensionID: asap-voting-aitgmb-de-production
           ExtensionName: AIT Voting Extension 
-          #Azure DevOps use the Releasenumber, but here must the old idea rethink
-          ExtensionVersion: $GITHUB_RUN_ID
           ExtensionVisibility: Public
           ExtensionPricing: Free
           SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
