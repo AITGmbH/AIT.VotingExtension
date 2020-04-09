@@ -32,6 +32,8 @@ jobs:
         files: '["**/VotingExtension_Description.md"]'
       env:
         Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
+    - name: Hello world
+      run: echo ${env:$Versionnumber}!
     - name: Replace Build Number in vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -57,7 +59,7 @@ jobs:
       run: npm install -g tfx-cli
       shell: cmd
     - name: Package Extension
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-$Versionnumber.vsix
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-${env:$Versionnumber}.vsix
       shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
