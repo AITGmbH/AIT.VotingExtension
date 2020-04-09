@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "asap-voting-aitgmb-de-preview",
-  "version": "0.1.37",
+  "version": "__Versionnumber__",
   "publisher": "aitgmbh",
   "public": false,
   "name": "AIT Voting Extension (Preview)",
