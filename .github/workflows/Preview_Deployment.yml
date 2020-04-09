@@ -26,25 +26,12 @@ jobs:
         files: '["**/appInsights.js"]'
       env:
         InstrumentationKey: 41197235-8c40-49e7-9880-93cf3c85d882
-    - name: Replace Build Number in VotingExtension_Description.md
+    - name: Replace Build Number in VotingExtension_Description.md and vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
         tokenPrefix: __
         tokenSuffix: __
-        files: '["**/VotingExtension_Description.md"]'
-      env:
-        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
-    - name: Hello world
-      env:
-        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
-      run: echo %VERSION_NUMBER%
-      shell: cmd
-    - name: Replace Build Number in vss-extension.json
-      uses: cschleiden/replace-tokens@v1.0
-      with:
-        tokenPrefix: __
-        tokenSuffix: __
-        files: '["**/vss-extension.json"]'
+        files: '["**/VotingExtension_Description.md", "**/vss-extension.json"]'
       env:
         VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
     - name: npm install
