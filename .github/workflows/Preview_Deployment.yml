@@ -7,14 +7,15 @@ on:
 jobs:
   Preview_Build:
     runs-on: [windows-latest]
+    env:
+      Major: 1
+      Minor: 2
     steps:
     - uses: actions/checkout@v2
     - name: Generate build number
       uses: einaregilsson/build-number@v2 
       with:
         token: ${{secrets.github_token}} 
-    - name: Print new build number
-      run: echo "Build number is $BUILD_NUMBER"
     - name: Replace Instrumentation Key in AppInsights.js
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -30,7 +31,13 @@ jobs:
         tokenSuffix: __
         files: '["**/VotingExtension_Description.md"]'
       env:
-        BuildNumber: $GITHUB_RUN_NUMBER
+        Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
+    - name: Replace Build Number in vss-extension.json
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: __
+        tokenSuffix: __
+        files: '["**/vss.extension.json"]'
     - name: npm install
       run: npm ci
       shell: cmd
