@@ -10,6 +10,8 @@ jobs:
     env:
       Major: 1
       Minor: 2
+      PublisherId: aitgmbh
+      ExtensionIdPreview: asap-voting-aitgmb-de-preview
     steps:
     - uses: actions/checkout@v2
     - name: Generate build number
@@ -33,7 +35,9 @@ jobs:
       env:
         Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
     - name: Hello world
-      run: echo ${env:$Versionnumber}!
+      run: echo $Versionnumber
+      env:
+        Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
     - name: Replace Build Number in vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -48,9 +52,6 @@ jobs:
       run: npm run update-manifest $PublisherId $ExtensionIdPreview
       shell: cmd
       working-directory: ./Source/Extension.Voting
-      env:
-        PublisherId: aitgmbh
-        ExtensionIdPreview: asap-voting-aitgmb-de-preview
     - name: Build prod
       run: npm run build-prod
       shell: cmd
