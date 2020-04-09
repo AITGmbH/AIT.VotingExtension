@@ -54,7 +54,7 @@ jobs:
     - name: Package Extension
       env:
         VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production-%VERSION_NUMBER%.vsix
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production.vsix
       shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
@@ -76,10 +76,10 @@ jobs:
         shell: cmd
       - name: publish Extension
         run: |
-          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
+          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --vsix %ExtensionFile% --share-with %SharedPrivateAccounts% --output friendly --debug-log-stream stderr
         shell: cmd
         env:
-          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-production.vsix
           PublisherID: aitgmbh
           ExtensionID: asap-voting-aitgmb-de-production
           ExtensionName: AIT Voting Extension 
@@ -88,5 +88,5 @@ jobs:
           SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
       - name: Check Marketplace validation status $ExtensionID
         run: |
-          echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID
+          echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher %PublisherID% --extension-id %ExtensionID%
         shell: cmd
