@@ -33,12 +33,9 @@ jobs:
         tokenSuffix: __
         files: '["**/VotingExtension_Description.md"]'
       env:
-        VERSION_NUMBER: $MAJOR_NUMBER.$MINOR_NUMBER.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
+        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{env.GITHUB_RUN_NUMBER}}
     - name: Hello world
-      env:
-        VERSION_NUMBER: $MAJOR_NUMBER.$MINOR_NUMBER.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
       run: echo %VERSION_NUMBER%
-      
     - name: Replace Build Number in vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -61,7 +58,7 @@ jobs:
       run: npm install -g tfx-cli
       shell: cmd
     - name: Package Extension
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-${env:$Versionnumber}.vsix
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-%VERSION_NUMBER%.vsix
       shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
@@ -86,7 +83,7 @@ jobs:
           echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix $ExtensionFile --share-with $SharedPrivateAccounts --output friendly --debug-log-stream stderr
         shell: cmd
         env:
-          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview-$Versionnumber.vsix
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview-${{env.VERSION_NUMBER}}.vsix
           PublisherID: aitgmbh
           ExtensionID: asap-voting-aitgmb-de-preview
           ExtensionName: AIT Voting Extension (Preview)
