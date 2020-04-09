@@ -9,8 +9,17 @@ on:
 jobs:
   Production_Build:
     runs-on: [windows-latest]
+    env:
+      MAJOR_NUMBER: 1
+      MINOR_NUMBER: 2
+      PublisherId: aitgmbh
+      ExtensionIdProduction: asap-voting-aitgmb-de-production
     steps:
     - uses: actions/checkout@v2
+    - name: Generate build number
+      uses: einaregilsson/build-number@v2 
+      with:
+        token: ${{secrets.github_token}} 
     - name: Replace Instrumentation Key in AppInsights.js
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -19,25 +28,22 @@ jobs:
         files: '["**/appInsights.js"]'
       env:
         InstrumentationKey: 41197235-8c40-49e7-9880-93cf3c85d882
-    - name: Replace Build Number in VotingExtension_Description.md
+    - name: Replace Build Number in VotingExtension_Description.md and vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
         tokenPrefix: __
         tokenSuffix: __
-        files: '["**/VotingExtension_Description.md"]'
+        files: '["**/VotingExtension_Description.md", "**/vss-extension.json"]'
       env:
-        BuildNumber: $GITHUB_RUN_NUMBER
+        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
     - name: npm install
       run: npm ci
       shell: cmd
       working-directory: ./Source/Extension.Voting
     - name: Update manifest
-      run: npm run update-manifest $PublisherId $ExtensionIdProduction
+      run: npm run update-manifest %PublisherId% %ExtensionIdProduction%
       shell: cmd
       working-directory: ./Source/Extension.Voting
-      env:
-        PublisherId: aitgmbh
-        ExtensionIdProduction: asap-voting-aitgmb-de-production
     - name: Build prod
       run: npm run build-prod
       shell: cmd
@@ -46,7 +52,9 @@ jobs:
       run: npm install -g tfx-cli
       shell: cmd
     - name: Package Extension
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production-1.0.0.0.vsix
+      env:
+        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-production-%VERSION_NUMBER%.vsix
       shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
