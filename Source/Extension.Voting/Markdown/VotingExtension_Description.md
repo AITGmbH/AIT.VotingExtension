@@ -17,7 +17,7 @@ Democratize your backlog with Voting Extension. Ask your stakeholders to vote fo
 
 For more detailed release notes please refer to our [release blog posts](https://www.aitgmbh.de/blog/).
 
-- **Version "__BuildNumber__"**
+- **Version "__VERSION_NUMBER__"**
   - Introduction of voting types: backlog-based and query-based votings
   - Limit votes per work item (in addition to limit per user)
   - Support for fixed voting period: start and end date for a voting can be configured
