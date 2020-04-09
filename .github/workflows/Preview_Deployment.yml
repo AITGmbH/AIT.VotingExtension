@@ -37,7 +37,8 @@ jobs:
     - name: Hello world
       env:
         VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
-      run: echo %VERSION_NUMBER%   
+      run: echo %VERSION_NUMBER%
+      shell: cmd
     - name: Replace Build Number in vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
@@ -62,7 +63,8 @@ jobs:
     - name: Package Extension
       run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-%VERSION_NUMBER%.vsix
       shell: cmd
-      
+      env:
+        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
       with:
