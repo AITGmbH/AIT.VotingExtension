@@ -37,7 +37,7 @@ jobs:
       with:
         tokenPrefix: __
         tokenSuffix: __
-        files: '["**/vss.extension.json"]'
+        files: '["**/vss-extension.json"]'
     - name: npm install
       run: npm ci
       shell: cmd
