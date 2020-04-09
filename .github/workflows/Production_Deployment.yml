@@ -90,7 +90,3 @@ jobs:
         run: |
           echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID
         shell: cmd
-      - name: Install Extension
-        run: |
-          echo install --no-color --auth-type pat --token ${{secrets.Token}} --publisher $PublisherID --extension-id $ExtensionID --service-url https://dev.azure.com/ait-customers
-        shell: cmd
