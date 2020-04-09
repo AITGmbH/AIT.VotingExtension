@@ -2,23 +2,14 @@
 
 name: Tools.TFSASAP.vNext.Voting.ProductionDeploy
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   release:
     types: [published]
 
 jobs:
   Production_Build:
-    # The type of runner that the job will run on
     runs-on: [windows-latest]
-
-    env:
-        PublisherId: aitgmbh
-        ExtensionIdProduction: asap-voting-aitgmb-de-production
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - name: Replace Instrumentation Key in AppInsights.js
       uses: cschleiden/replace-tokens@v1.0
@@ -44,6 +35,9 @@ jobs:
       run: npm run update-manifest $PublisherId $ExtensionIdProduction
       shell: cmd
       working-directory: ./Source/Extension.Voting
+      env:
+        PublisherId: aitgmbh
+        ExtensionIdProduction: asap-voting-aitgmb-de-production
     - name: Build prod
       run: npm run build-prod
       shell: cmd
