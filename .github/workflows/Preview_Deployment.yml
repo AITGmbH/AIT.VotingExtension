@@ -74,7 +74,7 @@ jobs:
         shell: cmd
       - name: publish Extension
         run: |
-          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix $ExtensionFile --share-with %SharedPrivateAccounts% --output friendly --debug-log-stream stderr
+          echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix %ExtensionFile% --share-with %SharedPrivateAccounts% --output friendly --debug-log-stream stderr
         shell: cmd
         env:
           ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview.vsix
