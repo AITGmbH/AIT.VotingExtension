@@ -8,8 +8,8 @@ jobs:
   Preview_Build:
     runs-on: [windows-latest]
     env:
-      Major: 1
-      Minor: 2
+      MAJOR_NUMBER: 1
+      MINOR_NUMBER: 2
       PublisherId: aitgmbh
       ExtensionIdPreview: asap-voting-aitgmb-de-preview
     steps:
@@ -33,11 +33,11 @@ jobs:
         tokenSuffix: __
         files: '["**/VotingExtension_Description.md"]'
       env:
-        Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
+        VERSION_NUMBER: $MAJOR_NUMBER.$MINOR_NUMBER.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
     - name: Hello world
-      run: echo $Versionnumber
+      run: echo $VERSION_NUMBER
       env:
-        Versionnumber: $Major.$Minor.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
+        VERSION_NUMBER: $MAJOR_NUMBER.$MINOR_NUMBER.$BUILD_NUMBER.$GITHUB_RUN_NUMBER
     - name: Replace Build Number in vss-extension.json
       uses: cschleiden/replace-tokens@v1.0
       with:
