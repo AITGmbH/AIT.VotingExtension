@@ -45,6 +45,8 @@ jobs:
         tokenPrefix: __
         tokenSuffix: __
         files: '["**/vss-extension.json"]'
+      env:
+        VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
     - name: npm install
       run: npm ci
       shell: cmd
@@ -61,10 +63,10 @@ jobs:
       run: npm install -g tfx-cli
       shell: cmd
     - name: Package Extension
-      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-%VERSION_NUMBER%.vsix
-      shell: cmd
       env:
         VERSION_NUMBER: ${{env.MAJOR_NUMBER}}.${{env.MINOR_NUMBER}}.${{env.BUILD_NUMBER}}.${{github.run_number}}
+      run: tfx extension create --json --no-color --root ./Source/Extension.Voting --manifest-globs vss-extension.json --loc-root ./ --output-path ./../output/AITGmbh.asap-voting-aitgmb-de-preview-%VERSION_NUMBER%.vsix
+      shell: cmd
     - name: Publish Artifact drop
       uses: actions/upload-artifact@v1
       with:
