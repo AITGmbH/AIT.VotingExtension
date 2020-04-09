@@ -63,6 +63,14 @@ jobs:
   Preview_Deployment:
       runs-on: [windows-latest]
       needs: Preview_Build
+      env:
+          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview.vsix
+          PublisherID: aitgmbh
+          ExtensionID: asap-voting-aitgmb-de-preview
+          ExtensionName: AIT Voting Extension (Preview)
+          ExtensionVisibility: Private Preview
+          ExtensionPricing: Free
+          SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
       steps:      
       - name: Download artifact
         uses: actions/download-artifact@v1.0.0
@@ -76,14 +84,6 @@ jobs:
         run: |
           echo publish --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}}  --vsix %ExtensionFile% --share-with %SharedPrivateAccounts% --output friendly --debug-log-stream stderr
         shell: cmd
-        env:
-          ExtensionFile: ./AITGmbh.asap-voting-aitgmb-de-preview.vsix
-          PublisherID: aitgmbh
-          ExtensionID: asap-voting-aitgmb-de-preview
-          ExtensionName: AIT Voting Extension (Preview)
-          ExtensionVisibility: Private Preview
-          ExtensionPricing: Free
-          SharedPrivateAccounts: ${{ secrets.SharedPrivateAccounts}}
       - name: Check Marketplace validation status $ExtensionID
         run: |
           echo extension isvalid --json --no-color --service-url https://marketplace.visualstudio.com/ --auth-type pat --token ${{secrets.Token}} --publisher %PublisherID% --extension-id %ExtensionID%
