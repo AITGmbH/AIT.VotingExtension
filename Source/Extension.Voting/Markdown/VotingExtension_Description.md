@@ -28,6 +28,9 @@ For more detailed release notes please refer to our [release blog posts](https:/
     - Solves problem that terms of use can not be confirmed
     - "Assigned to" is displayed correctly
 
+- **Bugfixes**
+  - Showing confirm Terms of Use and cannot press confirm #86
+
 ## Known Limitations
 
 - The extension is only supported in Chrome.

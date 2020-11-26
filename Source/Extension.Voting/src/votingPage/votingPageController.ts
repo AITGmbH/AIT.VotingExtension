@@ -8,7 +8,7 @@ import * as workItemTrackingService from "TFS/WorkItemTracking/Services";
 import Component from "vue-class-component";
 import moment from "moment";
 import Vue from "vue";
-import { CookieService } from "../services/cookieService";
+import { UserAgreementService } from "../services/userAgreementService";
 import { LogExtension } from "../shared/logExtension";
 import { User } from "../entities/user";
 import { Vote } from "../entities/vote";
@@ -28,7 +28,7 @@ export class VotingPageController extends Vue {
     private lockButtons: boolean;
     private actualVotingItems: Array<VotingItem>;
     private waitControl: statusIndicators.WaitControl;
-    private cookieService: CookieService;
+    private userAgreementService: UserAgreementService;
     private user: User;
     private startTimerId: number;
     private endTimerId: number;
@@ -50,7 +50,7 @@ export class VotingPageController extends Vue {
         );
 
         this.extensionContext = VSS.getExtensionContext();
-        this.cookieService = new CookieService();
+        this.userAgreementService = new UserAgreementService();
 
         this.votingService = new VotingPageService();
         this.votingService.nothingToVote = (isThereAnythingToVote: boolean) =>
@@ -227,7 +227,7 @@ export class VotingPageController extends Vue {
                     break;
             }
 
-            const hasAcceptedDataProtection = this.cookieService.isCookieSet();
+            const hasAcceptedDataProtection = this.userAgreementService.isUserAgreementAccepted();
             if (hasAcceptedDataProtection) {
                 await this.initAsync();
             } else {
@@ -421,7 +421,7 @@ export class VotingPageController extends Vue {
             content: dialogContent,
             buttons: {
                 Confirm: () => {
-                    this.cookieService.setCookie();
+                    this.userAgreementService.acceptUserAgreement();
                     dialog.close();
 
                     this.refreshAsync();
