@@ -18,17 +18,6 @@ Democratize your backlog with Voting Extension. Ask your stakeholders to vote fo
 For more detailed release notes please refer to our [release blog posts](https://www.aitgmbh.de/blog/).
 
 - **Version "__BuildNumber__"**
-  - Introduction of voting types: backlog-based and query-based votings
-  - Limit votes per work item (in addition to limit per user)
-  - Support for fixed voting period: start and end date for a voting can be configured
-  - Summary of finished voting on admin page with possibility to copy to HTML
-  - Icon in vertical navigation
-  - Moved apply to backlog option to report page for terminated votings
-  - Bugfixes
-    - Solves problem that terms of use can not be confirmed
-    - "Assigned to" is displayed correctly
-
-- **Bugfixes**
   - Showing confirm Terms of Use and cannot press confirm #86
 
 ## Known Limitations
