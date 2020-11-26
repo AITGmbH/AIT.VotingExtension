@@ -18,7 +18,9 @@ Democratize your backlog with Voting Extension. Ask your stakeholders to vote fo
 For more detailed release notes please refer to our [release blog posts](https://www.aitgmbh.de/blog/).
 
 - **Version "__BuildNumber__"**
-  - Bugfix: Showing confirm Terms of Use and cannot press confirm #86
+
+    - Bugfixes
+        - Solves the problem that terms of use can not be confirmed
 
 ## Known Limitations
 
