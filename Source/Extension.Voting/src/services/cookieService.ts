@@ -1,19 +1,15 @@
-export class CookieService {
-    private cookie: string = "VotingExtension.UserConfirmation=true";
+export class CookieService {  
+    public static setCookie(cname : string, cvalue: string , maxAgeDays?: number) {
+        // VSTS Extensions are not hosted on same domain as visualstudio.com, so we need to allow CORS
+        document.cookie = cname + "=" + cvalue + "; max-age="+ maxAgeDays*24*60*60 + "; path=/; SameSite=None; Secure";
+    }  
 
-    public setCookie() {
-        let expiringDate = new Date();
-        expiringDate.setTime(
-            expiringDate.getTime() + 365 * 24 * 60 * 60 * 1000
-        );
-        document.cookie = this.cookie + ";" + "expires=" + expiringDate.toUTCString();
-    }
+    public static isCookieSet(cname : string, cvalue: string) {
 
-    public isCookieSet() {
         let decodedCookie: string = decodeURIComponent(document.cookie);
         let allCookies: string[] = decodedCookie.split(";");
         for (let i = 0; i < allCookies.length; i++) {
-            if (allCookies[i] === this.cookie) {
+            if (allCookies[i].trim() === cname + "=" + cvalue) {
                 return true;
             }
         }
