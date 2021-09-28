@@ -5,6 +5,8 @@
     public title: string;
     public state: string;
     public size: string;
+    public priority: string;
+    public effort: string;
     public requirementType: string;
     public valueArea: string;
     public iterationPath: string;

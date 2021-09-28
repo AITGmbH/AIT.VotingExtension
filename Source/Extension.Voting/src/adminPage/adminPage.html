@@ -206,6 +206,30 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <h4 class="col-sm-12" title="Specify custom fields for voting table.">Custom fields</h4>
+                        <div class="form-group col-sm-6">
+                            <label>
+                                <input type="checkbox" name="useCustomFieldPriority" v-model="actualVoting.useCustomFieldPriority" />
+                                Priority
+                            </label>
+                            <br />
+                            <label>
+                                <input type="checkbox" name="useCustomFieldEffort" v-model="actualVoting.useCustomFieldEffort" />
+                                Effort
+                            </label>
+                            <br />
+                            <label>
+                                <input type="checkbox" name="useCustomFieldSize" v-model="actualVoting.useCustomFieldSize" />
+                                Size
+                            </label>
+                            <br />
+                            <label>
+                                <input type="checkbox" name="useCustomFieldValueArea" v-model="actualVoting.useCustomFieldValueArea" />
+                                Business Area
+                            </label>
+                        </div>
+                    </div>
                     <div class="row" style="height: 15vh"></div>
                 </div>
             </div>
