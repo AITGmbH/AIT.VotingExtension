@@ -572,25 +572,25 @@ export class VotingPageController extends Vue {
                     index: "state",
                     width: 100
                 },
-                ...(this.actualVoting.useCustomFieldPriority ? [{
+                ...(this.actualVoting.useExtraInfoFieldPriority ? [{
                     tooltip: "Priority",
                     text: "Priority",
                     index: "priority",
                     width: 60
                 }] : [] ),
-                ...(this.actualVoting.useCustomFieldSize ? [{
+                ...(this.actualVoting.useExtraInfoFieldSize ? [{
                     tooltip: "Size",
                     text: "Size",
                     index: "size",
                     width: 60
                 }] : [] ),
-                ...(this.actualVoting.useCustomFieldValueArea ? [{
+                ...(this.actualVoting.useExtraInfoFieldValueArea ? [{
                     tooltip: "Business Value",
                     text: "Business Value",
                     index: "valueArea",
                     width: 100
                 }] : [] ),
-                ...(this.actualVoting.useCustomFieldEffort ? [{
+                ...(this.actualVoting.useExtraInfoFieldEffort ? [{
                     tooltip: "Effort",
                     text: "Effort",
                     index: "effort",
