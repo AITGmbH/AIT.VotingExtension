@@ -440,6 +440,10 @@ export class BaseDataService {
                     tempRequirement.state = req.fields["System.State"];
                     tempRequirement.size =
                         req.fields["Microsoft.VSTS.Scheduling.Size"];
+                    tempRequirement.effort =
+                        req.fields["Microsoft.VSTS.Scheduling.Effort"];
+                    tempRequirement.priority =
+                        req.fields["Microsoft.VSTS.Common.Priority"];
                     tempRequirement.valueArea =
                         req.fields["Microsoft.VSTS.Common.BusinessValue"];
                     tempRequirement.iterationPath =

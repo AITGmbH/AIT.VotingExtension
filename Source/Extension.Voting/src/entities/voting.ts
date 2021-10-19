@@ -24,7 +24,11 @@ export class Voting {
     public isBlindVotingPublishEnabled: boolean = false;
     public cannotVoteForAssignedWorkItems: boolean = false;
     public cannotVoteForOwnWorkItems: boolean = false;
-
+    public useExtraInfoFieldPriority: boolean = false;
+    public useExtraInfoFieldSize: boolean = false;
+    public useExtraInfoFieldValueArea: boolean = false;
+    public useExtraInfoFieldEffort: boolean = false;
+    
     public get isBacklogBased() {
         return this.type == VotingTypes.LEVEL;
     }
