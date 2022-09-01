@@ -1,5 +1,7 @@
 # AIT Voting Extension
 
+__Note__ __! This project wil go into an archived status and will no longer be maintained !__ __Note__
+
 Democratize your backlog with Voting Extension. Ask your stakeholders to vote for their favorite backlog items. Align your work on your stakeholders' needs.
 
 Click the picture below to see a demo video.
